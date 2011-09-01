@@ -1,29 +1,19 @@
-//Some ideas
-//Load the tree data
-~init = Proto({
-	
-	~prep = {
-		~projectDir = "/Volumes/Mega/projects/timmer/kod/sc/";
-		~swed = (~projectDir ++ "data/swed019w.txt").loadPaths[0]; // The file 
-		~swed
-	}
-	
-	
-	
-}) => BP(\init);
+// Main sets main project dir, then we do this dance.
 
-~g = BP(\init).v
+~dir.data = ~dir.project ++ "data/";
+~dir.samples = ~dir.project ++ "samples/";
 
-~g.swed
+//Load all asset files, put them in ~q 
+(~dir.data ++ "*").pathMatch.do { |p| ~q.data[p.basename.splitext[0].asSymbol] = p.load } ;
+//Were assuming samples/subdir/file.wav, replacing spaces & hyphens for underscore (to work as symbol)
+(~dir.samples ++ "*").pathMatch.do( { |p|
+	var sub = p.basename.splitext[0].asSymbol;
+	~q.samples[sub] = ();
+	(p ++ "*").pathMatch.do( { |q|
+		~q.samples[sub][q.basename.splitext[0].tr($ , $_).tr($-, $_).asSymbol] = SoundFile(q);
+	})
+});
 
-//is just an array, yes 
-//smaller and smaller numbers
-~le = ~swed.collect {|i, o| ~swed.size - o / ~swed.size } * 0.4
+"*******INITED*********".postln;
+"Hurra"
 
-//Annoying test with durations
-Pbind(\dur, Pseq(~swed) * Pseq(~le), \note, Pseq((~swed * 12 + 0.5).floor)).play
-
-
-String
-
-"*".pathMatch
