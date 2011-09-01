@@ -1,4 +1,5 @@
 //Reloading, free all bound processes
+(
 BP.freeAll;
 //TODO: (maybe) move this to PR, or maybe not.
 SynthDef("timmer.grain1", { arg start, time, bufnum, rate = 1, pan = 0, amp = 1, attack = 0.001, decay = 0.02, outbus;
@@ -130,6 +131,10 @@ PR(\abstractProcess).v.clone({
 
 
 }) => PR(\timmerFx).subType_(\timmer);
+
+)
+
+
 /*
 
 BP.freeAll
