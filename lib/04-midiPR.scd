@@ -1,4 +1,4 @@
-(
+
 BP.freeType(\timmerMidi);
 
 
@@ -8,7 +8,7 @@ BP(\midiClockCheck).free;
 PR(\abstractProcess).v.clone( {
 	
 	~rolling = false;
-
+	
 	~tick = { |index, data|
 		
 		// ~rolling.postln;
@@ -17,6 +17,7 @@ PR(\abstractProcess).v.clone( {
 			//~rolling.postln;
 		}
 	};
+	
 	~isRolling = {
 		~rolling
 	}
@@ -39,6 +40,7 @@ MIDIIn.sysrt = { |src, index, data|
 	
 PR(\abstractProcess).v.clone(
 	{
+		//~event = (eventKey: \dummy);
 		~chan = 0;
 		~pgm = 1;
 		~posCC = #[3,35];
@@ -51,7 +53,7 @@ PR(\abstractProcess).v.clone(
 		~pgmr = nil;
 		~pos = 0;
 		~playing = false;
-		~rolling = false;
+		//~rolling = false;
 		
 		~prep = {
 			~ccr[0] = CCResponder(e { |src, chan, num, value|
@@ -60,16 +62,9 @@ PR(\abstractProcess).v.clone(
 			~ccr[1] = CCResponder(e { |src, chan, num, value|
 				~ccval[1] = value;
 				~pos = ((~ccval[0] * 128) + ~ccval[1]) / 16384;
-				//(~pos).postln;
 				}, nil, ~chan, ~posCC[1]);
 			~pgmr = ProgramChangeResponder(e { |src, chan, val|
-				"PMGM".postln;
-				(~autoplay && (val == ~pgm) && (false == ~playing)).if {
-					"PLAYING".postln;
-					~asPattern.value.play
-				};
 				~playing = (val == ~pgm);
-				[~rolling, ~playing].postln
 			}, nil, ~chan)
 		};
 		
@@ -78,24 +73,52 @@ PR(\abstractProcess).v.clone(
 			~ccr.do(_.remove);
 			~pgmr.remove;
 		};
-		
-		//Change this for the magic
-		~playerPattern = {
-			
-			Pbind()	
+		~thisPattern = {
+				Pbind(
+				\type, \empty,
+				\dur, 0.041666667, // 24 fps 
+				\playing, Pfunc( e { ~playing && BP(\midiClockCheck).isRolling }Ê) ,
+				\pos, Pfunc( e { ~pos }Ê),
+				\test, 0
+			)
 		};
 		
+		~embedPattern = {
+			Pbind()
+		};
+		
+		~embed = { |bp|
+			(bp.isSymbol).if ( {
+				~embedPattern = { BP(bp) }
+			}, {
+				~embedPattern = { bp }
+			});
+			~embedPattern
+		};	
+		
+		//Run embedded pattern when midi circumstances are right
+	
 		~asPattern = {
-			//Reset rolling for every event
-			Pwhile1({ ~rolling = BP(\midiClockCheck).isRolling; ~rolling && ~playing}, ~playerPattern.value);
+			Pif(Pfunc( e {~playing && BP(\midiClockCheck).isRolling } ), 
+				Pchain(~embedPattern.value, (type: \note), ~thisPattern.value), 
+				~thisPattern.value
+				)
 		}
 			
 }) => PR(\midiWrapper).subType_(\timmerMidi);
 
-PR(\midiWrapper) => BP(\tm)
-
- )
-BP(\tm).playing = true
+/*
+Small tut:
+BP(\tm).free;
+PR(\midiWrapper) => BP(\tm);
+BP(\tm).embed(\mySpecialBP) //embed BP
 BP(\tm).play
-BP(\tm).playing = false
+//Wait for midi input
 
+//Then you can do things like
+BP(\test).amp_(Pkey(\pos)) //Pick keys from midiWrapper stream
+//Eeh i guess there could be more midi inputs as well, but don't know
+
+//In the end:
+BP(\tm).stop
+*/
