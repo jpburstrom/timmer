@@ -22,4 +22,13 @@ Pbind(
 */
 
 
+SynthDef("timmer.hit", { arg bufnum, rate = 1, pan = 0, amp = 1, attack = 0.001, decay = 0.02, outbus;
+	var time, env, l, r;
+	//pan.poll(Impulse.kr(10));
+	time = BufDur.kr(bufnum) - attack - decay;
+	#l, r = PlayBuf.ar(2, bufnum, rate * BufRateScale.kr(bufnum), 1, 0, 0)
+		* EnvGen.kr(Env.linen(attack, time , decay), doneAction: 2);
+	OffsetOut.ar(outbus, Balance2.ar(l, r, pan, amp))
+}).add;
+
 

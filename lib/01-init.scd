@@ -7,8 +7,17 @@ BP.freeType(\assets);
 	
 	//Return paths for \dir, \label | [\array, \of, \labels]
 	~paths = { |dir, label|
+		var out=Array.new;
 		(label.size == 0).if { label = [label] };
-		label.collect {Ê|lab| ~s[dir][lab].path }
+		label.do {Ê|lab|
+			lab.postln;
+			(~s[dir][lab].size == 0).if ( {
+				out = out.add(~s[dir][lab].path)
+			}, {
+				out = out ++ ~s[dir][lab].collect(_.path)
+			});
+		};
+		out
 	};
 	~sf = { |dir, label|
 		~s[dir][label]
@@ -27,7 +36,11 @@ BP.freeType(\assets);
 	var sub = p.basename.splitext[0].asSymbol;
 	~q.s[sub] = ();
 	(p ++ "*").pathMatch.do( { |x|
-		~q.s[sub][x.basename.splitext[0].tr($ , $_).tr($-, $_).tr($., $_).asSymbol] = SoundFile(x).info;
+		(x.isFile).if ( {
+			~q.s[sub][x.basename.splitext[0].tr($ , $_).tr($-, $_).tr($., $_).asSymbol] = SoundFile(x).info;
+		}, {
+			~q.s[sub][x.basename.asSymbol] = SoundFile.collect(x ++ "*").do(_.info);
+		});
 	})
 });
 

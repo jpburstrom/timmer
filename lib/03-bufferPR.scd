@@ -17,6 +17,7 @@ PR(\basicBufferPlayer).v.clone({
 			* ~buffers[ev[\bufIndex]].sampleRate });
 		~amp = Pexprand(0.1, 0.9, inf);
 		~pan = Pwhite(-1.0, 1.0, inf);
+		~panWidth = 1;
 		~inChannels = 2;
 		~bufPaths = ["/Volumes/Mega/projects/timmer/render/part1-samples/nr/Gnid-short-20110825-003 20110825-175629.wav"];
 		
@@ -29,7 +30,7 @@ PR(\basicBufferPlayer).v.clone({
 				\rate, BPStream(\rate),
 				\start, BPStream(\start),
 				\amp, BPStream(\amp),
-				\pan, BPStream(\pan),
+				\pan, BPStream(\pan) * BPStream(\panWidth),
 				\attack, BPStream(\attack),
 				\decay, BPStream(\decay),
 				\chan, ~chan,
@@ -55,10 +56,69 @@ PR(\basicBufferPlayer).v.clone({
 		
 }) => PR(\timmerBufferPlayer).subType_(\timmerBuf);
 
+//Hit player
+PR(\timmerBufferPlayer).v.clone({
+		~def = "timmer.hit";
+		
+		//TODO: add attack + decay
+		~attack = 0.01;
+		~decay = 0.01;
+		~time =  Pbrown(0.02, 0.1);
+		~delta = Pkey(\time);
+		~rate = 1;
+		~amp = Pexprand(0.1, 0.9, inf);
+		~pan = Pwhite(-1.0, 1.0, inf);
+		
+		~bufPaths = nil;
+		
+		~playerPattern = {
+			~argPairsStream = Pbind(*~argPairs).asStream;
+			Pbind(
+				\instrument, BPStream(\def),
+				\bufIndex, Pwhite(0, Pfunc({ |ev| ~bufPaths.size - 1 })),
+				\bufnum, Pfunc({ |ev| ~buffers[ev[\bufIndex]].bufnum }),
+				\time, BPStream(\time).collect({ |time, ev| ~timeConversion.(time, ev) }),
+				\rate, BPStream(\rate),
+				\amp, BPStream(\amp),
+				\pan, BPStream(\pan) * BPStream(\panWidth),
+				\attack, BPStream(\attack),
+				\decay, BPStream(\decay),
+				\chan, ~chan,
+				\delta, BPStream(\delta),
+				\time, Pkey(\time) / Pfunc({ thisThread.clock.tempo })
+			).collect({ |ev|
+				~argPairsStream !? { ev = ~argPairsStream.next(ev) };
+				ev
+			});	
+		};
+}) => PR(\timmerHitPlayer).subType_(\timmerBuf);
+
+PR(\timmerHitPlayer).v.clone({
+	~bufPaths =  BP(\q).paths(\banks, \hits);
+	~pan
+}) => PR(\test).subType_(\timmerBuf);
+
+/*
+BP(\test).free
+PR(\test) => BP(\test)
+BP(\test).play(0)
+BP(\test).stop(0)
+BP(\test).dur = 2
+BP(\test).time = 1
+BP(\test).bufIndex = Pwhite(0, BP(\test).bufPaths.size);
+BP(\test).panWidth = 0
+
+PR(\timmerHitPlayer) => BP(\test)
+BP(\test).bufPaths = BP(\q).s.banks.hits.collect(_.path)
+BP(\q).paths(\banks, \hits)
+
+
+
 //A test, making another PR
 PR(\timmerBufferPlayer).v.clone({
 	~bufPaths =  BP(\q).paths(\test, \Turnoff_20110825_013_20110825_175526)
 }) => PR(\test_yo).subType_(\timmerBuf);
+*/
 
 /*
 
