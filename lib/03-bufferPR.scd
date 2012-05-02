@@ -68,21 +68,22 @@ PR(\timmerBufferPlayer).v.clone({
 		~rate = 1;
 		~amp = Pexprand(0.1, 0.9, inf);
 		~pan = Pwhite(-1.0, 1.0, inf);
-		
+		~bufIndex = Pwhite(0, Pfunc({ |ev| ~bufPaths.size - 1 }));
 		~bufPaths = nil;
+
 		
 		~playerPattern = {
 			~argPairsStream = Pbind(*~argPairs).asStream;
 			Pbind(
 				\instrument, BPStream(\def),
-				\bufIndex, Pwhite(0, Pfunc({ |ev| ~bufPaths.size - 1 })),
-				\bufnum, Pfunc({ |ev| ~buffers[ev[\bufIndex]].bufnum }),
-				\time, BPStream(\time).collect({ |time, ev| ~timeConversion.(time, ev) }),
+				\bufIndex, BPStream(\bufIndex),
+				\bufnum, Pfunc({ |ev| ~buffers[ev[\bufIndex]].bufnum; }),
+				\attack, BPStream(\attack),
+				\decay, BPStream(\decay),
+				\time, BPStream(\time).collect({ |time, ev| ~timeConversion.(time, ev);}),
 				\rate, BPStream(\rate),
 				\amp, BPStream(\amp),
 				\pan, BPStream(\pan) * BPStream(\panWidth),
-				\attack, BPStream(\attack),
-				\decay, BPStream(\decay),
 				\chan, ~chan,
 				\delta, BPStream(\delta),
 				\time, Pkey(\time) / Pfunc({ thisThread.clock.tempo })
@@ -94,17 +95,44 @@ PR(\timmerBufferPlayer).v.clone({
 }) => PR(\timmerHitPlayer).subType_(\timmerBuf);
 
 PR(\timmerHitPlayer).v.clone({
-	~bufPaths =  BP(\q).paths(\banks, \hits);
-	~pan
-}) => PR(\test).subType_(\timmerBuf);
+	
+	~time = 1;
+	~pan = 0;
+	~amp = 1;
+	~decay = 0.1;
+	
+	~reloadBufIndex = {
+		~bufIndex = Pshuf((0..~bufPaths.size - 1), inf)
+	}; 
+	//Yes
+	~timeConversion = { |time, ev|
+		var buf = ~buffers[ev[\bufIndex]];
+		//~bufPaths.size.postln;
+		//ev.postln;
+		time = (time * buf.numFrames / buf.sampleRate) - ev.decay;
+	}
+
+}) => PR(\timmerHuffPlayer).subType_(\timmerBuf);
+
+
+
 
 /*
 BP(\test).free
+s.reboot
 PR(\test) => BP(\test)
 BP(\test).play(0)
 BP(\test).stop(0)
-BP(\test).dur = 2
-BP(\test).time = 1
+BP(\test).attack = 0.1
+BP(\test).decay = Pkey(\delta
+
+
+BP(\test).delta = Pkey(\time); 
+BP(\test2).play(0); BP(\test).play(0)
+
+
+BP(\test).decay = 0.1
+BP(\test).time = 0.1
 BP(\test).bufIndex = Pwhite(0, BP(\test).bufPaths.size);
 BP(\test).panWidth = 0
 
@@ -113,7 +141,7 @@ BP(\test).bufPaths = BP(\q).s.banks.hits.collect(_.path)
 BP(\q).paths(\banks, \hits)
 
 
-
+PShuffle
 //A test, making another PR
 PR(\timmerBufferPlayer).v.clone({
 	~bufPaths =  BP(\q).paths(\test, \Turnoff_20110825_013_20110825_175526)
@@ -126,6 +154,8 @@ BP.freeType(\timmerBuf)
 
 //Preparation:
 
+n = BP(\test).v.bufPaths
+n.next
 
 
 PR(\test_yo) => BP(\test_yo_player)
