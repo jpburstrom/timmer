@@ -3,7 +3,8 @@
 //********
 
 (
-Server.local.options.device = "JackRouter";
+Server.local.options.device = "UA-25 48kHz";
+
 s.waitForBoot {
 	BP.freeAll;
 	
@@ -15,48 +16,8 @@ s.waitForBoot {
 	//Load lib files 
 	
 	(~dir.lib ++ "*").loadPaths;
-}
+	//(~dir.project ++ "live.scd").loadPaths
+	
+	s.meter
+};
 )
-
-*/
-
-~q.s.banks.hits.choose().asBuffer(s)
-SoundFile
-Synth.new("timmer.hit", [\bufnum, ~q.s.banks.hits.choose()]);
-
-
-(
-BP(\midiTest).free;
-PR(\midiWrapper).v.clone({
-	
-	~playerPattern = { BP(\test) } ;
-	
-	
-}) => PR(\midiTest).subType_(\timmerMidi) => BP(\midiTest)
-)
-
-s.boot
-BP(\test).play
-BP(\midiTest).asPattern
-BP(\test).amp_(Pkey(\pos))
-
-Pkey
-BP(\tm).setEmbedBP(\test)
-
-BP(\tm).stop
-BP(\tm).embed(\test)
-BP(\tm).amp_(Pkey(\pos))
-BP(\tm).play
-
-Pbind (\note, Pseq([1,3,4,5,6], inf)).play
-
-
-p.asPattern.isStream
-\
-
-Pbind(\BP(\tm))
-BP(\tm).playing
-
-BP(\tm).size
-
-EVent_types

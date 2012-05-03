@@ -1,3 +1,4 @@
+MIDIIn.connectAll;
 
 BP.freeType(\timmerMidi);
 
