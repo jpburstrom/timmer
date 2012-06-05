@@ -16,8 +16,12 @@ s.waitForBoot {
 	//Load lib files 
 	
 	(~dir.lib ++ "*").loadPaths;
-	//(~dir.project ++ "live.scd").loadPaths
+	//(~dir.project ++ "live.scd").loadPaths;
 	
 	s.meter
 };
 )
+
+//NdefMixer(s)
+
+//~show.start
