@@ -57,7 +57,6 @@ SynthDef(\soloKladd, { |bus, bufnum=0, gate=1, rate=0.7, amp=1, attack=0.1, rele
 s.boot
 MdaPiano
 Array
-
 (
 ///
 //Fantastiskt:::
@@ -80,8 +79,8 @@ Out.ar(0, ((IFFT(chain2)*0.3) + IFFT(chain) * 3).tanh * 0.2);
 }.play
 
 )
-c = Buffer.cueSoundFile(s,"/Users/johannes/samples/field/zoom/043-umea-nyar-februari-2009/003-ankdamm-duck-umeŒ-sjukhus-water-kvack-animals-stream-200902-snšknarr-birds-zoo-.wav" , 0, 2);
-c.cueSoundFile("/Users/johannes/samples/field/zoom/042-lulea-vasterbotten/010-sly-trŠsk-water-foot-bra-sly-bra.wav");
+c = Buffer.cueSoundFile(s,"/Volumes/Mega/samples/field/zoom/043-umea-nyar-februari-2009/003-ankdamm-duck-umeå-sjukhus-water-kvack-animals-stream-200902-snöknarr-birds-zoo-.wav" , 0, 2);
+c.cueSoundFile("/Users/johannes/samples/field/zoom/042-lulea-vasterbotten/010-sly-träsk-water-foot-bra-sly-bra.wav");
 c.cueSoundFile("/Users/johannes/samples/field/zoom/032-torpet-natur-tyst-walking/001-birds-summer-insects-happy-environment-insect_flying_by.wav");
 c.cueSoundFile("/Users/johannes/samples/field/zoom/043-umea-nyar-februari-2009/003-ankdamm-duck-umeŒ-sjukhus-water-kvack-animals-stream-200902-snšknarr-birds-zoo-.wav");
 "/Users/johannes/samples/field/zoom/045-vietnam-feb-2012/STE-019.wav"
