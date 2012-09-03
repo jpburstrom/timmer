@@ -18,8 +18,6 @@ s.waitForBoot {
 }
 )
 
-*/
-
 ~q.s.banks.hits.choose().asBuffer(s)
 SoundFile
 Synth.new("timmer.hit", [\bufnum, ~q.s.banks.hits.choose()]);
@@ -30,6 +28,7 @@ BP(\midiTest).free;
 PR(\midiWrapper).v.clone({
 	
 	~playerPattern = { BP(\test) } ;
+// (~dir.project ++ "live.scd").loadPaths;
 	
 	
 }) => PR(\midiTest).subType_(\timmerMidi) => BP(\midiTest)
@@ -59,4 +58,60 @@ BP(\tm).playing
 
 BP(\tm).size
 
-EVent_types
+//~show.start
+
+//
+// 3.1
+//
+
+(
+
+//Ugly fast sync from Reaper
+
+~player = Proto.new (Ê{
+	~upcomingEvent = 0;
+	
+	~events = [
+		[7.2, { "test".postln }],
+		[9.2234234234, { "test2".postln }]
+	];
+	
+	~start = {|time|
+		~upcomingEvent = ~events.flop[0].indexOfGreaterThan(time);
+	};
+
+		
+	~makeWindow = {
+		var window = Window.new("",Rect(318, 686, 275, 40)).front;
+		window.name("Time");
+		window.addFlowLayout( 10@10, 20@5 );
+		~label = StaticText.new(window.view, 200@20)
+			.font_(Font.new("Anonymous Pro", 18, true))
+			.string_(0);
+	};
+	
+	~makeWindow.();
+	
+	OSCdef.new(\play, e { |msg|
+		OSCFunc(e { |msg|
+			~start.(msg[1])
+		}, '/time').oneShot;  
+	}, '/play');
+	
+	OSCdef.new(\timeWindow, e { |msg|
+		var time = msg[1];
+		~events[~upcomingEvent] !? {Êif(~events[~upcomingEvent][0] < time, e { 
+			~events[~upcomingEvent][1].value; ~upcomingEvent = ~upcomingEvent + 1 
+		} ) };
+		e { ~label.string_(time) }.defer;
+	}, '/time');
+	
+})
+
+)
+
+
+Ndef(\sine).play
+Ndef(\sine).fadeTime = 0.1;
+Ndef(\sine, { SinOsc.ar([350, 351.3], 0, 0.2) });
+Ndef(\sine).free;
