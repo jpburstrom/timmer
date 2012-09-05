@@ -20,10 +20,6 @@ s.waitForBoot {
 	~p.addPrep(\gnid, e {
 		~p.playSynth(\delay, \bitCrushDelay,  
 			[\in, ~p.s.bus.delay, \aux1, ~p.s.bus.reverb], s, \addToTail);
-		~p.playSynth(\room1, \stereoConvReverb,  
-			[\in, ~p.s.bus.reverb, 
-				\bufL, ~p.s.buf[\room1_bufL], \bufR, ~p.s.buf[\room1_bufR]], 
-			s, \addToTail)
 	}, 0); //A priority of 0 makes it restart on cmd-period.
 
 	~p.prep;
@@ -93,11 +89,6 @@ Pdef(\delay, ~p.delay1).play
 //SCORE
 //
 
-Pn((Pfindur(1, ~p.carpet1) ++ Pfindur({2.rrand(5)}, ~p.carpet2))).play
-
-MasterEQ
-ddwEQ
-Quarks.gui
+Pn((Pfindur(1, ~p.carpet1) ++ Pfindur({2.rrand(5)}, ~p.carpet2))).render("/tmp/test.aif")
 
 
-StaticEQ().edit
