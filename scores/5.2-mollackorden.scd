@@ -5,6 +5,24 @@
 //TODO:
 //Midi sine
 //
+(
+	s.waitForBoot {
+		~p = Proto();
+		~p.s = ();
+		~p.d = ();
+		~p.s.currentPath = "/Volumes/HD2/projects/timmer/kod/sc/scores/";
+		(~p.s.currentPath ++ "lib/*").loadPaths;
+
+		~p.addPrep( \snickargladje, e {
+			~p.d.o = ~p.u.svdur.copy.open(~p.s.currentPath +/+ "../data/snickargladje.onsets").normalized_(true);
+			//do stuff
+		});
+
+		~p.prep;
+
+	}
+)
+
 
 (
 //INIT
