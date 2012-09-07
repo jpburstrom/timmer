@@ -1,9 +1,11 @@
 ~p.addPrep( \buses, e {
 		~p.makeBus(\devnull, 2);
-		~p.makeBus(\reverb, 2);
+		//~p.makeBus(\reverb, 2);
 		~p.makeBus(\delay, 2);
 	}
 );
+
+/*
 
 ~p.addPrep( \room1, e {
 	var bufs;
@@ -22,5 +24,5 @@
 	~p.addBuffer(\room1_bufL, bufs[0]);
 	~p.addBuffer(\room1_bufR, bufs[1]);
 });
-
+*/
 
