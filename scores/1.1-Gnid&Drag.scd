@@ -25,9 +25,8 @@ s.waitForBoot {
 	~p.prep;
 
 }
-)
+);
 
-Env().plot
 //
 //PATTERN DEFINITIONS
 //
@@ -73,6 +72,7 @@ Env().plot
 	dur: Pbrown(1, 10),
 ]);
 
+/*
 
 Pdef(\carpet1, ~p.carpet1).play
 ~p.carpet1.asStream.nextN(29, ());
@@ -84,11 +84,12 @@ Pdef(\delay, ~p.delay1).play
 ~p.carpet2.play
 ~p.hejhej.play
 ~p.delay1.play
+*/
 
 //
 //SCORE
 //
 
-Pn((Pfindur(1, ~p.carpet1) ++ Pfindur({2.rrand(5)}, ~p.carpet2))).render("/tmp/test.aif")
+Pn((Pfindur(1, ~p.carpet1) ++ Pfindur({2.rrand(5)}, ~p.carpet2)))
 
 
