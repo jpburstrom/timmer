@@ -8,7 +8,7 @@
 				OffsetOut.ar(aux2, sound);
 				OffsetOut.ar(aux3, sound);
 				OffsetOut.ar(aux4, sound);
-		}).store;
+		}).add;
 	};
 
 	var fxFactory = { |label, def| 
@@ -19,7 +19,7 @@
 				Out.ar(aux2, sound);
 				Out.ar(aux3, sound);
 				Out.ar(aux4, sound);
-		}).store;
+		}).add;
 	};
 
 	grainFactory.('timmer.grain1', 
@@ -54,6 +54,31 @@
 		Balance2.ar(l, r, pan, amp)
 	});
 
+	grainFactory.('timmer.grainMono', 
+	{ 
+		arg startPos, dur, bufnum, bufRate = 1, pan = 0, amp = 1, 
+				attack = 0.1, decay = 0.02;
+		var env, sound;
+		startPos = (startPos) * BufFrames.kr(bufnum);	
+		sound = PlayBuf.ar(1, bufnum, 
+			bufRate * BufRateScale.kr(bufnum) * EnvGen.kr(Env.perc(0.01, 20, curve:8)),
+			1, startPos, 0) * EnvGen.kr(Env.perc(attack, dur), doneAction: 2);
+		Pan2.ar(sound, pan, amp)
+	});
+
+	grainFactory.('timmer.playMono', 
+	{ 
+		arg startPos, dur, bufnum, bufRate = 1, pan = 0, amp = 1, 
+				attack = 0.1, decay = 0.02;
+		var env, sound;
+		startPos = (startPos) * BufFrames.kr(bufnum);	
+		sound = PlayBuf.ar(1, bufnum, 
+			bufRate * BufRateScale.kr(bufnum) * EnvGen.kr(Env.perc(0.01, 20, curve:8)),
+			1, startPos, 0) * EnvGen.kr(Env.perc(attack, dur), doneAction: 2);
+		Pan2.ar(sound, pan, amp)
+	});
+
+
 //EFFECTS
 	fxFactory.('bitCrushDelay', 
 	{ | in, length=0.2, feedback=0.36, lop=816, hip=100, mix=1, resolution=6 |
@@ -67,6 +92,7 @@
 		  XFade2.ar(source, local, mix);
   });
 
+	/*
 	fxFactory.('stereoConvReverb', 
 	{ |bufL=0, bufR=1, in=0, gate=1, mix=1, amp=1|
 		var left, right;
@@ -75,5 +101,6 @@
 			[ PartConv.ar(left, 2048, bufL, 1), PartConv.ar(right, 2048, bufR, 1) ],
 			mix, amp);
   });
+	*/
 
 )
