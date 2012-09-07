@@ -18,7 +18,7 @@ Synth.new("timmer.hit", [\bufnum, f.choose()]);
 Pbind(
 	\instrument, "timmer.hit",
 	// \amp, Pseq(BP(\q).d.swed019w).pow(2),
-	\delta, Pbrown(0.02, 0.1),
+	\dur, 1/110,
 	\amp, Pkey(\delta) * 3,
 	\bufnum, Pslide(f.scramble(), inf, #[2,3], 2, 0),
 	// \delta, Pslide(BP(\q).d.swed019w, inf, #[2,3], 2, 0) * 0.5,
@@ -28,4 +28,4 @@ Pbind(
 	).play
 	
 )
-Array
+
