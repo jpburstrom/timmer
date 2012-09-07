@@ -17,6 +17,7 @@ OSCdef.freeAll;
 
 //Render on start (callback from REAPER sending /tempo on start)
 OSCdef(\renderOnStart, { arg msg; 
+	  //only send this once, thank you very much.
 		~start.if {
 			send.(\render);
 			//Sending play after rendering, 
