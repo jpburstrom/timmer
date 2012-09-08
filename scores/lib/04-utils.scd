@@ -6,7 +6,6 @@
 
 	~open = { |path|
 		~path = path;
-		path.postln;
 		~durs = FileReader.read(~path).collect(_[0].asFloat);
 		currentEnvironment
 	};
@@ -20,10 +19,14 @@
 	};
 
 	~asPattern = {
+		var p;
 		var d = ~durations.(~normalized);
-		Pbind( \dur, 
-			Pseq(d.differentiate.drop(~normalized.asInteger))
-		)
+		~normalized.if {
+			p = Pbind( \dur, Pseq(d.differentiate.drop(1)))
+		} {
+			p = Pbind( \dur, Pseq(([0] ++ d).differentiate.drop(1)))
+		};
+		p
 	};
 	~asStream = {
 		~asPattern.().asStream
@@ -31,14 +34,13 @@
 
 });
 
-
 //Simple REAPER controller
 ~p.r !? { ~p.r.ddr.free };
 ~p.r = Proto ({ 
 	~ddr = NetAddr("localhost", 57121);
 	~playing = false;
 
-	~play = { |time|
+	~play = e { |time|
 		time !? { ~ddr.sendMsg("/time", time); };
 		(~playing == false).if {
 			~ddr.sendMsg("/play", 1);
@@ -51,38 +53,75 @@
 		~playing = false;
   }
 });
+//Shortcut
+~p.rp = { e { |v| ~r.play(v) }  };
 
 //Stop Reaper on Cmdperiod
 CmdPeriod.add( e { ~p.r.stop } );
 
+(
 
-//Select and play events from Pdef
-~p.u.evS = { |ev, label|
-	var w, layout, player, buttons, dropValue=0;
-	var pdef = Pdef(label);
-	var play = {
-		player.stop;
-		player = Pdrop(dropValue, Pbindf(
-			pdef,
-			\guiStep, Pseries(),
-			\guiButtons, Pfunc( { |ev| dropValue = buttons[ev.guiStep].focus; } ),
-			)).play
+~p.wrapper = Proto({ 
+
+	~pattern = Pbind();
+	~routines = (1: {"tetst".postln});
+	~dropValue = 0;
+
+	~asPattern = {
+		Pbindf(
+			~pattern,
+			\gui, Prout( ~guiCallback.() ),
+			\routine, p {
+				i = 0;
+				loop { 
+					~routines[i].value;
+					i = i+1;
+					i.yield;
+				}
+			}
+			).dropDo(~dropValue, topEnvironment[\p].rp)
 	};
 
-	w = Window("Events for Pdef: " ++ label.asString , Rect(1000,-800,396,210), resizable:false);
-	layout = w.addFlowLayout;
-	Button(w.view, 190@20).states_([["Play"]]).action_({ |v|
-		play.()
-	});
-	Button(w.view, 190@20).states_([["Stop"]]).action_({ |v|
-		player.stop;
-	});
-	buttons = 64.collect({ |i|
-		ActionButton(w.view, i.asString, { dropValue = i; play.() }, 44)
-	});
 
-	//do something
+	~guiDefaultCallback = { { loop { false.yield } } };
+	~guiCallback = ~guiDefaultCallback; 
+	
+	~showGui = {
+		var  buttons, w, layout; 
+		w = Window("Events for Pdef: " ++ ~label.asString , Rect(1000,-800,396,210), resizable:false);
+		layout = w.addFlowLayout;
+		Button(w.view, 190@20).states_([["Play"]]).action_( e { |v|
+			~play.(~dropValue)
+		});
+		Button(w.view, 190@20).states_([["Stop"]]).action_( e { |v|
+			~stop.()
+		});
+		buttons = 64.collect({ |i|
+			ActionButton(w.view, i.asString, e { ~dropValue = i; ~play.(i) }, 44)
+		});
+		w.front;
+		~guiCallback = { { i=0; loop { ~dropValue = i;  buttons[i].focus; i.yield; } } };
 
-	w.front;
-	w.onClose = { player.stop };
-}
+		w.onClose = e { ~stop.(); ~guiCallback = ~guiDefaultCallback; };
+	};
+
+	~play = {|time|
+		CmdPeriod.run; 
+		topEnvironment[\p].r.play(time);
+		~player = EventPatternProxy(~asPattern.()).play;
+		
+	};
+
+	~stop = {
+		~player !? { ~player.stop };
+		topEnvironment[\p].r.stop;
+		CmdPeriod.run; 
+	}
+
+});
+
+)
+
+
+
+
