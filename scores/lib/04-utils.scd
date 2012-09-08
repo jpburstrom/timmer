@@ -55,3 +55,34 @@
 //Stop Reaper on Cmdperiod
 CmdPeriod.add( e { ~p.r.stop } );
 
+
+//Select and play events from Pdef
+~p.u.evS = { |ev, label|
+	var w, layout, player, buttons, dropValue=0;
+	var pdef = Pdef(label);
+	var play = {
+		player.stop;
+		player = Pdrop(dropValue, Pbindf(
+			pdef,
+			\guiStep, Pseries(),
+			\guiButtons, Pfunc( { |ev| dropValue = buttons[ev.guiStep].focus; } ),
+			)).play
+	};
+
+	w = Window("Events for Pdef: " ++ label.asString , Rect(1000,-800,396,210), resizable:false);
+	layout = w.addFlowLayout;
+	Button(w.view, 190@20).states_([["Play"]]).action_({ |v|
+		play.()
+	});
+	Button(w.view, 190@20).states_([["Stop"]]).action_({ |v|
+		player.stop;
+	});
+	buttons = 64.collect({ |i|
+		ActionButton(w.view, i.asString, { dropValue = i; play.() }, 44)
+	});
+
+	//do something
+
+	w.front;
+	w.onClose = { player.stop };
+}
