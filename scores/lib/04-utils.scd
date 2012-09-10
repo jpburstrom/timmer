@@ -132,3 +132,40 @@ CmdPeriod.add( e { ~p.r.stop } );
 );
 
 
+/*
+~p.meap.open("impulse-strak.wav.feat")
+~p.meap.start(0.2) //single item
+~p.meap.length //array
+*/
+
+~p.meap = Proto({
+	~meap; 
+
+	~open = { |file|
+		~meap = MEAPSoft.new.loadFEAT(topEnvironment[\p].s.currentPath +/+ "../data" +/+ file);
+	};
+
+	~start = { |index = -1|
+		var d = ~meap.featDict[\AvgChunkPower];
+		(index < 0).if { 
+			d.collect(_.segTime) 
+		} {
+			index = (index * d.size).round.min(d.size);
+			d[index].segTime
+		}
+	};
+
+	~length = { |index = -1|
+		var d = ~meap.featDict[\AvgChunkPower];
+		(index < 0).if { 
+			d.collect(_.segLength) 
+		} {
+			index = (index * d.size).round.min(d.size);
+			d[index].segLength
+		}
+	};
+
+})
+
+
+
