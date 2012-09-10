@@ -2,6 +2,7 @@
 ~p.s.bus = ();
 ~p.s.syn = ();
 ~p.rendering = false;
+~p.isPrepped = false;
 
 ~p.freeAll = {
 	(~rendering == false).if {
@@ -41,7 +42,7 @@
 	~toPrep[label.asSymbol] = [fun, prio];
 };
 
-~p.prep = { 
+~p.prep = { |callback|
 	var clock;
 	~rendering.if { 
 		clock = ScoreClock; 
@@ -50,7 +51,20 @@
 	};
 	e {
 		~toPrep.asArray.sort({|x, y| x[1] > y[1]}).do( { |x| x[0].value; 0.00001.wait; } );
+		callback.value;
+		~isPrepped = true;
 	}.fork(clock)
+};
+
+~p.run = { |callback|
+	callback !? {
+		~runCallback = callback;
+	};
+	~isPrepped.if {
+		~runCallback.value
+	} {
+		~prep.(~runCallback);
+	}
 };
 
 ~p.restart = { 
