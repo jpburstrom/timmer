@@ -71,48 +71,57 @@ CmdPeriod.add( e { ~p.r.stop } );
 		Pbindf(
 			~pattern,
 			\gui, Prout( ~guiCallback.() ),
-			\routine, p {
+			\routine, p ( {
 				i = 0;
 				loop { 
 					~routines[i].value;
 					i = i+1;
 					i.yield;
 				}
-			}
+			}.inEnvir )
 			).dropDo(~dropValue, topEnvironment[\p].rp)
 	};
 
+	~asStream = {
+		~asPattern.().asStream
+	};
 
 	~guiDefaultCallback = { { loop { false.yield } } };
 	~guiCallback = ~guiDefaultCallback; 
 	
 	~showGui = {
 		var  buttons, w, layout; 
-		w = Window("Events for Pdef: " ++ ~label.asString , Rect(1000,-800,396,210), resizable:false);
-		layout = w.addFlowLayout;
-		Button(w.view, 190@20).states_([["Play"]]).action_( e { |v|
-			~play.(~dropValue)
-		});
-		Button(w.view, 190@20).states_([["Stop"]]).action_( e { |v|
-			~stop.()
-		});
-		buttons = 64.collect({ |i|
-			ActionButton(w.view, i.asString, e { ~dropValue = i; ~play.(i) }, 44)
-		});
-		w.front;
-		~guiCallback = { { i=0; loop { ~dropValue = i;  buttons[i].focus; i.yield; } } };
+		topEnvironment[\p].rendering.not.if {
+			~window !? { ~window.front };
+			~window ?? {
+				w = Window("Events for Pdef: " ++ ~label.asString , Rect(1000,-800,396,210), resizable:false);
+				layout = w.addFlowLayout;
+				Button(w.view, 190@20).states_([["Play"]]).action_( e { |v|
+					~playP.(~dropValue)
+				});
+				Button(w.view, 190@20).states_([["Stop"]]).action_( e { |v|
+					~stopP.()
+				});
+				buttons = 64.collect({ |i|
+					ActionButton(w.view, i.asString, e { ~dropValue = i; ~playP.(i) }, 44)
+				});
+				w.front;
+				~guiCallback = e { { i=0; loop { ~dropValue = i;  buttons[i].focus; i.yield; } } };
 
-		w.onClose = e { ~stop.(); ~guiCallback = ~guiDefaultCallback; };
+				w.onClose = e { ~window = nil; ~stop.(); ~guiCallback = ~guiDefaultCallback; };
+				~window = w;
+			}
+		}
 	};
 
-	~play = {|time|
+	~playP = {|time|
 		CmdPeriod.run; 
 		topEnvironment[\p].r.play(time);
 		~player = EventPatternProxy(~asPattern.()).play;
 		
 	};
 
-	~stop = {
+	~stopP = {
 		~player !? { ~player.stop };
 		topEnvironment[\p].r.stop;
 		CmdPeriod.run; 
@@ -120,8 +129,6 @@ CmdPeriod.add( e { ~p.r.stop } );
 
 });
 
-)
-
-
+);
 
 
