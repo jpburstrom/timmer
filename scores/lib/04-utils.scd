@@ -90,21 +90,22 @@ CmdPeriod.add( e { ~p.r.stop } );
 ~p.wrapper = Proto({ 
 
 	~pattern = Pbind();
-	~routines = (1: {"tetst".postln});
+	~onCounter = (1: {"tetst".postln});
+	~onEvery =  {};
+	~onFirst =  {};
 	~dropValue = 0;
 
 	~asPattern = {
 		Pbindf(
 			~pattern,
 			\gui, Prout( ~guiCallback.() ),
-			\routine, p ( {
-				i = 0;
-				loop { 
-					~routines[i].value;
-					i = i+1;
-					i.yield;
-				}
-			}.inEnvir )
+			\counter, Pseries(),
+			\routine, Pfunc ( e { |ev|
+					~onCounter[ev.counter].(ev);
+					~onEvery.(ev);
+					(ev.counter == ~dropValue).if { ~onFirst.(ev) };
+					true;
+				})
 			).dropDo(~dropValue, topEnvironment[\p].rp)
 	};
 
@@ -168,7 +169,7 @@ CmdPeriod.add( e { ~p.r.stop } );
 	~meap; 
 
 	~open = { |file|
-		~meap = MEAPSoft.new.loadFEAT(topEnvironment[\p].s.currentPath +/+ "../data" +/+ file);
+		~meap = MEAPSoft.new.loadFEAT(topEnvironment[\p].s.currentPath +/+ "data" +/+ file);
 	};
 
 	~start = { |index = -1|
@@ -176,7 +177,7 @@ CmdPeriod.add( e { ~p.r.stop } );
 		(index < 0).if { 
 			d.collect(_.segTime) 
 		} {
-			index = (index * d.size).round.min(d.size);
+			index = (index * d.size).round.min(d.size - 1);
 			d[index].segTime
 		}
 	};
@@ -186,12 +187,11 @@ CmdPeriod.add( e { ~p.r.stop } );
 		(index < 0).if { 
 			d.collect(_.segLength) 
 		} {
-			index = (index * d.size).round.min(d.size);
+			index = (index * d.size).round.min(d.size - 1);
 			d[index].segLength
 		}
 	};
 
 })
-
 
 
