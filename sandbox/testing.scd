@@ -36,3 +36,7 @@ Pdef(\test2, ~test2).play
 Pdef(\test2, ~test2).stop
 )
 
+
+OSCFunc.trace(true);
+NetAddr.langPort
+

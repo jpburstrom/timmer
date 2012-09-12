@@ -25,7 +25,7 @@ SynthDef("\impulseTest2", { arg bufnum=0, freq=440, grainlen=2, attack=0.01, sus
 
 )
 
-}
+
 (
 ~ptn = Pbind(
 		\instrument, \impulseTest2,

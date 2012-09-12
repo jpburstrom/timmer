@@ -1,0 +1,32 @@
+				~pw.pattern = Pbind(
+					\instrument, 'timmer.impulseSin2',
+					\bufnum, [~p.s.buf.strak1],
+					\nothingTimes, Pshuf([0.01,0.02,0.03,0.04,0.05,0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.22], inf),
+					\meap, Pwhite(0.8,0.9),
+					//\start, Pwhite(0, (~p.s.buf.nothing.numFrames / ~p.s.buf.nothing.sampleRate)),
+					\start, Pfunc( e { |ev| ~p.meap.start(ev.meap)}),
+					//\length, Pfunc( e { |ev| ~p.meap.length(ev.meap) }),
+					\length, 0.1,
+					\legato, 0.1,
+					\bufRate, [0.5, 1, 3, 7],
+					\softness, 100,
+					\attack, 0,
+					\release, 5,
+					\root, -9,
+				  \note, p { 
+						var v1 = [3,5].choose,
+						v2 = [7,9].choose,
+						v3 = [3,5,7,9].choose;
+						6.rrand(12).do { 0.yield };
+						4.rrand(8).do { [0,v1].yield };
+						2.rrand(4).do { [0,v2].yield };
+						1.rrand(2).do { [2,v3].yield };
+						loop {
+							[2,5].yield
+						}
+					},
+					\amp, 0.01,
+
+					//\midinote, 12 + p { loop { (52..60).scramble.powerset.do { |x| ([49, 51] ++ x).yield }}}
+				)
+
