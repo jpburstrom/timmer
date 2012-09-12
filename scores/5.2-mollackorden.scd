@@ -4,28 +4,70 @@
 
 //TODO:
 //Midi sine
+//Pconst!!:call SClangHardstop()
+Pconst
+Pspawn
 //
+~p = nil;
+Server.default = Server.local;
 (
 	s.waitForBoot {
-		~p = Proto();
-		~p.s = ();
-		~p.d = ();
-		~p.s.currentPath = "/Volumes/HD2/projects/timmer/kod/sc/scores/";
-		(~p.s.currentPath ++ "lib/*").loadPaths;
+		~p ?? {
+			~p = Proto();
+			~p.s = ();
+			~p.d = ();
+			~p.s.currentPath = "/Volumes/HD2/projects/timmer/kod/sc";
+			(~p.s.currentPath +/+ "scores/lib/*").loadPaths;
 
-		~p.addPrep( \snickargladje, e {
-			~p.d.o = ~p.u.svdur.copy.open(~p.s.currentPath +/+ "../data/snickargladje.onsets").normalized_(true);
-			//do stuff
+			~p.addPrep( \snickargladje, e {
+				~p.d.durations = ~p.u.svdur.copy.open("snickargladje-bass.aiff");
+				~p.d.gdur = ~p.u.svdur.copy.open("greppbrada-1.wav");
+				~p.readBuffer(\greppbrada1, "greppbrada-1.wav");  
+				~p.readBuffer(\strak1, "impulse-strak.wav");
+				~p.readBuffer(\nothing, "Nothing-excerpt.wav");
+				~p.readBank(\huff, "part4-huff");
+				~p.readBank(\hits, "hits");
+				~p.meap.open("impulse-strak.wav.feat");
+
+				Pdef.defaultQuant = 0;
+				//do stuff
+				~pw = ~p.wrapper.copy;
+			}, 1);
+		};
+
+		~p.run(
+			e {
+			~pw !? { ~pw.dropValue = 1 };
+			~pw.pattern = Pbindf(~p.d.durations) <> 
+				Pbindf(Pdef(\impulseStringChords), \attack, 0, \db, -33, \softness, 0);
+		
+			//Add routines
+			~pw.onCounter = ();
+			~pw.onFirst = {
+				Pdef(\nothing).play;
+			};
+			~pw.onEvery = e { |ev|
+				/*
+					(Pbind(\dur, Env([0.05,0.2].mirror, [0.5,0.5] * ev.dur, \sin)) <>
+						Pdef(\strakArp).asPattern.repeat).play
+						*/
+
+				//ev.postln;
+			};
+			Pdef(\main, ~pw).play;
 		});
-
-		~p.prep;
-
 	}
-)
+);
+ ~p.d.durations.peakEnv(0, 1, \sin, 2, [0.33, 0.34, 0.33]).plot
+Env
 
+Pbind(\dur, Env.linen([1,0.1,0.1,1], [1,4,1].normalizeSum * 2)).play
+[1,0.1].mirror
 
+Env([1,0.1,0.1,1], [1,0,1].normalizeSum * 10, \sin).plot;
+
+~p.d.notes.asStream.next(())
 (
-//INIT
 
 SynthDef("timmer.grain4", { arg startPos, dur, bufnum, bufRate = 1, pan = 0, amp = 1, attack = 0.1, decay = 0.02, curve= -8, out;
 	var env, l, r;
@@ -37,47 +79,31 @@ SynthDef("timmer.grain4", { arg startPos, dur, bufnum, bufRate = 1, pan = 0, amp
 	OffsetOut.ar(out, Balance2.ar(l, r, pan, amp))
 }).store;
 
-SynthDef("timmer.grainX", { arg distance=1, revOutG=2, revOutL=4, startPos, dur, bufnum, bufRate = 1, pan = 0, attack = 0.1, decay = 0.02, curve, out;
-	var env, l, r, panspec, hpspec, lpspec, fakedistance, widthspec, hp, lp, amp, revamp, revampG, revampL, width, sound;
-	
-	//pan.poll(Impulse.kr(10));
-	//Fade in _before_ grain start
-	startPos = startPos * BufFrames.kr(bufnum);
-	
-	lpspec = ControlSpec(20000, 1000, \exp);
-	hpspec = ControlSpec(40, 500, \exp);
-	widthspec = ControlSpec(-1, 0);
-	//distance = MouseY.kr;
-	//pan = MouseX.kr(-1, 1);
-	hp = hpspec.map(distance);
-	lp = lpspec.map(distance);
-	fakedistance = (distance * 9 + 1);
-	amp = fakedistance.reciprocal;
-	revamp = 1 / fakedistance.sqrt;
-	revampG = revamp * amp;
-	revampL = revamp * 1 - amp;
-	width = widthspec.map(distance);
-	width = -1;
-	//pan = pan * (width.abs * 0.5 + 0.5);
-	
-	sound = PlayBuf.ar(2, bufnum, bufRate * BufRateScale.kr(bufnum), 1, startPos, 0)
-		* EnvGen.ar(Env.perc(attack, decay, curve: curve), doneAction: 2);
-	#l, r = LPF.ar(HPF.ar(sound, hp), lp);
-	sound = [LinXFade2.ar(l, r, width), LinXFade2.ar(r, l, width)];
-	sound = Pan2.ar(sound, [(pan - 1).clip(-1,0), (pan + 1).clip(0, 1)]).sum;
-	OffsetOut.ar(out, sound);
-	OffsetOut.ar(revOutG, sound * revampG);
-	OffsetOut.ar(revOutL, sound * revampL);	
-}).store; 
-
-
-//~scmirfile = SCMIRAudioFile("/Volumes/HD2/projects/timmer/render/to SC/hits-new.wav").extractOnsets;
-~scmirfile = SCMIRAudioFile("/Volumes/HD2/projects/timmer/render/NR/boat-putter-s 20120810-175741.wav").extractOnsets;
-~onsets = (~scmirfile.onsetdata) / ~scmirfile.duration;
-~birds = [12,12,12,16,16,24,24,24,4,8,64,32,62.060606];
+PdefAllGui(32)
+b = Buffer.read(s, "/Volumes/HD2/projects/timmer/samples/greppbrada-1.wav")
 
 )
+Synth('timmer.grainPerc', [\bufnum, b])
 
+(
+
+	)
+	(
+
+		Pbind(
+			\instrument, 'timmer.grainPerc',
+			\bufnum, b,
+			\harmonic, 1,
+			\dur, Pbrown(0.09, 0.11),
+			\legato, Pkey(\dur) * 25,
+			\db, Pseq([0, Pseq(5.collect(-6))], inf),
+			\attack, 0.01,
+			\startPos, Pseq([~p.d.gdur.durations[8], Pxrand(~p.d.gdur.durations, 5)], inf) + 0.1,
+			\pan, Pkey(\startPos) * 2 - 1,
+			\curve, -6,
+			\out, 0,
+		).play
+)
 (
 p.stop;
 p = Pproto(
@@ -115,10 +141,9 @@ p = Pproto(
 			Pbindf(p, \foo, Plorenz(8), \delta, Pfunc({|e| e.foo[0]; }), \amp, Pexprand(0.1, 1), \distance, i.reciprocal, \attack, Pkey(\delta), \decay, Pkey(\attack) )
 		]);
 	});
+
 Ppar(~items).play
 )
-//TESTING...
 
-Pseq(Plorenz())
 
-Array
+
