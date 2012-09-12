@@ -1,21 +1,37 @@
 ~p.u = ();
+
 ~p.u.svdur = Proto({
 	~path = nil;
 	~durs = [];
+	//Normalized as in if 0 is first event or not.... silly name.
 	~normalized = false;
+	~samplerate = 48000;
 
-	~open = { |path|
-		~path = path;
+	~open = { |basename|
+		var base = topEnvironment[\p].s.currentPath;
+		~samplerate = SoundFile.use( base +/+ "samples" +/+ basename, (_.sampleRate));
+		~path = base +/+ "data" +/+ basename.splitext[0] ++ ".onsets";
 		~durs = FileReader.read(~path).collect(_[0].asFloat);
-		currentEnvironment
+		currentEnvironment;
 	};
 
+	//duration in secs
 	~durations = { |n=false|
 		n.if {
 			~durs - ~durs[0]
 		} {
 			~durs
 		}
+	};
+
+	//durations in frames
+	~frames = {
+		(~durs * ~samplerate).round;
+	};
+
+	//durations as 
+	~durationsNormSum = {
+		~durs.normalizeSum;
 	};
 
 	~asPattern = {
@@ -28,8 +44,18 @@
 		};
 		p
 	};
+	
 	~asStream = {
 		~asPattern.().asStream
+	};
+
+	//return envelope with durations as peaks
+	~peakEnv = { |peak=1,low=0.01,curve=\sin, from, division=#[0.25, 0.5, 0.25]|
+		var durs = ~durs.differentiate.drop(from);
+		var levels;
+		levels = (durs.collect { [peak, low, peak] }).flatten;
+		durs = durs.collect( _ * division  ).flatten.drop(1);
+		Env(levels, durs, curve);
 	}
 
 });
