@@ -1,6 +1,7 @@
 ~p.s.buf = ();
 ~p.s.bus = ();
 ~p.s.syn = ();
+~p.s.bank = ();
 ~p.rendering = false;
 ~p.isPrepped = false;
 
@@ -8,6 +9,8 @@
 	(~rendering == false).if {
 		~s.buf.asArray.do(_.free);
 		~s.buf = ();
+		~s.bank.asArray.do { |x| x.do(_.free) };
+		~s.bank = ();
 		~s.bus.asArray.do(_.free);
 		~s.bus = ();
 		~s.syn.asArray.do(_.free);
@@ -18,12 +21,24 @@
 
 ~p.readBuffer = { |label, path|
 	(~rendering == false).if { ~s.buf[label.asSymbol].free };
+	(path[0] != "/").if {
+		path = ~s.currentPath +/+ "samples" +/+ path;
+	};
 	~s.buf[label.asSymbol] = Buffer.read(s, path);
 };
 ~p.addBuffer = { |label, buffer|
 	(~rendering == false).if { ~s.buf[label.asSymbol].free };
 	~s.buf[label.asSymbol] = buffer;
 };
+
+~p.readBank = { |label, path|
+	(~rendering == false).if { ~s.buf[label.asSymbol].do(_.free) };
+	(path[0] != "/").if {
+		path = ~s.currentPath +/+ "samples/banks" +/+ path +/+ "*";
+	};
+	~s.bank[label.asSymbol] =  SoundFile.collectIntoBuffers(path)
+
+}
 
 ~p.makeBus = { |label, channels=1|
 	(~rendering == false).if { ~s.bus[label.asSymbol].free };
@@ -74,7 +89,6 @@
 ~p.getBuf = { |label|
 	Pfunc( e { ~s.buf[label] })
 };
-
 ~p.getBus = { |label|
 	Pfunc( e { ~s.bus[label] })
 };
@@ -91,7 +105,7 @@
 	~rendering = true;
 	ScoreClock.beginScore;
 	ScoreClock.tempo = 1;
-	(~s.currentPath ++ "lib/02-synthdefs.scd").load;
+	(~s.currentPath +/+ "scores/lib/02-synthdefs.scd").load;
 
 	~prep.();
 	topEnvironment.make({
