@@ -38,7 +38,7 @@
 	};
 	~s.bank[label.asSymbol] =  SoundFile.collectIntoBuffers(path)
 
-}
+};
 
 ~p.makeBus = { |label, channels=1|
 	(~rendering == false).if { ~s.bus[label.asSymbol].free };
@@ -83,7 +83,9 @@
 };
 
 ~p.restart = { 
-	~toPrep.asArray.select({|x| x[1] == 0}).do( { |x| x[0].value;} );
+	e {
+		~toPrep.asArray.select({|x| x[1] == 0}).do( { |x| x[0].value;} );
+	}.defer(0.1);
 };
 
 ~p.getBuf = { |label|
@@ -127,7 +129,7 @@
 
 
 
-CmdPeriod.add( e { ~p.restart } );
+CmdPeriod.add( e { ~p.s.syn = ();  ~p.restart } );
 
 Server.default = Server.local
 

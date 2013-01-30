@@ -4,9 +4,6 @@
 
 //TODO:
 //Midi sine
-//Pconst!!:call SClangHardstop()
-Pconst
-Pspawn
 //
 ~p = nil;
 Server.default = Server.local;
@@ -14,6 +11,7 @@ Server.default = Server.local;
 	s.waitForBoot {
 		~p ?? {
 			~p = Proto();
+			~p.name = "snickargladje";
 			~p.s = ();
 			~p.d = ();
 			~p.s.currentPath = "/Volumes/HD2/projects/timmer/kod/sc";

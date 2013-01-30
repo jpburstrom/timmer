@@ -94,7 +94,7 @@
 		source = In.ar(in, 2);//(Decay.ar(Impulse.ar(0.3), 0.1) * WhiteNoise.ar(0.2)).dup;
 		local = HPF.ar(
 			LPF.ar((LocalIn.ar(2) + source).round(2.pow(resolution).reciprocal)				, lop), hip);
-			local = DelayC.ar(local, 2, length);
+			local = DelayC.ar(local, 2, Lag.kr(length));
 			LocalOut.ar(local * feedback);
 		  XFade2.ar(source, local, mix);
   });
@@ -109,18 +109,6 @@
 			mix, amp);
   });
 	*/
-
-	~p.fact.synth('bitCrushDelay', 
-	{ | in, length=0.2, feedback=0.36, lop=816, hip=100, mix=1, resolution=6 |
-		var source, local;
-		feedback = feedback.min(0.9999999);
-		source = In.ar(in, 2);//(Decay.ar(Impulse.ar(0.3), 0.1) * WhiteNoise.ar(0.2)).dup;
-		local = HPF.ar(
-			LPF.ar((LocalIn.ar(2) + source).round(2.pow(resolution).reciprocal)				, lop), hip);
-			local = DelayC.ar(local, 2, length);
-			LocalOut.ar(local * feedback);
-		  XFade2.ar(source, local, mix);
-  });
 
 	~p.fact.synth('timmer.sinSynth1', { |freq, amp, gate=1|
 		var son, inamp;
