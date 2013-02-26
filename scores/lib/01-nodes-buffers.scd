@@ -3,30 +3,40 @@ q.make({
     "Loading server stuff".postln;
 
     //Buses
-    ~send = Setup({
+    q.makeSetup(\bus, {
 
         //Jack outputs
-        ~main = Bus(\audio, 0);
-        ~rfx1 = Bus(\audio, 2);
-        ~rfx2 = Bus(\audio, 4);
-        ~rfx3 = Bus(\audio, 6);
+        ~out1 = Bus(\audio, 0);
+        ~out2 = Bus(\audio, 2);
+        ~out3 = Bus(\audio, 4);
+        ~out4 = Bus(\audio, 6);
 
         //Other useful buses
-        ~test = Bus.audio(s, 1);
+        ~in1L = Bus.audio(s, 1); // mono busses
+        ~in1R = Bus.audio(s, 1);
+        ~in1 = Bus.audio(s, 2); //Stereo busses
+        ~in2 = Bus.audio(s, 2);
+        ~in3 = Bus.audio(s, 2);
+        ~in4 = Bus.audio(s, 2);
+
+        //From analysis group (should be removed)
+        // ~onsets = Bus.control(s, 1);
+        // ~amplitude = Bus.control(s, 1);
+        // ~pitch = Bus.control(s, 1);
+
 
     }, \boot);
 
 
 
     //Buffers
-    ~buf = Setup({
+    q.makeSetup(\buf, {
         (
             snickargladje: {
-                ~hits = SoundFile.collectIntoBuffers( q.path.samples +/+ "banks/hits/*");
+                q.smpLoad('banks/hits');
             }
 
         ).at(q.song).value
-
 
 
     }, \boot);
@@ -34,18 +44,27 @@ q.make({
 
 
     //Server Groups
-    ~grp = Setup({
-        //"Give me a group".postln;
-        ~test = Group(s);
-        ~test2 = Group(s, \addToTail);
-        ~foo = Group(~test2);
+    q.makeSetup(\grp, {
+        //We set up 5 main buses
+        [\in, \ctl, \syn, \ins, \fx].do { arg sym;
+            currentEnvironment[sym] = Group.tail;
+        };
+
 
     }, \tree);
 
+    //Controls (
+    q.makeSetup(\ins, {
 
-    //Synths (Always-running fx)
-    ~synth = Setup({
-        // p.grp.test.postln;
-    });
+    }, \tree);
+
+    q.makeSetup(\fx, {
+
+    }, \tree);
+
+    //Controls (
+    q.makeSetup(\ctl, {
+        "CONTROL".postln;
+    }, \tree);
 
 });

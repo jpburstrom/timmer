@@ -2,7 +2,7 @@
 q.make({
     "Loading synthdefs".postln;
 
-    ~synthDefs = Setup({
+    q.makeSetup(\synthdefs, {
         (q.path.lib +/+ "synthdefs/*").loadPaths
 
     }, \boot);
