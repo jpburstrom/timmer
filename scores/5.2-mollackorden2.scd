@@ -1,9 +1,41 @@
 (
-~song = \snickargladje;
-"lib/init.scd".loadRelative
+"lib/init.scd".loadRelative[0].(
+    (
+        song: \snickargladje,
+        bus: {
+            "More busses".postln;
+        },
+        fx: {
+            "More fx".postln;
+            q.makeFx(\test, \fxTest)
+        },
+        ctl: {
+            "More controls".postln;
+            q.makeCtl(\test, \lfoTest, [\freq, 0.5])
+        }
+    )
+);
+
 )
 
 
+SynthDef(\fxTest, { arg bus, outbus=0; Out.ar(outbus, In.ar(bus) * SinOsc.ar(5)) }).add
+
+SynthDef(\lfoTest, { arg bus, freq=1; Out.kr(bus, SinOsc.kr(freq)) } ).add
+
+q.pfx(
+
+{ SinOsc.ar(In.kr(q.bus.ctl_test).range(220, 440), mul:0.1) }.play(q.grp.syn)
+
+    { Out.ar(q.bus.fx_test, SinOsc.ar(440, mul:0.1)) }.play(q.grp.syn)
+
+
+Bus.perform(\control, s, 1)
+q.bus.use { Bus.perform(\control, s, 1) }
+q.bus
+
+SynthDescLib
+Instr
 //-----Song starts here------
 (
 var x = Prout( { |ev| var f;
@@ -49,6 +81,8 @@ var m = (start:32, mid:2@12, end:4@00);
 
     // CmdPeriod.add({btn.close});
 
-(Ppar([p, Pbind(\root, -10) <> p]) ++ Rest(10)).reap(m.end).play
+(Ppar([p, Pbind(\root, -10) <> p]) ++ Rest(10)).reap(m.start).play
 // Ppar([p, p <> Pbind(\root, -10)]).reap(2@02, -0.1).play
 )
+
+Tempo.bpm
