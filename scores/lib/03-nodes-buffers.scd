@@ -31,6 +31,7 @@ q.make({
 
     //Buffers
     q.makeSetup(\buf, {
+        q.smpLoad('banks/hits');
         (
             snickargladje: {
                 q.smpLoad('banks/hits');
@@ -64,7 +65,7 @@ q.make({
 
     //Controls (
     q.makeSetup(\ctl, {
-        "CONTROL".postln;
+        // "CONTROL".postln;
     }, \tree);
 
 });

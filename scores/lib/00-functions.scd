@@ -3,9 +3,14 @@ q.make({
     //Setup factory, run from within Setup
     ~makeSetup = { arg sym, func, rebuildOn;
         currentEnvironment[sym] = Setup(func, rebuildOn);
-
         currentEnvironment[sym].makeAdd(q.settings[sym]);
     };
+
+    ~makeSpec = { arg sym, spec;
+        ControlSpec.specs[sym] = spec.asSpec;
+    };
+
+    (q.path.lib +/+ "helpers/synthDefFactory.scd").load;
 
     //Make control ( Synth + Bus ),
     ~makeCtl = { arg sym, defName, args, channels=1, type=\control;
