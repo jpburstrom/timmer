@@ -1,7 +1,134 @@
-//---Snickarglädje
-SynthDef(\klanky, { |freq=440, sustain=1, bufnum=0, amp=0.6|
-    var snd = PlayBuf.ar(2, bufnum) * EnvGen.ar(Env.perc(0, sustain, amp, 0), doneAction:2);
-    snd = (Klank.ar(`[[1, 1.97,3.34,5], [2,2,4,0.2].normalizeSum, [0.3,1.2,0.1,1.3]], snd, freq, 0, sustain) * 0.2);
-    // snd = snd * EnvGen.kr(Env([0,1,1], [0, sustain]), doneAction:2);
-    Out.ar(0, snd);
-}).add;
+q.makeDefs (\synth,
+    [
+        \bufGrain,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(1, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+        },
+        nil,
+        (channels:1)
+    ],[
+        \bufGrain2,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+
+        }
+    ],
+    //--------RLPF/RHPF---------------
+    [
+        \bufGrainRLPF,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1, ffreq=2000, rq=1;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(1, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd = RLPF.ar(snd, ffreq, rq);
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+        },
+        nil,
+        (channels:1)
+    ],[
+        \bufGrainRLPF2,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1, ffreq=2000, rq=1;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd = RLPF.ar(snd, ffreq, rq);
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+
+        }
+    ],[
+        \bufGrainRHPF,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1, ffreq=2000, rq=1;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(1, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd = RHPF.ar(snd, ffreq, rq);
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+        },
+        nil,
+        (channels:1)
+    ],[
+        \bufGrainRHPF2,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1, ffreq=2000, rq=1;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd = RHPF.ar(snd, ffreq, rq);
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+
+        }
+    ],
+    //--------LPF/HPF---------------
+    [
+        \bufGrainLPF,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1, ffreq=2000;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(1, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd = LPF.ar(snd, ffreq);
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+        },
+        nil,
+        (channels:1)
+    ],[
+        \bufGrainLPF2,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1, ffreq=2000;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd = LPF.ar(snd, ffreq);
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+
+        }
+    ],[
+        \bufGrainHPF,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1, ffreq=2000;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(1, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd = HPF.ar(snd, ffreq);
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+        },
+        nil,
+        (channels:1)
+    ],[
+        \bufGrainHPF2,
+        {
+            arg bufnum=0, phase=0, rate=1, sustain=1, ffreq=2000;
+            var env = Env.newClear(8);
+            var envctl = \env.kr(env.asArray);
+            var snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * rate,
+                startPos: phase*BufFrames.kr(bufnum));
+            snd = HPF.ar(snd, ffreq);
+            snd * EnvGen.ar(envctl, timeScale:sustain, doneAction:2)
+
+        }
+    ]
+)
+
+
+
+
