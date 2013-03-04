@@ -127,7 +127,7 @@ q.makeDefs (\synth,
 
         }
     ]
-)
+);
 
 
 
