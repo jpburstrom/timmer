@@ -1,7 +1,6 @@
-//These are borrowed from ddwSynths, ddwChucklib quark
-
 q.makeDefs (\ctl,
     [
+        //Borrowed from ddwSynths, ddwChucklib quark
         \ctlPoint,
         {
             arg snd, value, sustain, curve;
@@ -16,6 +15,7 @@ q.makeDefs (\ctl,
         }
     ],
     [
+        //Borrowed from ddwSynths, ddwChucklib quark
         \ctlEnv,
         {
             // this def plays an arbitrary envelope on the bus

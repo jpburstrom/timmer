@@ -47,7 +47,6 @@ var klank4Variants = (
 
 klank4Variants.keysValuesDo { arg name, ev;
     name = ("bufKlank4" ++ name).asSymbol;
-    ev.kfreq.postln;
     q.makeDef(\synth, name,
         {
             arg freq = 440, sustain=1, attack=0, curve= -4, bufnum=0, bufRate = 1,
