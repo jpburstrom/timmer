@@ -31,6 +31,15 @@ q.make({
 
     //Buffers
     q.makeSetup(\buf, {
+        ~envs = ().make {
+            ~grain = ().make {
+                q.envs.grain.keysValuesDo { arg label, env;
+                    currentEnvironment[label] = Buffer.sendCollection(s, env.discretize);
+                }
+            }
+        };
+
+
         q.smpLoad('banks/hits');
         (
             snickargladje: {
