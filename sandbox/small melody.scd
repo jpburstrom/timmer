@@ -8,4 +8,6 @@ p = Pbind(\instrument, \sinefb, \legato, 1, \x, P3n1(Pseq((1, 3..11)), 1), \dur,
 
 )
 
+p.play
+
 Synth(\default).autogui

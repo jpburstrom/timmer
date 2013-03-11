@@ -64,7 +64,6 @@ c = 2. collect { |i| i.postln; Buffer.readChannel(s,
 d = 2. collect { |i| i.postln; Buffer.readChannel(s, "/Volumes/Mega/projects/timmer/render/to SC/flageolett-test3.wav", channels: [i]) }
 e = 2. collect { |i| i.postln; Buffer.readChannel(s, "/Volumes/Mega/projects/timmer/render/to SC/flageolett-test4.wav", channels: [i]) }
 
-
 (
 
 {

@@ -3,7 +3,19 @@ This file is evaluated within the q environment
 (q.path.lib +/+ "helpers/synthDefFactory.scd").load;
 q.makeDef(\synth)
 */
-var fact = {
+var fact;
+
+~makeDef = { arg type, name, func, lags, options;
+    Environment.make(fact).at(type).value(name, func, lags, options)
+};
+
+
+~makeDefs = { arg ... args;
+    var type = args.removeAt(0);
+    args.do { arg x; ~makeDef.(type, *x) };
+}
+
+fact = {
 
 
     var factory = { arg name, func, lags, options;
@@ -118,6 +130,7 @@ var fact = {
             pan: false,
             amp: false,
             width: false,
+            outClass:ReplaceOut
         );
         options = (options ?? ()).proto_(optionParent);
         factory.(name, func, lags, options);
@@ -136,19 +149,13 @@ var fact = {
 
     //Send effect
     ~send = { arg name, func, lags, options;
-        var optionParent = ();
+        var optionParent = (
+            outBus: \outbus
+        );
         options = (options ?? ()).proto_(optionParent);
         factory.(name, func, lags, options);
     };
 
 };
 
-~makeDef = { arg type, name, func, lags, options;
-    Environment.make(fact).at(type).value(name, func, lags, options)
-};
 
-
-~makeDefs = { arg ... args;
-    var type = args.removeAt(0);
-    args.do { arg x; ~makeDef.(type, *x) };
-}

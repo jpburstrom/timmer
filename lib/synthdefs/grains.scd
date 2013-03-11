@@ -175,7 +175,7 @@ q.makeDefs(\synth,
             var trig, pos, len;
             trig = Dust.ar(freq);
             pos = (phase + (LFNoise1.ar(freq, freq.reciprocal * phaseDev))).wrap(0, 1);
-            GrainBuf.ar(1, trig, freq.reciprocal * density, bufnum, rate, pos, envbufnum: envbuf)
+            GrainBuf.ar(1, trig, freq.reciprocal * density, bufnum, rate, pos, 4, envbufnum: envbuf)
             * EnvGen.ar(Env.adsr(attack, decay, sustainLevel, release), gate, doneAction:2)
         }, nil, (channels:1)
     ], [
@@ -187,7 +187,7 @@ q.makeDefs(\synth,
             var trig, pos, len;
             trig = Dust.ar(freq);
             pos = (phase + (LFNoise1.ar(freq, freq.reciprocal * phaseDev))).wrap(0, 1);
-            GrainBuf.ar(1, trig, freq.reciprocal * density, bufnum, rate, pos, envbufnum: envbuf)
+            GrainBuf.ar(1, trig, freq.reciprocal * density, bufnum, rate, pos, 4, envbufnum: envbuf)
             * EnvGen.ar(Env.adsr(attack, decay, sustainLevel, release), gate, doneAction:2)
         }
     ]
