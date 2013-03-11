@@ -1,7 +1,7 @@
 //Init paths and load all the other lib files.
 //TODO: make it possible to use other interpreter variables
 // (using this.interpret("whatever"))
-{ arg settings;
+var initFunc = { arg settings;
 
     settings.postln;
 
@@ -15,7 +15,7 @@
         ~path = ().make({
             //This is meant to be executed from main file, so
             //base is relative to that.
-            ~base = "".resolveRelative;
+            ~base = settings.basePath ?? { "".resolveRelative };
 
             ~lib = ~base +/+ "lib";
             ~instr = ~base +/+ "Instr";
@@ -44,6 +44,13 @@
         ~lastCall = Setup({"Done".postln}, \tree);
 
 
-    })
+    });
+
+    Toolbar.replace('-Q-');
+    Toolbar.replace('Init', { initFunc.( q.settings.make { ~basePath = q.path.base } ) })
+
+
 
 };
+
+initFunc
