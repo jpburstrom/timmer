@@ -8,5 +8,3 @@ q.make({
     }, \boot);
 
 });
-
-ServerTree.objects

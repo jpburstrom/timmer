@@ -13,7 +13,7 @@ var fact;
 ~makeDefs = { arg ... args;
     var type = args.removeAt(0);
     args.do { arg x; ~makeDef.(type, *x) };
-}
+};
 
 fact = {
 
