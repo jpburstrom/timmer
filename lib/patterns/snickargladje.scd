@@ -1,38 +1,49 @@
-Pdef(\greppbrada,  Pbind(
-		\instrument, 'timmer.grainPerc',
-		\bufnum, ~p.getBuf(\greppbrada1),
-		\note, -2,
-		\dur, Pdefn(\durGeomRit),
-		\legato, 1.2,
-		\db, Pseq([0, Pseq(5.collect(-6))], inf),
-		\attack, 0.01,
-		\startPos, Pseq([~p.d.gdur.frames[12], Pxrand(~p.d.gdur.frames, 5)], inf),
-		\pan, 0,
-		\curve, -6,
-		\out, 0,
-	));
+Pbindef(\greppbrada,
+    \instrument, 'timmer.grainPerc',
+    \bufnum, q.pBuf(\greppbrada1),
+    \note, -2,
+    \dur, Pdefn(\durGeomRit),
+    \legato, 1.2,
+    \db, Pseq([0, Pseq(5.collect(-6))], inf),
+    \attack, 0.01,
+    //\startPos, Pseq([~p.d.gdur.frames[12], Pxrand(~p.d.gdur.frames, 5)], inf), //FIxME
+    \pan, 0,
+    \curve, -6,
+    \out, 0 //FIXME
+).tags = #[greppbrada, grains, snickargladje];
 
-Pdef(\strakArp,  Pbind(
-		\instrument, 'timmer.grainPerc',
-		\bufnum, ~p.getBuf(\strak1),
-		\root, -0.57,
-		\note, [0,5,19],
-		\strum, 0.1,
-		\dur, 0.1,
-		\legato, 10,
-		\db, Pwhite(-32, -28),
-		\startPos, Pwhite(0.3,0.31),
-		\pan, 0,
-		\curve, -2,
-		\out, 0,
-	));
+Pbindef(\strakArp,
+    \instrument, 'timmer.grainPerc',
+    \bufnum, q.pBuf(\strak1),
+    \root, -0.57,
+    \note, [0,5,19],
+    \strum, 0.1,
+    \dur, 0.1,
+    \legato, 10,
+    \db, Pwhite(-32, -28),
+    \startPos, Pwhite(0.3,0.31),
+    \pan, 0,
+    \curve, -2,
+    \out, 0,
+).tags = #[strak, grains, snickargladje];
 
 //Denna kan användas med olika startPos, som återkommande signal.
-Pdef(\strakTremoloSignal, Pbindf(Pdef(\strakArp).asPattern, \note, 0, \attack, 0.1, \dur, Pwhite(0.1,0.11)));
+Pdef(\strakTremoloSignal,
+    Pbindf(
+        Pdef(\strakArp).source,
+        \note, 0,
+        \attack, 0.1,
+        \dur, Pwhite(0.1,0.11)
+    )
+).tags = #[strak, grains, snickargladje, signal];
+
+
+
+
 
 Pdef(\nothing,  Pbind(
 		\instrument, 'timmer.grainPerc',
-		\bufnum, ~p.getBuf(\nothing),
+		\bufnum, q.pBuf(\nothing),
 		\note, -12,
 		\dur, Plprand(0.01, 2),
 		\legato, 1,
@@ -68,8 +79,8 @@ Pdef(\impulseHits, Pbindf(Pdef(\impulseString).asPattern,
 		\bufnum, Pstutter(Pkey(\change), Pfunc( e {~p.s.bank.hits})
 	)));
 
-Pdef(\impulseStringChords, 
-	Pbindf(Pdef(\impulseString), 
+Pdef(\impulseStringChords,
+	Pbindf(Pdef(\impulseString),
 			\db, -40,
 			\degree, Pstutter(Pkey(\change), Pfuncn({Array.rand(3, 0, 8)}, inf)
 		)));

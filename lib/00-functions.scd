@@ -15,14 +15,19 @@ q.make({
     //Make control ( Synth + Bus ),
     ~makeCtl = { arg sym, defName, args, channels=1, type=\control;
         var argfunc, busname = ("ctl_" ++ sym).asSymbol;
+        q.bus[busname].free;
         q.bus.make  {
-            currentEnvironment[busname] = Bus.perform(type, s, channels);
+                currentEnvironment[busname] = Bus.perform(type, s, channels);
         };
-        argfunc = { args ++ [\bus, q.bus[busname]] };
+        argfunc = { [\bus, q.bus[busname], \outbus, q.bus[busname]] ++ args.value };
+
         q.ctl.make {
             // argf
             currentEnvironment[sym] = Synth.tail(q.grp.ctl, defName, argfunc.value);
-        }
+        };
+        //Placeholder OSCdef
+        // OSCdef(busname,'/tr', s.addr, nil, [{ arg id; id == q.ctl[sym].nodeID}]);
+
     };
 
     //Make fx ( Synth + Bus ),
@@ -62,36 +67,36 @@ q.make({
 
 
 
-    //Pattern-generating buffer functions
+    //Pattern-generating buffer functions, BIG HACKS
     ~pBuf = { |sym|
-        Pfuncn({ |ev|
+        Pfsym(sym, { q.buf }).collect({ | val, ev |
             if(ev.isNil or: { ev.bufindex.isNil } ) {
-                q.buf[sym]
+                val
             } {
-                q.buf[sym] !? { q.buf[sym][ev.bufindex] }
+                val !? { val[ev.bufindex] }
             };
-        }, inf);
+        })
     };
 
     ~pBufChoose = { |sym|
-        Pfuncn({ |ev|
-            q.buf[sym].choose
-        }, inf);
+        Pfsym(sym, { q.buf }).collect({ |val| val.choose })
     };
 
     ~pBufAt = { |sym, index|
-        Pfuncn({ |ev|
-            q.buf[sym].at(index % q.buf[sym].size)
-        }, inf);
+        Pfsym(sym, { q.buf }).collect({ |val| val[index % val.size] })
     };
 
-    ~pBus = { |sym| Pfuncn({ q.bus[sym] }, inf) };
+    ~pBufBankSize = { |sym|
+        Pfsym(sym, { q.buf }).collect({ |val| val.size })
+    };
 
-    ~pCtl = { |sym| Pfuncn({ q.ctl[sym] }, inf) };
-    ~pCtlBus = { |sym| Pfuncn({ q.bus[(\ctl_ ++ sym).asSymbol] }, inf) };
+    ~pBus = { |sym| Pfsym(sym, { q.bus }) };
 
-    ~pFx = { |sym| Pfuncn({ q.fx[sym] }, inf) };
-    ~pFxBus = { |sym| Pfuncn({ q.bus[(\fx_ ++ sym).asSymbol]}, inf) };
+    ~pCtl = { |sym| Pfsym(sym, { q.ctl }) };
+    ~pCtlBus = { |sym| Pfsym((\ctl_ ++ sym).asSymbol, { q.bus } ) };
+
+    ~pFx = { |sym| Pfsym(sym, { q.fx }) };
+    ~pFxBus = { |sym| Pfsym((\fx_ ++ sym).asSymbol, { q.fx } ) };
 
 
 

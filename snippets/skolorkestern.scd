@@ -21,9 +21,3 @@ Pmul(\dur,
         \legato, 1,
         \freq, Pseq([\r, 100, 400, \r], inf),
         \width, -0.5, \amp, 0.1, \bufnum, Pfunc({q.buf.at('banks/hits').choose})).play(quant:1)
-
-}
-)
-
-
-   

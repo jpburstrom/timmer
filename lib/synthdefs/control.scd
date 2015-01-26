@@ -19,34 +19,40 @@ q.makeDefs (\ctl,
         \ctlEnv,
         {
             // this def plays an arbitrary envelope on the bus
-            // to avoid discontinuity, the envelope's init value is replaced
-            // with the bus's value if connect>0
             arg snd, levelScale = 1, levelBias = 0, sustain = 1, connect = 1;
             var	env = \env.kr(0 ! 40);	// enough for 10 breakpoints
-            env[0] = Select.kr(connect > 0, [env[0], snd]);
+            // env[0] = Select.kr(connect > 0, [env[0], snd]);
             EnvGen.kr(env, 1, levelScale, levelBias, sustain, doneAction: 2)
-        }
+        },
+        nil,
+        (outClass: XOut)
     ],
     [
         \lfoSin,
         {
             arg snd, freq=1, phase=0, min=0, max=1;
             LFCub.kr(freq, phase).range(min, max);
-        }
+        },
+        nil,
+        (outClass: XOut)
     ],
     [
         \lfoPulse,
         {
             arg snd, freq=1, phase=0, width=0.5, min=0, max=1;
             LFPulse.kr(freq, phase, width, max-min, min);
-        }
+        },
+        nil,
+        (outClass: XOut)
     ],
     [
         \lfoSaw,
         {
             arg snd, freq=1, phase=0, min=0, max=1;
             LFSaw.kr(freq, phase).range(min, max);
-        }
+        },
+        nil,
+        (outClass: XOut)
     ],
     [
         \lfoTri,

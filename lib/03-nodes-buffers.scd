@@ -5,7 +5,10 @@ q.make({
     //Buses
     q.makeSetup(\bus, {
 
+        ~anaIn = Bus.audio(s, 1)
+
         //Jack outputs
+        /*
         ~out1 = Bus(\audio, 0);
         ~out2 = Bus(\audio, 2);
         ~out3 = Bus(\audio, 4);
@@ -18,11 +21,7 @@ q.make({
         ~in2 = Bus.audio(s, 2);
         ~in3 = Bus.audio(s, 2);
         ~in4 = Bus.audio(s, 2);
-
-        //From analysis group (should be removed)
-        // ~onsets = Bus.control(s, 1);
-        // ~amplitude = Bus.control(s, 1);
-        // ~pitch = Bus.control(s, 1);
+        */
 
 
     }, \boot);
@@ -63,7 +62,14 @@ q.make({
 
     }, \tree);
 
-    //Controls (
+    //inputs (
+    q.makeSetup(\inputs, {
+
+        Synth(\soundIn, [\bus, 0, \outbus, q.bus.anaIn], q.grp.in);
+
+    }, \tree);
+
+    //FX (
     q.makeSetup(\ins, {
 
     }, \tree);
@@ -74,7 +80,12 @@ q.make({
 
     //Controls (
     q.makeSetup(\ctl, {
-        // "CONTROL".postln;
+        q.makeCtl(\onsets, \anaOnsets, [\bus, q.bus.anaIn], 1);
+        q.makeCtl(\pitch, \anaPitch, {[\bus, q.bus.anaIn, \trig, q.bus.ctl_onsets.asMap]}, 2);
+        q.makeCtl(\amplitude, \anaAmp, {[\bus, q.bus.anaIn, \trig, q.bus.ctl_onsets.asMap]});
+        q.makeCtl(\spectral, \anaSpectral,
+            {[\bus, q.bus.anaIn, \trig, q.bus.ctl_onsets.asMap]}, 2);
+
     }, \tree);
 
 });

@@ -22,6 +22,7 @@ var initFunc = { arg settings;
             ~patterns = ~base +/+ "patterns";
             ~samples = ~base +/+ "samples";
             ~data = ~base +/+ "data";
+            ~storage = ~data +/+ "store-" ++ q.song.asString ++ ".zarchive";
 
             Instr.dir = ~instr;
             Sample.dir = ~samples;
@@ -41,13 +42,17 @@ var initFunc = { arg settings;
             };
         });
 
+        Library.put(\brstrm, \tmpDocDir, ~path.base +/+ "sandbox");
+
         ~lastCall = Setup({"Done".postln}, \tree);
 
 
     });
 
     Toolbar.replace('-Q-');
-    Toolbar.replace('Init', { initFunc.( q.settings.make { ~basePath = q.path.base } ) })
+    Toolbar.replace('Init', { initFunc.( q.settings.make { ~basePath = q.path.base } ) });
+    Toolbar.replace('Store', { "Writing file".postln; q.store.writeToFile });
+
 
 
 

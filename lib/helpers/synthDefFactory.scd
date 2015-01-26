@@ -45,11 +45,14 @@ fact = {
             outClass: Out,
         );
         options = (options ?? ()).parent_(optionParent);
+        options.inChannels = options.inChannels ?? options.channels;
+        options.outChannels = options.outChannels ?? options.channels;
+        // options.inBus.postln;
         SynthDef(name, {
             var snd, env;
             if (options.inBus.isSymbol) {
                 snd = options.inClass.perform(options.inRate,
-                    options.inBus.kr, options.numChannels);
+                    options.inBus.kr, options.inChannels);
                 snd = SynthDef.wrap(func, lags, [snd]);
             } {
                 snd = SynthDef.wrap(func, lags);
@@ -60,11 +63,11 @@ fact = {
                 options.outClass.asClass.perform(options.outRate,
                     bus.kr, snd * amp.kr(options.preSendDefault, options.preSendLag, true));
             };
-            if (options.channels == 2 and: { options.width }) {
+            if (options.outChannels == 2 and: { options.width }) {
                 snd = Splay.ar(snd, \width.kr(options.widthDefault, options.widthLag, true));
             };
             if (options.pan) {
-                if (options.channels == 1) {
+                if (options.outChannels == 1) {
                     snd = Pan2.ar(snd, \pan.kr(options.panDefault, options.panLag, true))
                 } {
                     snd = Balance2.ar(snd[0], snd[1], \pan.kr(options.panDefault, options.panLag, true))
@@ -89,7 +92,7 @@ fact = {
 
             }
             },
-            variants: options.variants).add;
+            variants: options.variants).add(\timmer);
     };
 
     ~synth = { arg name, func, lags, options;
@@ -120,6 +123,8 @@ fact = {
             outClass: ReplaceOut
         );
         options = (options ?? ()).proto_(optionParent);
+        //[name, func, lags, options].postln;
+
         factory.(name, func, lags, options);
     };
 
@@ -127,6 +132,7 @@ fact = {
     ~ctla2k = { arg name, func, lags, options;
         var optionParent = (
             outRate: \kr,
+            outBus: \outbus,
             pan: false,
             amp: false,
             width: false,
@@ -157,5 +163,7 @@ fact = {
     };
 
 };
+
+
 
 

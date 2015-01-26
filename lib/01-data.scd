@@ -1,6 +1,9 @@
 
 q.make({
+
+    var storePath =
     "Loading data".postln;
+
 
     ~data = ();
 
@@ -30,6 +33,28 @@ q.make({
         }
     };
 
+    //Persistent storage thing, at q.store
+    if (File.exists(q.path.storage)) {
+        var z = ZArchive.read(q.path.storage);
+        ~store = z.readItem(Event);
+        z.close;
+    }{
+        ~store = (
+            autoscale: (),
+            revertFromFile: {
+                q.make {
+                    var z = ZArchive.read(q.path.storage);
+                    ~store = z.readItem(Event);
+                    z.close;
 
+                }
+            },
+            writeToFile: {
+                var z = ZArchive.write(q.path.storage);
+                z.writeItem(q.store);
+                z.writeClose;
+            }
+        )
+    }
 
 })
