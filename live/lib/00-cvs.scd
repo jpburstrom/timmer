@@ -1,11 +1,12 @@
-Spec.add(\preamp, [-30, 30, \lin, 0, 0]);
+Spec.add(\preamp, [0, 15, \lin, 0, 0]);
 Knob.defaultMode = \vert;
 q.make {
     var preampPath = q.path.data +/+ "preamps.data.scd";
     var c;
     //TODO: clean up open windows
     ~conds = ();
-    ~cvs = ();
+    ~cvs = Object.readArchive(q.path.data +/+ "cvs.archive") ?? ();
+    ~cvs.phase = ~cvs.phase ?? { IdentityDictionary() };
 
     //PREAMPS
     c = Conductor.make({ |con |
@@ -15,7 +16,7 @@ q.make {
         ~np.source = { SinOsc.ar(440, mul: \amp.kr) * 0.05 };
         con.name = "Example";
         */
-        con.useSettings;
+        con.useSettings(false);
         con.gui[\settingsGUI] = { |win, name =">", settings|
             ~simpleButton.value(win)
             .states_([["S"]])
@@ -29,18 +30,37 @@ q.make {
             ~simpleButton.value(win)
             .states_([["OA"]])
             .action_( { settings.load( ); });
+           //q { settings.load( preampPath ) }.try( { "Error loading preamp presets".warn } );
+
         };
+
     });
-    //TODO: 36->93 as global var
     q.settings.pitches.collect { |i| c.addCV((i).asSymbol, 1, \knob).spec_(\preamp) };
     c.gui.keys = q.settings.pitches.collect({ |i|
-        var sym = (i).asSymbol;
+        var val, sym = (i).asSymbol;
+
+        //Add phase cvs
+        ~cvs.phase[sym] = q.cvs.phase[sym] ?? { CV([0, 10].asSpec, 0.8) };
+        val = ~cvs.phase[sym].value;
+        ~cvs.phase[sym].spec_([0, 5].asSpec, val);
+
+
+
+        ~cvs[sym] !? { c[sym].value = ~cvs[sym].value };
         ~cvs[sym] = c[sym];
         sym
-    }).clump(12);
-    c.load(preampPath);
+    }).clump(5).flop;
     defer {
+        Toolbar.replace('Save CV', {
+            [\cvs].do { |name|
+                q[name].writeArchive(q.path.data +/+ "backup/" ++ name + Date.getDate.asSortableString ++ ".archive");
+                q[name].writeArchive(q.path.data +/+ name ++ ".archive");
+            }
+        });
         Toolbar.replace('Preamps', { c.gui[\win] !? { c.gui[\win].close; }; c.show });
     };
     ~conds.preamp = c;
+
 };
+
+

@@ -1,9 +1,14 @@
 var init = { |settings|
-    q !?  { q.free };
+    q !?  {
+        q.updaters.do(_.remove);
+        q.launchPad.free;
+        q.free
+
+    };
     KeyDownActions.globalShortcutsEnabled = false;
 
     s.options.sampleRate = 48000;
-    s.options.hardwareBufferSize = 128;
+    s.options.hardwareBufferSize = 256;
 
     q = Setup({
         s.latency.wait;
@@ -11,15 +16,21 @@ var init = { |settings|
         ~song = "live";
         ~settings = settings;
         ~settings.latencies = List();
+        /*
         if (s.options.device == "PreSonus FireStudio") {
             ~settings.latencies.add(0.00425); //extra hardware latency
         };
         ~settings.latencies.add(((s.options.hardwareBufferSize ? 512) * 2) / s.sampleRate);
+        */
+
+        //Assuming hardwareBufferSize = 256;
+        ~settings.latencies.add(0.014708333);
 
         //Safety limiter, see brstrm/StageLimiter.sc
         if (true) {
             StageLimiter.activate;
-            ~settings.latencies.add(0.01); //For StageLimiter;
+            ~settings.latencies.add(0.02); //For StageLimiter,
+            //see Limiter help -- adds double amount of latency
         };
 
         ~path = ().make({
@@ -37,6 +48,8 @@ var init = { |settings|
         ~find = { arg what, path;
             q.path.at(what) +/+ path
         };
+
+        ~updaters = ();
 
         //Load all
         topEnvironment.use({

@@ -3,6 +3,8 @@ q.make {
     ~tree = Setup(nil, \tree).on(\build, {
         "Adding groups".postln;
         ~syngrp = Group();
+        ~ctlgrp = Group.before(~syngrp);
+        ~mstfxgrp = Group.after(~syngrp);
         \groups
     });
 
