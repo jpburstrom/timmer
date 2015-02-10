@@ -1,7 +1,10 @@
 var init = { |settings|
     q !?  {
         q.updaters.do(_.remove);
-        q.launchPad.free;
+        q.launchPad !? {
+            q.launchPad.allElements.do(_.reset);
+            q.launchPad.free;
+        };
         q.free
 
     };

@@ -156,7 +156,6 @@ q.make {
             var con = ~model.connections;
             switch (v)
             {0} {
-                [k, v].postln;
                 //Recursively remove connections
                 con.connectionsTo(k).copy.do { |kee|
                     if (con.connectionsFrom(kee).size == 1) {
@@ -169,7 +168,6 @@ q.make {
                     //If modula
                     if (~model[kee] == 3 and: { con.connectionsTo(kee).size > 0 }) {
                         //FIXME: Why setState?
-                        "setState".postln;
                         ~setState.value(kee, 3, update);
                     } {
                         //make carrier normal if it has no other connections
@@ -234,7 +232,7 @@ q.make {
         ~toggleAll = { |val|
             val ?? { val = 1 - ~model.values.select(_.isNumber).mean.round.min(1) };
             if (val.isNaN) { val = 0 };
-            q.launchIndexes.size.do { |x| x.postln; ~setState.value(x, val) };
+            q.launchIndexes.size.do { |x| ~setState.value(x, val) };
 
         };
 
