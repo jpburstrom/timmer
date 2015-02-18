@@ -94,6 +94,9 @@ x = Proto({
         ~con = ();
     };
 
+
+    //------------Snapshot support -------------//
+
     //Replace current connections with connections from other proto (eg snapshots)
     ~replaceWith = { |other|
         var these = ~allConnections.value;
@@ -104,6 +107,20 @@ x = Proto({
         (those - these).do { |x|
             ~add.(x.[0], x[1]);
         };
-    }
+    };
+
+    //snapshots uses setValue
+    ~setValue = { |other|
+        ~replaceWith.(other);
+    };
+
+    //for snapshots, Proto.value uses ~next
+    //So we can do x.setValue(y.value)
+    //which corresponds to x.replaceWith(y)
+    ~next = {
+        currentEnvironment
+    };
+
+    //---------End snapshot support-----------------//
 
 });

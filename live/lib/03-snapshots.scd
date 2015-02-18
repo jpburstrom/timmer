@@ -29,7 +29,11 @@ q.make {
         ~load = { |key|
             q.storage[\snapshots, key] !? {
                 q.storage[\snapshots, key].leafDo { arg path, val;
-                    q.storage.at(*path).value = val.value;
+                    if (q.storage.at(*path).respondsTo(\setValue)) {
+                         q.storage.at(*path).setValue(val.value);
+                    } {
+                        q.storage.at(*path).value_(val.value);
+                    }
                 }
             };
             currentEnvironment.changed(\load, key);
@@ -38,7 +42,6 @@ q.make {
     });
 }
 );
-q.storage.atPath[[\cvs, \phase]]
 
 /*
 q.snapshots.addSnapshotKey(\cvs);
