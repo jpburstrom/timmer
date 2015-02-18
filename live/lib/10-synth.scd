@@ -50,8 +50,8 @@ q.tree.on(\groups, {
             q.tree.synths[sym] = Synth(\bandy,
                 [\freq, i.midicps, \out, 0, \delayOffset, q.settings.rtlatency], q.tree.syngrp);
             q.tree.synths[sym].setControls([
-                preamp: q.conds.preamp[sym],
-                phase: q.cvs.phase[sym],
+                preamp: q.storage[\cvs, \preamp, sym],
+                phase: q.storage[\cvs, \phase, sym],
             ]);
         };
 

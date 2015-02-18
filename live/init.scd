@@ -54,6 +54,10 @@ var init = { |settings|
 
         ~updaters = ();
 
+        ~storage = Object.readArchive(q.path.data +/+ "storage.archive") ?? {
+            MultiLevelIdentityDictionary.new;
+        };
+
         //Load all
         topEnvironment.use({
             (q.path.lib +/+ "*").pathMatch
@@ -67,14 +71,15 @@ var init = { |settings|
 
         ~lastCall = Setup({"Done".postln}, \tree);
 
+        ~forceReload = { init.( q.settings.make { ~basePath = q.path.base } ) };
 
 
     });
     //Fix
     Toolbar.replace('-Live-');
     Toolbar.replace('Init', { init.( q.settings.make { ~basePath = q.path.base } ) });
-    Toolbar.replace('Store', { "Writing file".postln; q.store.writeToFile });
-Toolbar.replace('NdefMixer', { NdefMixer(s) });
+    //Toolbar.replace('Store', { "Writing file".postln; q.store.writeToFile });
+    Toolbar.replace('NdefMixer', { NdefMixer(s) });
 };
 
 init;

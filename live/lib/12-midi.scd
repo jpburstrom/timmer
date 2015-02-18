@@ -1,255 +1,99 @@
 (
-q.launchPad !? {
-    q.launchPad.allElements.do(_.reset);
-    q.launchPad.free;
-};
+q.dev !? { |d| d.lpIn !? { |in|
+    in.allElements.do(_.reset);
+    in.free;
+}};
 q.make {
-    ~launchPad = MKtl('lnch0');
-    ~launchIndexes =  (24..63).clump(8).flop.flatten;
+    //launchPad key mapping
+    var keys = (
+        snapshots: (0..3),
+        macros: [0,8,16] +.x (4..7),
+        modulation: [0,8] +.x (8..11) ++ (24..39),
+        notes: [40,48,56] +.x (0..7)
+    );
+    var colors = (
+        snapshots: [\off, \lRed, \red],
+        macros: [\off, \lAmber, \amber],
+        modulation: [\off, \yellow, \yellow]
+    );
 
-    ~launchView = Proto({
-        ~colors = [\off, \amber, \green, \red];
-        ~selColors = [\fYellow, \fAmber, \fGreen, \fRed];
-        ~out = nil;
-        ~updater = nil;
-        ~controller = nil;
+    ~dev = ();
+    ~views = ();
+    ~ctrls = ();
 
-        ~connect  = { |ctrl|
-            ~controller = ctrl;
-            ~out = LaunchpadOut(ctrl.ktl);
-            //Auto-flash
-            64.do(~out.setColor(_, \off));
-            ~out.midiOut.control(0, 0, 40);
+    ~dev.lpIn = MKtl('lnch0');
+    ~dev.lpOut = LaunchpadOut(~dev.lpIn).reset;
 
-            q.updaters.launchView = Updater(~controller, e { |model, state, k, v, sel|
-                if (state == \state) {
-                    var c = ~colors;
-                    if (model.isSelected(k)) { c = ~selColors };
-                    ~out.setColor(q.launchIndexes[k], c[v])
+    //TEMP reload everything on button press
+    ~dev.lpIn.elementAt(\mixer).action_({ |elem|
+        if (elem.value == 1) {
+            defer { q.forceReload }
+        }
+    });
+
+    //Auto-flash ON
+    ~dev.lpOut.midiOut.control(0, 0, 40);
+
+    ~ctrls.notes = q.f.getProto(\noteController).connect(~dev.lpIn, keys.notes);
+    ~views.notes = q.f.getProto(\noteView).connect(~ctrls.notes, ~dev.lpOut);
+
+    [\snapshots, \macros, \modulation].do { |k|
+        ~ctrls[k] = q.f.getProto(\buttonController).connect(~dev.lpIn, keys[k]);
+        ~views[k] = q.f.getProto(\buttonView).connect(~ctrls[k], ~dev.lpOut);
+        ~views[k].colors = colors[k];
+    };
+
+    //modulation keys should always be inited
+    ~ctrls.modulation.isKeyInited = { true };
+
+    //=========SNAPSHOTS==============//
+
+    ~ctrls.snapshots.use {
+        ~onLongPress = { |k|
+            q.snapshots.save(k);
+        };
+        ~onShortPress = { |k|
+            q.snapshots.load(k);
+        }
+    };
+
+    //=========MACROS=============//
+
+    //Go through macros and activate slots accordingly
+
+    12.do { |i|
+        if (~macros.exists(i)) {
+            ~ctrls.macros.setState(i, 1);
+        }
+    };
+
+    //Make macros update on macro updates
+    ~macros.addDependant(~ctrls.macros);
+    ~ctrls.macros.use {
+        ~update = e { |obj, what, k, v|
+            if (what == \put) {
+                if (v.notNil) {
+                    ~setState.(k, 1);
                 } {
-                    if (state == \selected) {
-                        if (sel) {
-                            ~out.setColor(q.launchIndexes[k], ~selColors[v])
-                        } {
-                            ~out.setColor(q.launchIndexes[k], ~colors[v])
-                        }
-                    }
+                    ~setState.(k, 0);
                 }
-            });
-        };
-
-        ~free = {
-            ~updater.remove;
-        }
-
-    });
-    ~launchController = Proto({
-
-        ~model = (selected: Set(), connections: (q.path.lib +/+ "protos/connections.scd").load);
-        ~states = [\off, \play, \car, \mod];
-        ~ktl = nil;
-
-        ~rout = Routine({ arg kv;
-            var key, value, first, longPressRout, longPress=false, cur = List();
-
-            #key, value = kv;
-            first = key;
-
-            loop {
-
-                //Handle trailing note-offs
-                while ({ value == 0 }) {
-                    #key, value = false.yield;
-                };
-
-
-
-                //Here comes the first key press
-                first = key;
-                cur.add(key);
-
-                longPressRout.stop.free;
-                //Wait for long press
-                longPressRout = fork {
-                    0.5.wait;
-                    cur.do(~select.value(_));
-                    longPress = true;
-                };
-
-                while ( {cur.size > 0}) {
-
-                    #key, value = [key, value].yield;
-
-                    //FIXME: yield first after longPress
-                    while ({longPress}) {
-                        if (value == 1) {
-                            //TODO toggle select?
-                            ~select.(key);
-
-                        } {
-                            if (key == first) {
-                                longPress = false;
-                                cur.clear;
-                                first = false;
-                            }
-                        }
-
-                    };
-                    if (key == first and: { value == 0 }) {
-                        //If multiple keys, make connections
-                        longPressRout.stop;
-
-                        if (cur.size > 1) {
-                            if (~isSelected.(first)) {
-                                cur.do(~unselect.(_));
-                            } {
-                                var con = ~model.connections.connectionsTo(first, true);
-                                if (con.notNil and: { (con & cur[1..]).size > 0 }) {
-                                    "Circular connection -- aborting".warn;
-                                } {
-                                    ~setState.(first, 3);
-                                    cur[1..].do { |x|
-                                        if (~model[x] != 3) {
-                                            ~setState.(x, 2, true, first);
-                                        } {
-                                            ~setState.(x, 3, true, first);
-                                        }
-
-                                    };
-                                }
-                            }
-
-                        } {
-                            //If current (only) key is selected, unselect
-                            if (~isSelected.(key)) {
-                                ~unselect.(key);
-                            } {
-                                //... otherwise toggle state
-                                ~toggleState.(first);
-                            }
-                        };
-                        cur.clear;
-                    } {
-                        //If key is not first, add or remove to current collection
-
-                        if (value == 0) {
-                            cur.remove(key);
-                        } {
-                            cur.add(key);
-                        }
-                    }
-                };
-
             }
-
-
-        });
-
-        //Connect model to launchpad
-        ~connect = { |ktl|
-            ~ktl = ktl;
-            64.do { |x| q.launchPad.elementAt(\bt, x).action_(~update.inEnvir) };
         };
-
-        //Main state-setting method
-        ~setState = { |k, v, update=true, other|
-            var con = ~model.connections;
-            switch (v)
-            {0} {
-                //Recursively remove connections
-                con.connectionsTo(k).copy.do { |kee|
-                    if (con.connectionsFrom(kee).size == 1) {
-                        ~setState.value(kee, 0, update);
-                    }
-                };
-                //Check connections from k, aka carriers
-                con.connectionsFrom(k).do { |kee|
-                    //TODO multiple connections (fan out)?
-                    //If modula
-                    if (~model[kee] == 3 and: { con.connectionsTo(kee).size > 0 }) {
-                        //FIXME: Why setState?
-                        ~setState.value(kee, 3, update);
-                    } {
-                        //make carrier normal if it has no other connections
-                        if ((con.connectionsTo(kee) - [k]).size == 0) {
-                            ~setState.value(kee, 1, update);
-                        }
-                    }
-                };
-                con.removeAll(k);
-            }
-            {1} {
-                //~model.connections.removeAll(k);
-            }
-            {2} {
-                other !? { con.add(other, k) };
-            }
-            {3} {
-                other !? {
-                    if (~model[k] == 3) {
-                        //Avoid 0->1 & 1->2 & 0->2
-                        if (con.connectionsFrom(other).isNil or: { (con.connectionsFrom(k) & con.connectionsFrom(other)).size == 0 } ) {
-
-                            ~model.connections.add(other, k);
-                        } {
-                            "This connection is too complex for me".postln;
-                        }
-                    } {
-                        ~model.connections.add(k, other) ;
-                    };
-
-                };
-            };
-            if (update) {
-                currentEnvironment.changed(\state, k, v, other);
-            };
-            ~model[k] = v;
-
-        };
-
-        //Select a key (for modal ui)
-        ~select = { |k|
-            ~model.selected.add(k);
-            currentEnvironment.changed(\selected, k, ~model[k] ? 0, true);
-        };
-
-        //Unselect key
-        ~unselect = { |k|
-            ~model.selected.remove(k);
-            currentEnvironment.changed(\selected, k, ~model[k] ? 0, false);
-        };
-
-        ~toggleState = { |k, update=true|
-            ~setState.(k, ((~model[k] ? 0) == 0).asInt, update);
-
-        };
-
-        ~isSelected = { |k|
-            ~model.selected.includes(k);
-        };
+    };
 
 
-        ~toggleAll = { |val|
-            val ?? { val = 1 - ~model.values.select(_.isNumber).mean.round.min(1) };
-            if (val.isNaN) { val = 0 };
-            q.launchIndexes.size.do { |x| ~setState.value(x, val) };
 
-        };
+    //Run on button
+    ~ctrls.macros.onButtonDown = { |k|
+        ~macros.run(k);
+    }.inEnvir;
 
-        ~update = { |e|
-            q.launchIndexes.indexOf(e.index) !? {
-                ~rout.value([q.launchIndexes.indexOf(e.index), e.value])
-            }
+    //========MODULATION========//
 
-        };
+    //Button connects currently selected keys to a slot in the mod matrix
+    //onButtonPress: |y|
+    //~ctrls.notes.selected().do { |x| ~matrix.mod.add(x, y) }
 
-        ~free = {
-            q.launchToSynth.remove;
-        }
-    });
-    ~launchController.connect(q.launchPad);
-
-    ~launchView.connect(q.launchController);
 
     q.updaters.launchSynth = Updater(~launchController, { |what, msg, index, value, other|
         index = q.settings.pitches[index];
@@ -266,6 +110,8 @@ q.make {
 }
 
 );
-
-q.launchController.model.connections.connectionsTo(26)
-
+/*
+v = q.f.getProto(\buttonController)
+v.connect(MKtl('lnch0'), [0,1,2,3])
+*/
+q.storage[\cvs, \phase, \67].value

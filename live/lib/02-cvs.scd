@@ -1,12 +1,10 @@
+//leftover from trying out conductor. Eventually move to gui/reset
 Spec.add(\preamp, [0, 15, \lin, 0, 0]);
 Knob.defaultMode = \vert;
 q.make {
     var preampPath = q.path.data +/+ "preamps.data.scd";
     var c;
     //TODO: clean up open windows
-    ~conds = ();
-    ~cvs = Object.readArchive(q.path.data +/+ "cvs.archive") ?? ();
-    ~cvs.phase = ~cvs.phase ?? { IdentityDictionary() };
 
     //PREAMPS
     c = Conductor.make({ |con |
@@ -40,26 +38,21 @@ q.make {
         var val, sym = (i).asSymbol;
 
         //Add phase cvs
-        ~cvs.phase[sym] = q.cvs.phase[sym] ?? { CV([0, 10].asSpec, 0.8) };
-        val = ~cvs.phase[sym].value;
-        ~cvs.phase[sym].spec_([0, 5].asSpec, val);
+        val = (~storage[\cvs, \phase, sym] ?? {
+            ~storage[\cvs, \phase, sym] = CV([0, 10].asSpec, 0.8)
+        }).value;
 
+        ~storage[\cvs, \phase, sym].spec_([0, 5].asSpec, val);
 
+        ~storage[\cvs, \preamp, sym] !? {
+            c[sym].value = ~storage[\cvs, \preamp, sym].value;
+        };
 
-        ~cvs[sym] !? { c[sym].value = ~cvs[sym].value };
-        ~cvs[sym] = c[sym];
+        ~storage[\cvs, \preamp, sym] = c[sym];
         sym
+
     }).clump(5).flop;
-    defer {
-        Toolbar.replace('Save CV', {
-            [\cvs].do { |name|
-                q[name].writeArchive(q.path.data +/+ "backup/" ++ name + Date.getDate.asSortableString ++ ".archive");
-                q[name].writeArchive(q.path.data +/+ name ++ ".archive");
-            }
-        });
-        Toolbar.replace('Preamps', { c.gui[\win] !? { c.gui[\win].close; }; c.show });
-    };
-    ~conds.preamp = c;
+    //~conds.preamp = c;
 
 };
 

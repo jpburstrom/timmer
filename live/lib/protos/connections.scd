@@ -9,6 +9,7 @@ x = Proto({
         if (~con[from].to.includes(to).not) {
             ~con[from].to.add(to);
             ~con[to].from.add(from);
+            currentEnvironment.changed(\add, from, to);
         } {
             false;
         };
@@ -18,6 +19,7 @@ x = Proto({
         if (~con[from].to.includes(to)) {
             ~con[from].to.remove(to);
             ~con[to].from.remove(from);
+            currentEnvironment.changed(\remove, from, to);
         } {
             false;
         };
@@ -80,8 +82,28 @@ x = Proto({
         };
     };
 
+    //Return a Set of associations representing all connections
+    //(from->to)
+    ~allConnections = {
+        ~con.collect( { |v, k|
+            v.from.collect { |i| [i, k] }
+    }).asArray.reduce('|') ??  { Set() };
+    };
+
     ~reset = {
         ~con = ();
+    };
+
+    //Replace current connections with connections from other proto (eg snapshots)
+    ~replaceWith = { |other|
+        var these = ~allConnections.value;
+        var those = other.allConnections;
+        (these - those).do { |x|
+            ~remove.(x[0], x[1]);
+        };
+        (those - these).do { |x|
+            ~add.(x.[0], x[1]);
+        };
     }
 
 });

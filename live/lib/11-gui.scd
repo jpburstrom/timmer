@@ -59,7 +59,7 @@ defer {
         q.makeui.grid('Phase', 5, 8, nil, Rect(0, 0, 500, 400).center_( Window.availableBounds.center ));
         q.settings.pitches.clump(5).flop.flatten.do { |x|
 
-            var cv = q.cvs.phase[x.asSymbol];
+            var cv = q.storage[\cvs, \phase, x.asSymbol];
             cv !? {
                 q.makeui.knob(x.asSymbol, cv, 'Phase', 0.0001);
             }
