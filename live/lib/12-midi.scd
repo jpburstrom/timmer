@@ -57,6 +57,12 @@ q.make {
         }
     };
 
+    keys.snapshots.do { |x|
+        if (q.snapshots.exists(x)) {
+            ~ctrls.snapshots.setState(x, 1);
+        }
+    };
+
     //=========MACROS=============//
 
     //Go through macros and activate slots accordingly
@@ -94,6 +100,29 @@ q.make {
     //onButtonPress: |y|
     //~ctrls.notes.selected().do { |x| ~matrix.mod.add(x, y) }
 
+    ~ctrls.modulation.use {
+
+        //TODO: move connections to q.storage[\matrix, \modulation]
+        ~connections = q.f.getProto(\connections);
+
+
+        //TODO toggle on/off ffs
+        ~onShortPress = { |to|
+            to.postln;
+            q.ctrls.notes.doSelected({ |from|
+                ~connections.add(from, to);
+            }.inEnvir);
+        };
+
+        //TODO: make connections on connection changes
+    };
+
+    //------------NOTES------------//
+
+    //Unselect
+    q.dev.lpIn.elementAt(\ar, 7).action_({
+        ~ctrls.notes.doSelected(~unselect.(_), {})
+    }.inEnvir);
 
     q.updaters.launchSynth = Updater(~launchController, { |what, msg, index, value, other|
         index = q.settings.pitches[index];
@@ -114,4 +143,3 @@ q.make {
 v = q.f.getProto(\buttonController)
 v.connect(MKtl('lnch0'), [0,1,2,3])
 */
-q.storage[\cvs, \phase, \67].value

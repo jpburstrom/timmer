@@ -6,6 +6,7 @@ q.make {
             };
 
             ~run = { |i|
+                //TODO: pass CVs/MKtlElements to function
                 currentEnvironment[i.asSymbol].value(q);
             }
 

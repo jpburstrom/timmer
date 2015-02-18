@@ -1,8 +1,8 @@
 //noteView
 
 Proto({
-    ~colors = [\off, \amber, \green, \red];
-    ~selColors = [\fYellow, \fAmber, \fGreen, \fRed];
+    ~selColors = [\fAmber, \amber, \green, \red];
+    ~colors = [\off, \lAmber, \lGreen, \lRed];
     ~out = nil;
     ~updater = nil;
     ~controller = nil;
@@ -20,17 +20,17 @@ Proto({
             var c = ~colors;
             //if selected, choose selected colors
             if (model.isSelected(k)) { c = ~selColors };
-            ~out.setColor(q.launchIndexes[k], c[v])
+            ~out.setColor(~controller.indexAt(k), c[v])
         } {
             if (state == \selected) {
                 if (sel) {
-                    ~out.setColor(q.launchIndexes[k], ~selColors[v])
+                    ~out.setColor(~controller.indexAt(k), ~selColors[v])
                 } {
-                    ~out.setColor(q.launchIndexes[k], ~colors[v])
+                    ~out.setColor(~controller.indexAt(k), ~colors[v])
                 }
             }
         }
-    };
+    }.inEnvir;
 
     ~free = {
         ~controller.removeDependant(currentEnvironment);

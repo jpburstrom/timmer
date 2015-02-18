@@ -37,6 +37,10 @@ q.make {
                 }
             };
             currentEnvironment.changed(\load, key);
+        };
+
+        ~exists = { |key|
+            q.storage[\snapshots, key].notNil
         }
 
     });

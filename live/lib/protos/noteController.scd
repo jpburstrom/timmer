@@ -188,6 +188,16 @@ Proto({
         ~model.selected.includes(k);
     };
 
+    ~doSelected = { |func, allFunc|
+        var result;
+        allFunc ??  { allFunc = func };
+        if (~model.selected.isEmpty.not) {
+            result = ~model.selected.asArray.do(func);
+        } {
+            result = ~indexes.size.do(allFunc).copy;
+        };
+    };
+
 
     ~toggleAll = { |val|
         val ?? { val = 1 - ~model.values.select(_.isNumber).mean.round.min(1) };
@@ -201,6 +211,10 @@ Proto({
             ~rout.value([~indexes.indexOf(e.index), e.value])
         }
 
+    };
+
+    ~indexAt = { |i|
+        ~indexes.at(i);
     };
 
 });
