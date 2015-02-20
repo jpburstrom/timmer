@@ -71,6 +71,7 @@ var init = { |settings|
 
         ~lastCall = Setup({"Done".postln}, \tree);
 
+        //Reload everything
         ~forceReload = { init.( q.settings.make { ~basePath = q.path.base } ) };
 
 

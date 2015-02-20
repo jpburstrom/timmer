@@ -13,4 +13,3 @@ x.setColor(6, \green);
 ((0..7) +.x (8 * (5..7))).do (x.setColor(_, [\green, \amber, \red, \off].wchoose([0.1,0.1,0.1,0.7])))
 
 
-x.setArrowColor(7, \yellow)
