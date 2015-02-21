@@ -28,16 +28,24 @@ q.make {
             ui = VLayout(
                 knob = Knob().keystep_(keystep),
                 number = NumberBox().maxDecimals_(4),
-                StaticText().string_(label.asString.capitalize).align_(\topLeft).toolTip_(cv.value).mouseDownAction_({cv.value.postln; cv.value.ccopy}),
+                StaticText().string_(label.asString.capitalize).align_(\topLeft).toolTip_(cv.value).mouseDownAction_({cv.value.postln; cv.value.ccopy})
+                .font_(Font.default.pointSize_(13)),
             ).spacing_(0).margins_(0);
             cv.connect(knob);
             cv.connect(number);
             gui.windows[parent].layout.add(ui, count div: rows, count % rows);
             ui
-        }
-
+        };
+        ~label = { |ev, label, parent|
+            var count = knobCounts[parent];
+            var rows = rw[parent];
+            knobCounts[parent] = count + 1;
+            gui.windows[parent].layout.add(
+                StaticText().string_(label.asString.capitalize).align_(\top),
+                count div:rows, count % rows
+            );
+        };
     };
-
 
     ~ui = gui;
 };
@@ -45,24 +53,67 @@ q.make {
 defer {
     /*
     Toolbar.replace(\delayAdj, {
-        q.makeui.grid('Delay adjustment', 4, 12, nil, Rect(0, 0, 800, 400).center_( Window.availableBounds.center ));
-        q.settings.pitches.do { |x|
+    q.makeui.grid('Delay adjustment', 4, 12, nil, Rect(0, 0, 800, 400).center_( Window.availableBounds.center ));
+    q.settings.pitches.do { |x|
 
-            var cv = q.cvs.delayAdjustment[x.asSymbol];
-            cv !? {
-                q.makeui.knob(x.asSymbol, cv, 'Delay adjustment');
-            }
-        };
+    var cv = q.cvs.delayAdjustment[x.asSymbol];
+    cv !? {
+    q.makeui.knob(x.asSymbol, cv, 'Delay adjustment');
+    }
+    };
     });
     */
-    Toolbar.replace(\Phase, {
-        q.makeui.grid('Phase', 5, 8, nil, Rect(0, 0, 500, 400).center_( Window.availableBounds.center ));
-        q.settings.pitches.clump(5).flop.flatten.do { |x|
 
-            var cv = q.storage[\cvs, \phase, x.asSymbol];
-            cv !? {
-                q.makeui.knob(x.asSymbol, cv, 'Phase', 0.0001);
-            }
-        };
+    var pitches = q.settings.pitches.clump(3).collect(_.reverse).flop.flatten;
+
+    [
+        Phase: \phase,
+        Preamp: \preamp,
+        Delay: \delay,
+        Amp: \amp
+
+    ].pairsDo { |label, key|
+
+        Toolbar.replace(label, {
+            q.makeui.grid(label, 3, 8, nil, Rect(0, 0, 500, 300).center_( Window.availableBounds.center ));
+            pitches.do { |x|
+
+                var cv = q.storage[\cvs, key, x.asSymbol];
+                cv !? {
+                    q.makeui.knob(x.asSymbol, cv, label, 0.0001);
+                }
+            };
+        });
+    };
+
+    Toolbar.replace(\Global, {
+        q.makeui.grid(\Global, 1, 8, nil, Rect(0, 0, 500, 100).center_( Window.availableBounds.center ));
+        #[ pitch, delay, amp, rev,
+            lfoSpeed, lfoDepth, noiseSpeed, noiseDepth].do { |k|
+            q.makeui.knob(k, q.storage[\cvs, \global, k], \Global, 0.01);
+        }
     });
+
+    Toolbar.replace(\Mod, {
+
+        q.makeui.grid(\Mod, 3, 9, nil, Rect(0, 0, 700, 300).center_( Window.availableBounds.center ));
+        #[[pedal, amp], [pitch, delay, rev, vol, lfoSpeed,
+            lfoDepth, noiseSpeed, noiseDepth]].allTuples.do { |tup, i|
+            var from, to, label;
+            #from, to = tup;
+            if (i%8 == 0) {
+                q.makeui.label(from, \Mod);
+            };
+            q.makeui.knob(to, q.storage[\cvs, \modulation, from, to], \Mod, 0.01);
+        };
+        q.makeui.label(\lfoxws, \Mod);
+
+        #[lfo, noise].do { |from, i|
+            [ [ 'pitch', 'delay', 'noiseSpeed', 'noiseDepth' ],
+                [ 'pitch', 'delay', 'lfoSpeed', 'lfoDepth' ] ].at(i).do { |to|
+                q.makeui.knob(to, q.storage[\cvs, \modulation, from, to], \Mod, 0.01);
+            }
+    };
+    });
+
 }

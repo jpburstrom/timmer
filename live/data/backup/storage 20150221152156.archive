@@ -1,0 +1,1654 @@
+var o, p;
+o = [
+	MultiLevelIdentityDictionary.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  IdentityDictionary.prNew,  
+	Array.prNew(32),  IdentityDictionary.prNew,  Array.prNew(256),  CV.prNew,  
+	ControlSpec.prNew,  LinearWarp.prNew,  "",  CV.prNew,  
+	ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  ControlSpec.prNew,  
+	LinearWarp.prNew,  "",  CV.prNew,  CV.prNew,  
+	CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  
+	CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  "",  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  ControlSpec.prNew,  
+	LinearWarp.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  ControlSpec.prNew,  
+	LinearWarp.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	CV.prNew,  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  CV.prNew,  
+	IdentityDictionary.prNew,  Array.prNew(128),  CV.prNew,  ControlSpec.prNew,  
+	CurveWarp.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	IdentityDictionary.prNew,  Array.prNew(128),  Array.prNew(2),  IdentityDictionary.prNew,  
+	Array.prNew(32),  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  ControlSpec.prNew,  
+	LinearWarp.prNew,  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  
+	ControlSpec.prNew,  LinearWarp.prNew,  Array.prNew(2),  IdentityDictionary.prNew,  
+	Array.prNew(32),  CV.prNew,  Array.prNew(2),  IdentityDictionary.prNew,  
+	Array.prNew(32),  CV.prNew,  Array.prNew(2),  IdentityDictionary.prNew,  
+	Array.prNew(32),  CV.prNew,  Array.prNew(2),  IdentityDictionary.prNew,  
+	Array.prNew(32),  CV.prNew,  IdentityDictionary.prNew,  Array.prNew(32),  
+	CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  
+	ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  ControlSpec.prNew,  
+	LinearWarp.prNew,  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	Array.prNew(2),  IdentityDictionary.prNew,  Array.prNew(32),  CV.prNew,  
+	IdentityDictionary.prNew,  Array.prNew(128),  CV.prNew,  ControlSpec.prNew,  
+	ExponentialWarp.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	IdentityDictionary.prNew,  Array.prNew(256),  CV.prNew,  ControlSpec.prNew,  
+	LinearWarp.prNew,  CV.prNew,  CV.prNew,  ControlSpec.prNew,  
+	LinearWarp.prNew,  "",  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  ControlSpec.prNew,  
+	LinearWarp.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew,  CV.prNew,  IdentityDictionary.prNew,  
+	Array.prNew(32),  CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  
+	CV.prNew,  CV.prNew,  ControlSpec.prNew,  FaderWarp.prNew,  
+	CV.prNew,  ControlSpec.prNew,  ExponentialWarp.prNew,  " Hz",  
+	CV.prNew,  ControlSpec.prNew,  LinearWarp.prNew,  CV.prNew,  
+	CV.prNew,  CV.prNew
+];
+p = [
+	// MultiLevelIdentityDictionary
+	0, [ dictionary: o[1] ],  
+	// IdentityDictionary
+	1, [ array: o[2],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	2, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'cvs',  o[3] ],  
+	// IdentityDictionary
+	3, [ array: o[4],  size: 6,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	4, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  'phase',  o[5],  
+		'delay',  o[112],  'modulation',  o[140],  
+		'amp',  o[300],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'preamp',  o[328],  nil,  nil,  
+		'global',  o[403],  nil,  nil ],  
+	// IdentityDictionary
+	5, [ array: o[6],  size: 66,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	6, [ nil,  nil,  '32',  o[7],  
+		'63',  o[11],  '71',  o[14],  
+		'90',  o[18],  '80',  o[19],  
+		'33',  o[20],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '72',  o[23],  
+		nil,  nil,  nil,  nil,  
+		'44',  o[24],  '55',  o[28],  
+		'74',  o[29],  '84',  o[30],  
+		nil,  nil,  '57',  o[31],  
+		'61',  o[32],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'92',  o[35],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'89',  o[36],  nil,  nil,  
+		'31',  o[37],  nil,  nil,  
+		'35',  o[40],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '91',  o[43],  
+		'78',  o[44],  '48',  o[45],  
+		nil,  nil,  '87',  o[46],  
+		'77',  o[47],  '93',  o[48],  
+		nil,  nil,  nil,  nil,  
+		'65',  o[49],  '29',  o[52],  
+		nil,  nil,  '50',  o[55],  
+		'39',  o[56],  '64',  o[57],  
+		nil,  nil,  nil,  nil,  
+		'41',  o[60],  '58',  o[61],  
+		'52',  o[62],  '60',  o[63],  
+		'81',  o[66],  '56',  o[67],  
+		'45',  o[68],  '86',  o[69],  
+		'66',  o[70],  '54',  o[73],  
+		'73',  o[74],  '67',  o[75],  
+		'62',  o[78],  '70',  o[81],  
+		'76',  o[82],  '68',  o[83],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'88',  o[84],  nil,  nil,  
+		'30',  o[85],  nil,  nil,  
+		nil,  nil,  '82',  o[88],  
+		nil,  nil,  nil,  nil,  
+		'28',  o[89],  '40',  o[92],  
+		'75',  o[93],  '83',  o[94],  
+		nil,  nil,  nil,  nil,  
+		'59',  o[95],  '69',  o[96],  
+		nil,  nil,  '49',  o[97],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'53',  o[98],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '79',  o[99],  
+		'42',  o[100],  nil,  nil,  
+		nil,  nil,  '46',  o[101],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'85',  o[102],  '36',  o[103],  
+		nil,  nil,  '51',  o[104],  
+		nil,  nil,  '47',  o[105],  
+		'38',  o[106],  nil,  nil,  
+		'34',  o[107],  nil,  nil,  
+		'37',  o[110],  '43',  o[111],  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	7, [ value: 0.8,  spec: o[8] ],  
+	// ControlSpec
+	8, [ minval: 0,  maxval: 5,  
+		warp: o[9],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	9, [ spec: o[8] ],  
+	// CV
+	11, [ value: 0.8,  spec: o[12] ],  
+	// ControlSpec
+	12, [ minval: 0,  maxval: 5,  
+		warp: o[13],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	13, [ spec: o[12] ],  
+	// CV
+	14, [ value: 0.8,  spec: o[15] ],  
+	// ControlSpec
+	15, [ minval: 0,  maxval: 1,  
+		warp: o[16],  step: 0.0,  
+		default: 0,  units: o[17],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 1 ],  
+	// LinearWarp
+	16, [ spec: o[15] ],  
+	// CV
+	18, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	19, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	20, [ value: 0.8,  spec: o[21] ],  
+	// ControlSpec
+	21, [ minval: 0,  maxval: 5,  
+		warp: o[22],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	22, [ spec: o[21] ],  
+	// CV
+	23, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	24, [ value: 0.0,  spec: o[25] ],  
+	// ControlSpec
+	25, [ minval: 0,  maxval: 1,  
+		warp: o[26],  step: 0.0,  
+		default: 0,  units: o[27],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 1 ],  
+	// LinearWarp
+	26, [ spec: o[25] ],  
+	// CV
+	28, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	29, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	30, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	31, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	32, [ value: 0.0,  spec: o[33] ],  
+	// ControlSpec
+	33, [ minval: 0,  maxval: 5,  
+		warp: o[34],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	34, [ spec: o[33] ],  
+	// CV
+	35, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	36, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	37, [ value: 0.8,  spec: o[38] ],  
+	// ControlSpec
+	38, [ minval: 0,  maxval: 5,  
+		warp: o[39],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	39, [ spec: o[38] ],  
+	// CV
+	40, [ value: 0.8,  spec: o[41] ],  
+	// ControlSpec
+	41, [ minval: 0,  maxval: 5,  
+		warp: o[42],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	42, [ spec: o[41] ],  
+	// CV
+	43, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	44, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	45, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	46, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	47, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	48, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	49, [ value: 0.8,  spec: o[50] ],  
+	// ControlSpec
+	50, [ minval: 0,  maxval: 5,  
+		warp: o[51],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	51, [ spec: o[50] ],  
+	// CV
+	52, [ value: 0.8,  spec: o[53] ],  
+	// ControlSpec
+	53, [ minval: 0,  maxval: 5,  
+		warp: o[54],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	54, [ spec: o[53] ],  
+	// CV
+	55, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	56, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	57, [ value: 0.8,  spec: o[58] ],  
+	// ControlSpec
+	58, [ minval: 0,  maxval: 5,  
+		warp: o[59],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	59, [ spec: o[58] ],  
+	// CV
+	60, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	61, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	62, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	63, [ value: 0.0,  spec: o[64] ],  
+	// ControlSpec
+	64, [ minval: 0,  maxval: 5,  
+		warp: o[65],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	65, [ spec: o[64] ],  
+	// CV
+	66, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	67, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	68, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	69, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	70, [ value: 0.8,  spec: o[71] ],  
+	// ControlSpec
+	71, [ minval: 0,  maxval: 5,  
+		warp: o[72],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	72, [ spec: o[71] ],  
+	// CV
+	73, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	74, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	75, [ value: 0.8,  spec: o[76] ],  
+	// ControlSpec
+	76, [ minval: 0,  maxval: 5,  
+		warp: o[77],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	77, [ spec: o[76] ],  
+	// CV
+	78, [ value: 0.0,  spec: o[79] ],  
+	// ControlSpec
+	79, [ minval: 0,  maxval: 5,  
+		warp: o[80],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	80, [ spec: o[79] ],  
+	// CV
+	81, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	82, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	83, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	84, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	85, [ value: 0.8,  spec: o[86] ],  
+	// ControlSpec
+	86, [ minval: 0,  maxval: 5,  
+		warp: o[87],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	87, [ spec: o[86] ],  
+	// CV
+	88, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	89, [ value: 0.8,  spec: o[90] ],  
+	// ControlSpec
+	90, [ minval: 0,  maxval: 5,  
+		warp: o[91],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	91, [ spec: o[90] ],  
+	// CV
+	92, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	93, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	94, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	95, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	96, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	97, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	98, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	99, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	100, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	101, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	102, [ value: 0.8,  spec: o[15] ],  
+	// CV
+	103, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	104, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	105, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	106, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	107, [ value: 0.8,  spec: o[108] ],  
+	// ControlSpec
+	108, [ minval: 0,  maxval: 5,  
+		warp: o[109],  step: 0.0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 5 ],  
+	// LinearWarp
+	109, [ spec: o[108] ],  
+	// CV
+	110, [ value: 0.0,  spec: o[25] ],  
+	// CV
+	111, [ value: 0.0,  spec: o[25] ],  
+	// IdentityDictionary
+	112, [ array: o[113],  size: 24,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	113, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'44',  o[114],  '55',  o[117],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '40',  o[118],  
+		'57',  o[119],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'59',  o[120],  nil,  nil,  
+		nil,  nil,  '49',  o[121],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'53',  o[122],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '48',  o[123],  
+		'42',  o[124],  nil,  nil,  
+		nil,  nil,  '46',  o[125],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '50',  o[126],  
+		'39',  o[127],  '36',  o[128],  
+		nil,  nil,  '51',  o[129],  
+		'41',  o[130],  '47',  o[131],  
+		'38',  o[132],  '52',  o[133],  
+		'58',  o[134],  '56',  o[135],  
+		'37',  o[136],  '43',  o[137],  
+		'45',  o[138],  '54',  o[139] ],  
+	// CV
+	114, [ value: 0.0,  spec: o[115] ],  
+	// ControlSpec
+	115, [ minval: 0,  maxval: 1,  
+		warp: o[116],  step: 0.0,  
+		default: 0,  units: o[27],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 1 ],  
+	// CurveWarp
+	116, [ spec: o[115],  a: -0.00012342503594619,  
+		b: -0.00012342503594619,  grow: 8103.0839275754,  
+		curve: 9 ],  
+	// CV
+	117, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	118, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	119, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	120, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	121, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	122, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	123, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	124, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	125, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	126, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	127, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	128, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	129, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	130, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	131, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	132, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	133, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	134, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	135, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	136, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	137, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	138, [ value: 0.0,  spec: o[115] ],  
+	// CV
+	139, [ value: 0.0,  spec: o[115] ],  
+	// IdentityDictionary
+	140, [ array: o[141],  size: 34,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	141, [ o[142],  o[143],  o[148],  o[149],  
+		o[152],  o[153],  o[156],  o[157],  
+		o[160],  o[161],  o[164],  o[165],  
+		o[168],  o[169],  o[172],  o[173],  
+		nil,  nil,  o[176],  o[177],  
+		o[180],  o[181],  o[184],  o[185],  
+		o[188],  o[189],  nil,  nil,  
+		o[192],  o[193],  o[196],  o[197],  
+		nil,  nil,  nil,  nil,  
+		o[200],  o[201],  nil,  nil,  
+		nil,  nil,  o[204],  o[205],  
+		nil,  nil,  o[208],  o[209],  
+		o[212],  o[213],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		o[216],  o[217],  nil,  nil,  
+		o[220],  o[221],  o[224],  o[225],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  o[228],  o[229],  
+		'lfo',  o[232],  nil,  nil,  
+		nil,  nil,  o[246],  o[247],  
+		nil,  nil,  nil,  nil,  
+		o[250],  o[251],  nil,  nil,  
+		nil,  nil,  o[254],  o[255],  
+		o[258],  o[259],  'noise',  o[262],  
+		nil,  nil,  o[276],  o[277],  
+		o[280],  o[281],  nil,  nil,  
+		o[284],  o[285],  o[288],  o[289],  
+		o[292],  o[293],  o[296],  o[297] ],  
+	// Array
+	142, [ 'amp',  'noiseSpeed' ],  
+	// IdentityDictionary
+	143, [ array: o[144],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	144, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  14,  o[145],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	145, [ value: 0.0,  spec: o[146] ],  
+	// ControlSpec
+	146, [ minval: -1,  maxval: 1,  
+		warp: o[147],  step: 0.0,  
+		default: 0,  units: o[27],  
+		grid: nil,  clipLo: -1,  
+		clipHi: 1 ],  
+	// LinearWarp
+	147, [ spec: o[146] ],  
+	// Array
+	148, [ 'pedal',  'delay' ],  
+	// IdentityDictionary
+	149, [ array: o[150],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	150, [ 1,  o[151],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	151, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	152, [ 'pedal',  'lfoSpeed' ],  
+	// IdentityDictionary
+	153, [ array: o[154],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	154, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  4,  o[155],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	155, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	156, [ 'pedal',  'delay' ],  
+	// IdentityDictionary
+	157, [ array: o[158],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	158, [ 1,  o[159],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	159, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	160, [ 'pedal',  'rev' ],  
+	// IdentityDictionary
+	161, [ array: o[162],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	162, [ 2,  o[163],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	163, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	164, [ 'amp',  'delay' ],  
+	// IdentityDictionary
+	165, [ array: o[166],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	166, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  9,  o[167] ],  
+	// CV
+	167, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	168, [ 'amp',  'lfoSpeed' ],  
+	// IdentityDictionary
+	169, [ array: o[170],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	170, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  12,  o[171] ],  
+	// CV
+	171, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	172, [ 'amp',  'pitch' ],  
+	// IdentityDictionary
+	173, [ array: o[174],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	174, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  8,  o[175] ],  
+	// CV
+	175, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	176, [ 'amp',  'delay' ],  
+	// IdentityDictionary
+	177, [ array: o[178],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	178, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  9,  o[179] ],  
+	// CV
+	179, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	180, [ 'amp',  'vol' ],  
+	// IdentityDictionary
+	181, [ array: o[182],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	182, [ nil,  nil,  11,  o[183],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	183, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	184, [ 'pedal',  'rev' ],  
+	// IdentityDictionary
+	185, [ array: o[186],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	186, [ 2,  o[187],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	187, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	188, [ 'pedal',  'lfoDepth' ],  
+	// IdentityDictionary
+	189, [ array: o[190],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	190, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		5,  o[191],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	191, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	192, [ 'amp',  'lfoDepth' ],  
+	// IdentityDictionary
+	193, [ array: o[194],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	194, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  13,  o[195],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	195, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	196, [ 'pedal',  'lfoDepth' ],  
+	// IdentityDictionary
+	197, [ array: o[198],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	198, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		5,  o[199],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	199, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	200, [ 'pedal',  'noiseSpeed' ],  
+	// IdentityDictionary
+	201, [ array: o[202],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	202, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		6,  o[203],  nil,  nil ],  
+	// CV
+	203, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	204, [ 'pedal',  'pitch' ],  
+	// IdentityDictionary
+	205, [ array: o[206],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	206, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  0,  o[207],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	207, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	208, [ 'amp',  'lfoDepth' ],  
+	// IdentityDictionary
+	209, [ array: o[210],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	210, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  13,  o[211],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	211, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	212, [ 'pedal',  'noiseDepth' ],  
+	// IdentityDictionary
+	213, [ array: o[214],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	214, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		7,  o[215],  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	215, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	216, [ 'pedal',  'noiseSpeed' ],  
+	// IdentityDictionary
+	217, [ array: o[218],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	218, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		6,  o[219],  nil,  nil ],  
+	// CV
+	219, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	220, [ 'amp',  'rev' ],  
+	// IdentityDictionary
+	221, [ array: o[222],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	222, [ nil,  nil,  10,  o[223],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	223, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	224, [ 'amp',  'noiseSpeed' ],  
+	// IdentityDictionary
+	225, [ array: o[226],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	226, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  14,  o[227],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	227, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	228, [ 'amp',  'rev' ],  
+	// IdentityDictionary
+	229, [ array: o[230],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	230, [ nil,  nil,  10,  o[231],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	231, [ value: 0.0,  spec: o[146] ],  
+	// IdentityDictionary
+	232, [ array: o[233],  size: 4,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	233, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  o[234],  'delay',  o[237],  
+		nil,  nil,  'noiseDepth',  o[240],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'noiseSpeed',  o[243],  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	234, [ value: 0.0,  spec: o[235] ],  
+	// ControlSpec
+	235, [ minval: 0.0,  maxval: 1.0,  
+		warp: o[236],  step: 0.0,  
+		default: 0.0,  units: o[27],  
+		grid: nil,  clipLo: 0.0,  
+		clipHi: 1.0 ],  
+	// LinearWarp
+	236, [ spec: o[235] ],  
+	// CV
+	237, [ value: 0.0,  spec: o[238] ],  
+	// ControlSpec
+	238, [ minval: 0.0,  maxval: 1.0,  
+		warp: o[239],  step: 0.0,  
+		default: 0.0,  units: o[27],  
+		grid: nil,  clipLo: 0.0,  
+		clipHi: 1.0 ],  
+	// LinearWarp
+	239, [ spec: o[238] ],  
+	// CV
+	240, [ value: 0.0,  spec: o[241] ],  
+	// ControlSpec
+	241, [ minval: 0.0,  maxval: 1.0,  
+		warp: o[242],  step: 0.0,  
+		default: 0.0,  units: o[27],  
+		grid: nil,  clipLo: 0.0,  
+		clipHi: 1.0 ],  
+	// LinearWarp
+	242, [ spec: o[241] ],  
+	// CV
+	243, [ value: 0.0,  spec: o[244] ],  
+	// ControlSpec
+	244, [ minval: 0.0,  maxval: 1.0,  
+		warp: o[245],  step: 0.0,  
+		default: 0.0,  units: o[27],  
+		grid: nil,  clipLo: 0.0,  
+		clipHi: 1.0 ],  
+	// LinearWarp
+	245, [ spec: o[244] ],  
+	// Array
+	246, [ 'amp',  'pitch' ],  
+	// IdentityDictionary
+	247, [ array: o[248],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	248, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  8,  o[249] ],  
+	// CV
+	249, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	250, [ 'pedal',  'lfoSpeed' ],  
+	// IdentityDictionary
+	251, [ array: o[252],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	252, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  4,  o[253],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	253, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	254, [ 'pedal',  'vol' ],  
+	// IdentityDictionary
+	255, [ array: o[256],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	256, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  3,  o[257] ],  
+	// CV
+	257, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	258, [ 'amp',  'lfoSpeed' ],  
+	// IdentityDictionary
+	259, [ array: o[260],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	260, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  12,  o[261] ],  
+	// CV
+	261, [ value: 0.0,  spec: o[146] ],  
+	// IdentityDictionary
+	262, [ array: o[263],  size: 4,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	263, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  o[264],  'delay',  o[267],  
+		'lfoSpeed',  o[270],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  'lfoDepth',  o[273],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	264, [ value: 0.0,  spec: o[265] ],  
+	// ControlSpec
+	265, [ minval: 0.0,  maxval: 1.0,  
+		warp: o[266],  step: 0.0,  
+		default: 0.0,  units: o[27],  
+		grid: nil,  clipLo: 0.0,  
+		clipHi: 1.0 ],  
+	// LinearWarp
+	266, [ spec: o[265] ],  
+	// CV
+	267, [ value: 0.0,  spec: o[268] ],  
+	// ControlSpec
+	268, [ minval: 0.0,  maxval: 1.0,  
+		warp: o[269],  step: 0.0,  
+		default: 0.0,  units: o[27],  
+		grid: nil,  clipLo: 0.0,  
+		clipHi: 1.0 ],  
+	// LinearWarp
+	269, [ spec: o[268] ],  
+	// CV
+	270, [ value: 0.0,  spec: o[271] ],  
+	// ControlSpec
+	271, [ minval: 0.0,  maxval: 1.0,  
+		warp: o[272],  step: 0.0,  
+		default: 0.0,  units: o[27],  
+		grid: nil,  clipLo: 0.0,  
+		clipHi: 1.0 ],  
+	// LinearWarp
+	272, [ spec: o[271] ],  
+	// CV
+	273, [ value: 0.0,  spec: o[274] ],  
+	// ControlSpec
+	274, [ minval: 0.0,  maxval: 1.0,  
+		warp: o[275],  step: 0.0,  
+		default: 0.0,  units: o[27],  
+		grid: nil,  clipLo: 0.0,  
+		clipHi: 1.0 ],  
+	// LinearWarp
+	275, [ spec: o[274] ],  
+	// Array
+	276, [ 'amp',  'vol' ],  
+	// IdentityDictionary
+	277, [ array: o[278],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	278, [ nil,  nil,  11,  o[279],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	279, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	280, [ 'amp',  'noiseDepth' ],  
+	// IdentityDictionary
+	281, [ array: o[282],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	282, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  15,  o[283],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	283, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	284, [ 'pedal',  'vol' ],  
+	// IdentityDictionary
+	285, [ array: o[286],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	286, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  3,  o[287] ],  
+	// CV
+	287, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	288, [ 'pedal',  'pitch' ],  
+	// IdentityDictionary
+	289, [ array: o[290],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	290, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  0,  o[291],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	291, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	292, [ 'amp',  'noiseDepth' ],  
+	// IdentityDictionary
+	293, [ array: o[294],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	294, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  15,  o[295],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	295, [ value: 0.0,  spec: o[146] ],  
+	// Array
+	296, [ 'pedal',  'noiseDepth' ],  
+	// IdentityDictionary
+	297, [ array: o[298],  size: 1,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	298, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		7,  o[299],  nil,  nil,  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	299, [ value: 0.0,  spec: o[146] ],  
+	// IdentityDictionary
+	300, [ array: o[301],  size: 24,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	301, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'44',  o[302],  '55',  o[305],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '40',  o[306],  
+		'57',  o[307],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'59',  o[308],  nil,  nil,  
+		nil,  nil,  '49',  o[309],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'53',  o[310],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '48',  o[311],  
+		'42',  o[312],  nil,  nil,  
+		nil,  nil,  '46',  o[313],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '50',  o[314],  
+		'39',  o[315],  '36',  o[316],  
+		nil,  nil,  '51',  o[317],  
+		'41',  o[318],  '47',  o[319],  
+		'38',  o[320],  '52',  o[321],  
+		'58',  o[322],  '56',  o[323],  
+		'37',  o[324],  '43',  o[325],  
+		'45',  o[326],  '54',  o[327] ],  
+	// CV
+	302, [ value: 1.0,  spec: o[303] ],  
+	// ControlSpec
+	303, [ minval: 0.25118864315096,  maxval: 3.981071705535,  
+		warp: o[304],  step: 0,  
+		default: 0,  units: o[27],  
+		grid: nil,  clipLo: 0.25118864315096,  
+		clipHi: 3.981071705535 ],  
+	// ExponentialWarp
+	304, [ spec: o[303] ],  
+	// CV
+	305, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	306, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	307, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	308, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	309, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	310, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	311, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	312, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	313, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	314, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	315, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	316, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	317, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	318, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	319, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	320, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	321, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	322, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	323, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	324, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	325, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	326, [ value: 1.0,  spec: o[303] ],  
+	// CV
+	327, [ value: 1.0,  spec: o[303] ],  
+	// IdentityDictionary
+	328, [ array: o[329],  size: 66,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	329, [ nil,  nil,  '32',  o[330],  
+		'63',  o[333],  '71',  o[334],  
+		'90',  o[338],  '80',  o[339],  
+		'33',  o[340],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '72',  o[341],  
+		nil,  nil,  nil,  nil,  
+		'44',  o[342],  '55',  o[345],  
+		'74',  o[346],  '84',  o[347],  
+		nil,  nil,  '57',  o[348],  
+		'61',  o[349],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'92',  o[350],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'89',  o[351],  nil,  nil,  
+		'31',  o[352],  nil,  nil,  
+		'35',  o[353],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '91',  o[354],  
+		'78',  o[355],  '48',  o[356],  
+		nil,  nil,  '87',  o[357],  
+		'77',  o[358],  '93',  o[359],  
+		nil,  nil,  nil,  nil,  
+		'65',  o[360],  '29',  o[361],  
+		nil,  nil,  '50',  o[362],  
+		'39',  o[363],  '64',  o[364],  
+		nil,  nil,  nil,  nil,  
+		'41',  o[365],  '58',  o[366],  
+		'52',  o[367],  '60',  o[368],  
+		'81',  o[369],  '56',  o[370],  
+		'45',  o[371],  '86',  o[372],  
+		'66',  o[373],  '54',  o[374],  
+		'73',  o[375],  '67',  o[376],  
+		'62',  o[377],  '70',  o[378],  
+		'76',  o[379],  '68',  o[380],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'88',  o[381],  nil,  nil,  
+		'30',  o[382],  nil,  nil,  
+		nil,  nil,  '82',  o[383],  
+		nil,  nil,  nil,  nil,  
+		'28',  o[384],  '40',  o[385],  
+		'75',  o[386],  '83',  o[387],  
+		nil,  nil,  nil,  nil,  
+		'59',  o[388],  '69',  o[389],  
+		nil,  nil,  '49',  o[390],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'53',  o[391],  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  '79',  o[392],  
+		'42',  o[393],  nil,  nil,  
+		nil,  nil,  '46',  o[394],  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'85',  o[395],  '36',  o[396],  
+		nil,  nil,  '51',  o[397],  
+		nil,  nil,  '47',  o[398],  
+		'38',  o[399],  nil,  nil,  
+		'34',  o[400],  nil,  nil,  
+		'37',  o[401],  '43',  o[402],  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	330, [ value: 0.0,  spec: o[331] ],  
+	// ControlSpec
+	331, [ minval: 0,  maxval: 15,  
+		warp: o[332],  step: 0,  
+		default: 0,  units: o[10],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 15 ],  
+	// LinearWarp
+	332, [ spec: o[331] ],  
+	// CV
+	333, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	334, [ value: 0.0,  spec: o[335] ],  
+	// ControlSpec
+	335, [ minval: -30,  maxval: 30,  
+		warp: o[336],  step: 0,  
+		default: 0,  units: o[337],  
+		grid: nil,  clipLo: -30,  
+		clipHi: 30 ],  
+	// LinearWarp
+	336, [ spec: o[335] ],  
+	// CV
+	338, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	339, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	340, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	341, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	342, [ value: 9.0,  spec: o[343] ],  
+	// ControlSpec
+	343, [ minval: 0,  maxval: 15,  
+		warp: o[344],  step: 0,  
+		default: 0,  units: o[27],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 15 ],  
+	// LinearWarp
+	344, [ spec: o[343] ],  
+	// CV
+	345, [ value: 7.35,  spec: o[343] ],  
+	// CV
+	346, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	347, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	348, [ value: 6.0,  spec: o[343] ],  
+	// CV
+	349, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	350, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	351, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	352, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	353, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	354, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	355, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	356, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	357, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	358, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	359, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	360, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	361, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	362, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	363, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	364, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	365, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	366, [ value: 4.05,  spec: o[343] ],  
+	// CV
+	367, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	368, [ value: 5.4,  spec: o[331] ],  
+	// CV
+	369, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	370, [ value: 5.4,  spec: o[343] ],  
+	// CV
+	371, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	372, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	373, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	374, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	375, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	376, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	377, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	378, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	379, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	380, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	381, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	382, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	383, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	384, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	385, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	386, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	387, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	388, [ value: 4.5,  spec: o[343] ],  
+	// CV
+	389, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	390, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	391, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	392, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	393, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	394, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	395, [ value: 0.0,  spec: o[335] ],  
+	// CV
+	396, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	397, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	398, [ value: 9.15,  spec: o[343] ],  
+	// CV
+	399, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	400, [ value: 0.0,  spec: o[331] ],  
+	// CV
+	401, [ value: 9.0,  spec: o[343] ],  
+	// CV
+	402, [ value: 9.0,  spec: o[343] ],  
+	// IdentityDictionary
+	403, [ array: o[404],  size: 8,  
+		proto: nil,  parent: nil,  
+		know: false ],  
+	// Array
+	404, [ nil,  nil,  nil,  nil,  
+		nil,  nil,  nil,  nil,  
+		'pitch',  o[405],  'delay',  o[408],  
+		'amp',  o[409],  'lfoSpeed',  o[412],  
+		'noiseDepth',  o[416],  nil,  nil,  
+		nil,  nil,  'lfoDepth',  o[419],  
+		'rev',  o[420],  'noiseSpeed',  o[421],  
+		nil,  nil,  nil,  nil ],  
+	// CV
+	405, [ value: 0.0,  spec: o[406] ],  
+	// ControlSpec
+	406, [ minval: -2,  maxval: 2,  
+		warp: o[407],  step: 0,  
+		default: 0,  units: o[27],  
+		grid: nil,  clipLo: -2,  
+		clipHi: 2 ],  
+	// LinearWarp
+	407, [ spec: o[406] ],  
+	// CV
+	408, [ value: 0.0,  spec: o[146] ],  
+	// CV
+	409, [ value: 0.0,  spec: o[410] ],  
+	// ControlSpec
+	410, [ minval: 0,  maxval: 1,  
+		warp: o[411],  step: 0,  
+		default: 0,  units: o[27],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 1 ],  
+	// FaderWarp
+	411, [ spec: o[410] ],  
+	// CV
+	412, [ value: 6.0,  spec: o[413] ],  
+	// ControlSpec
+	413, [ minval: 0.1,  maxval: 100,  
+		warp: o[414],  step: 0,  
+		default: 6,  units: o[415],  
+		grid: nil,  clipLo: 0.1,  
+		clipHi: 100.0 ],  
+	// ExponentialWarp
+	414, [ spec: o[413] ],  
+	// CV
+	416, [ value: 0.0,  spec: o[417] ],  
+	// ControlSpec
+	417, [ minval: 0,  maxval: 1,  
+		warp: o[418],  step: 0.0,  
+		default: 0,  units: o[27],  
+		grid: nil,  clipLo: 0,  
+		clipHi: 1 ],  
+	// LinearWarp
+	418, [ spec: o[417] ],  
+	// CV
+	419, [ value: 0.0,  spec: o[417] ],  
+	// CV
+	420, [ value: 0.0,  spec: o[417] ],  
+	// CV
+	421, [ value: 6.0,  spec: o[413] ]
+];
+prUnarchive(o,p);

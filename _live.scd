@@ -5,7 +5,9 @@
 //Noise
 
 var ev = (
-    pitches: (28..28+39) //Från E
+    //pitches: (28..28+39), //Från E
+    pitches: 24.collect(_+36),
+    basePath: "/Volumes/HD2/projects/timmer/kod/sc/live"
 
 );
 "live/init.scd".loadRelative[0].(ev);

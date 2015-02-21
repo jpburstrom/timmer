@@ -5,6 +5,10 @@ q.make {
             (q.path.lib +/+ "protos/%.scd").format(file).load;
         };
 
+        ~getLatency = {
+            q.settings.latencies.sum;
+        }
+
 
     });
 

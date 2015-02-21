@@ -10,12 +10,14 @@ q.make {
 
     //Add CV if not exist in storage already
     var maybeAddCV = { |path, spec|
-        var cv = ~storage.atPath(path);
+        var val, cv = ~storage.atPath(path);
         if (cv.isNil) {
             ~storage.putAtPath(path, CV(spec));
         } {
             //Set spec for cv anyways
-            cv.spec_(spec)
+            val = cv.value;
+            cv.spec_(spec);
+            cv.value = val;
         }
     };
 
@@ -26,7 +28,7 @@ q.make {
         pitch: \pitch,
         delay: \bipolar,
         rev: \unipolar,
-        vol: \amp,
+        amp: \amp,
         lfoSpeed: \lofreq,
         lfoDepth: \unipolar,
         noiseSpeed: \lofreq,
@@ -54,16 +56,15 @@ q.make {
     }
     */
 
-
     //--------------LOCAL CVS----------------
 
     //key->spec map
     locals = (
         phase: [0, 1].asSpec,
         //almost like \delay.asSpec but 0 == 0
-        delay: [0, 1, -9].asSpec,
+        delay: [0, 1, 9].asSpec,
         //TODO: Fix this.
-        amp: [-12.dbamp, 12.dbamp, \exp].asSpec
+        amp: [-12.dbamp, 12.dbamp, \exp, 0, 1].asSpec
 
     );
 
@@ -73,6 +74,7 @@ q.make {
         locals.keysValuesDo { |key, spec|
             maybeAddCV.([\cvs, key, sym], spec)
         };
+
 
     });
 

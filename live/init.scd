@@ -14,10 +14,13 @@ var init = { |settings|
     s.options.hardwareBufferSize = 256;
 
     q = Setup({
-        s.latency.wait;
+        2.wait;
+        "--------%--------".format(
+            s.audioBusAllocator.findAvailable(1).start).underlined.postln;
 
         ~song = "live";
         ~settings = settings;
+        settings.postln;
         ~settings.latencies = List();
         /*
         if (s.options.device == "PreSonus FireStudio") {
@@ -39,7 +42,7 @@ var init = { |settings|
         ~path = ().make({
             //This is meant to be executed from main file, so
             //base is relative to that.
-            ~base = settings.basePath ?? { "live".resolveRelative };
+             ~base = settings.basePath ?? { "live".resolveRelative };
 
             ~lib = ~base +/+ "lib";
             ~patterns = ~base +/+ "patterns";
@@ -72,13 +75,13 @@ var init = { |settings|
         ~lastCall = Setup({"Done".postln}, \tree);
 
         //Reload everything
-        ~forceReload = { init.( q.settings.make { ~basePath = q.path.base } ) };
+        ~forceReload = { init.( q.settings.copy.make { ~basePath = q.path.base } ) };
 
 
     });
     //Fix
     Toolbar.replace('-Live-');
-    Toolbar.replace('Init', { init.( q.settings.make { ~basePath = q.path.base } ) });
+    Toolbar.replace('Init', { init.( q.settings.copy.make { ~basePath = q.path.base } ) });
     //Toolbar.replace('Store', { "Writing file".postln; q.store.writeToFile });
     Toolbar.replace('NdefMixer', { NdefMixer(s) });
 };

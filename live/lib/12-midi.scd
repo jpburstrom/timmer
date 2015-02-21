@@ -22,107 +22,110 @@ q.make {
     ~ctrls = ();
 
     ~dev.lpIn = MKtl('lnch0');
-    ~dev.lpOut = LaunchpadOut(~dev.lpIn).reset;
+    if (~dev.lpIn.mktlDevice.notNil) {
 
-    //TEMP reload everything on button press
-    ~dev.lpIn.elementAt(\mixer).action_({ |elem|
-        if (elem.value == 1) {
-            defer { q.forceReload }
-        }
-    });
+        ~dev.lpOut = LaunchpadOut(~dev.lpIn).reset;
 
-    //Auto-flash ON
-    ~dev.lpOut.midiOut.control(0, 0, 40);
+        //TEMP reload everything on button press
+        ~dev.lpIn.elementAt(\mixer).action_({ |elem|
+            if (elem.value == 1) {
+                defer { q.forceReload }
+            }
+        });
 
-    ~ctrls.notes = q.f.getProto(\noteController).connect(~dev.lpIn, keys.notes);
-    ~views.notes = q.f.getProto(\noteView).connect(~ctrls.notes, ~dev.lpOut);
+        //Auto-flash ON
+        ~dev.lpOut.midiOut.control(0, 0, 40);
 
-    [\snapshots, \macros, \modulation].do { |k|
-        ~ctrls[k] = q.f.getProto(\buttonController).connect(~dev.lpIn, keys[k]);
-        ~views[k] = q.f.getProto(\buttonView).connect(~ctrls[k], ~dev.lpOut);
-        ~views[k].colors = colors[k];
-    };
+        ~ctrls.notes = q.f.getProto(\noteController).connect(~dev.lpIn, keys.notes);
+        ~views.notes = q.f.getProto(\noteView).connect(~ctrls.notes, ~dev.lpOut);
 
-    //modulation keys should always be inited
-    ~ctrls.modulation.isKeyInited = { true };
-
-    //=========SNAPSHOTS==============//
-
-    ~ctrls.snapshots.use {
-        ~onLongPress = { |k|
-            q.snapshots.save(k);
+        [\snapshots, \macros, \modulation].do { |k|
+            ~ctrls[k] = q.f.getProto(\buttonController).connect(~dev.lpIn, keys[k]);
+            ~views[k] = q.f.getProto(\buttonView).connect(~ctrls[k], ~dev.lpOut);
+            ~views[k].colors = colors[k];
         };
-        ~onShortPress = { |k|
-            q.snapshots.load(k);
-        }
-    };
 
-    keys.snapshots.do { |x|
-        if (q.snapshots.exists(x)) {
-            ~ctrls.snapshots.setState(x, 1);
-        }
-    };
+        //modulation keys should always be inited
+        ~ctrls.modulation.isKeyInited = { true };
 
-    //=========MACROS=============//
+        //=========SNAPSHOTS==============//
 
-    //Go through macros and activate slots accordingly
-
-    12.do { |i|
-        if (~macros.exists(i)) {
-            ~ctrls.macros.setState(i, 1);
-        }
-    };
-
-    //Make macros update on macro updates
-    ~macros.addDependant(~ctrls.macros);
-    ~ctrls.macros.use {
-        ~update = e { |obj, what, k, v|
-            if (what == \put) {
-                if (v.notNil) {
-                    ~setState.(k, 1);
-                } {
-                    ~setState.(k, 0);
-                }
+        ~ctrls.snapshots.use {
+            ~onLongPress = { |k|
+                q.snapshots.save(k);
+            };
+            ~onShortPress = { |k|
+                q.snapshots.load(k);
             }
         };
-    };
 
-
-
-    //Run on button
-    ~ctrls.macros.onButtonDown = { |k|
-        ~macros.run(k);
-    }.inEnvir;
-
-    //========MODULATION========//
-
-    //Button connects currently selected keys to a slot in the mod matrix
-    //onButtonPress: |y|
-    //~ctrls.notes.selected().do { |x| ~matrix.mod.add(x, y) }
-
-    ~ctrls.modulation.use {
-
-        //TODO: move connections to q.storage[\matrix, \modulation]
-        ~connections = q.f.getProto(\connections);
-
-
-        //TODO toggle on/off ffs
-        ~onShortPress = { |to|
-            to.postln;
-            q.ctrls.notes.doSelected({ |from|
-                ~connections.add(from, to);
-            }.inEnvir);
+        keys.snapshots.do { |x|
+            if (q.snapshots.exists(x)) {
+                ~ctrls.snapshots.setState(x, 1);
+            }
         };
 
-        //TODO: make connections on connection changes
+        //=========MACROS=============//
+
+        //Go through macros and activate slots accordingly
+
+        12.do { |i|
+            if (~macros.exists(i)) {
+                ~ctrls.macros.setState(i, 1);
+            }
+        };
+
+        //Make macros update on macro updates
+        ~macros.addDependant(~ctrls.macros);
+        ~ctrls.macros.use {
+            ~update = e { |obj, what, k, v|
+                if (what == \put) {
+                    if (v.notNil) {
+                        ~setState.(k, 1);
+                    } {
+                        ~setState.(k, 0);
+                    }
+                }
+            };
+        };
+
+
+
+        //Run on button
+        ~ctrls.macros.onButtonDown = { |k|
+            ~macros.run(k);
+        }.inEnvir;
+
+        //========MODULATION========//
+
+        //Button connects currently selected keys to a slot in the mod matrix
+        //onButtonPress: |y|
+        //~ctrls.notes.selected().do { |x| ~matrix.mod.add(x, y) }
+
+        ~ctrls.modulation.use {
+
+            //TODO: move connections to q.storage[\matrix, \modulation]
+            ~connections = q.f.getProto(\connections);
+
+
+            //TODO toggle on/off ffs
+            ~onShortPress = { |to|
+                to.postln;
+                q.ctrls.notes.doSelected({ |from|
+                    ~connections.add(from, to);
+                }.inEnvir);
+            };
+
+            //TODO: make connections on connection changes
+        };
+
+        //------------NOTES------------//
+
+        //Unselect
+        q.dev.lpIn.elementAt(\ar, 7).action_({
+            ~ctrls.notes.doSelected(~unselect.(_), {})
+        }.inEnvir);
     };
-
-    //------------NOTES------------//
-
-    //Unselect
-    q.dev.lpIn.elementAt(\ar, 7).action_({
-        ~ctrls.notes.doSelected(~unselect.(_), {})
-    }.inEnvir);
 
     q.updaters.launchSynth = Updater(~launchController, { |what, msg, index, value, other|
         index = q.settings.pitches[index];
