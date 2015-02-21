@@ -29,10 +29,15 @@ q.make {
         ~load = { |key|
             q.storage[\snapshots, key] !? {
                 q.storage[\snapshots, key].leafDo { arg path, val;
-                    if (q.storage.at(*path).respondsTo(\setValue)) {
-                         q.storage.at(*path).setValue(val.value);
+                    var item = q.storage.atPath(path);
+                    if (item.notNil) {
+                        if (item.respondsTo(\setValue)) {
+                            item.setValue(val.value).changed(\synch);
+                        } {
+                            item.value_(val.value).changed(\synch);
+                        }
                     } {
-                        q.storage.at(*path).value_(val.value);
+                        "Snapshot: Invalid key: %".format(path).warn;
                     }
                 }
             };
@@ -46,6 +51,7 @@ q.make {
     });
 }
 );
+
 
 /*
 q.snapshots.addSnapshotKey(\cvs);

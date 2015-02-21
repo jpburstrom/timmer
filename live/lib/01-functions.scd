@@ -20,7 +20,8 @@ defer {
         [\storage].do { |name|
             q[name].writeArchive(q.path.data +/+ "backup/" ++ name + Date.getDate.asSortableString ++ ".archive");
             q[name].writeArchive(q.path.data +/+ name ++ ".archive");
-        }
+        };
+        "Session saved".inform;
     });
     Toolbar.replace('Preamps', { c.gui[\win] !? { c.gui[\win].close; }; c.show });
 

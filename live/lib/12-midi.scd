@@ -3,6 +3,7 @@ q.dev !? { |d| d.lpIn !? { |in|
     in.allElements.do(_.reset);
     in.free;
 }};
+
 q.make {
     //launchPad key mapping
     var keys = (
@@ -14,15 +15,17 @@ q.make {
     var colors = (
         snapshots: [\off, \lRed, \red],
         macros: [\off, \lAmber, \amber],
-        modulation: [\off, \yellow, \yellow]
+        modulation: [\off, \lAmber, \yellow]
     );
+
+    var mktl;
 
     ~dev = ();
     ~views = ();
     ~ctrls = ();
 
-    ~dev.lpIn = MKtl('lnch0');
-    if (~dev.lpIn.mktlDevice.notNil) {
+    ~dev.lpIn = mktl = MKtl('lnch0');
+   if (~dev.lpIn.mktlDevice.notNil) {
 
         ~dev.lpOut = LaunchpadOut(~dev.lpIn).reset;
 
@@ -38,34 +41,22 @@ q.make {
 
         ~ctrls.notes = q.f.getProto(\noteController).connect(~dev.lpIn, keys.notes);
         ~views.notes = q.f.getProto(\noteView).connect(~ctrls.notes, ~dev.lpOut);
-
-        [\snapshots, \macros, \modulation].do { |k|
-            ~ctrls[k] = q.f.getProto(\buttonController).connect(~dev.lpIn, keys[k]);
+        [snapshots: \snapshotController,
+            \macros: \macroController,
+            \modulation: \modulationController ].pairsDo { |k, v|
+            ~ctrls[k] = q.f.getProto(v).connect(~dev.lpIn, keys[k]);
             ~views[k] = q.f.getProto(\buttonView).connect(~ctrls[k], ~dev.lpOut);
             ~views[k].colors = colors[k];
         };
 
-        //modulation keys should always be inited
-        ~ctrls.modulation.isKeyInited = { true };
 
-        //=========SNAPSHOTS==============//
-
-        ~ctrls.snapshots.use {
-            ~onLongPress = { |k|
-                q.snapshots.save(k);
-            };
-            ~onShortPress = { |k|
-                q.snapshots.load(k);
-            }
-        };
+        //Snapshot activation
 
         keys.snapshots.do { |x|
             if (q.snapshots.exists(x)) {
                 ~ctrls.snapshots.setState(x, 1);
             }
         };
-
-        //=========MACROS=============//
 
         //Go through macros and activate slots accordingly
 
@@ -75,61 +66,31 @@ q.make {
             }
         };
 
-        //Make macros update on macro updates
-        ~macros.addDependant(~ctrls.macros);
-        ~ctrls.macros.use {
-            ~update = e { |obj, what, k, v|
-                if (what == \put) {
-                    if (v.notNil) {
-                        ~setState.(k, 1);
-                    } {
-                        ~setState.(k, 0);
-                    }
-                }
-            };
-        };
 
-
-
-        //Run on button
-        ~ctrls.macros.onButtonDown = { |k|
-            ~macros.run(k);
-        }.inEnvir;
-
-        //========MODULATION========//
-
-        //Button connects currently selected keys to a slot in the mod matrix
-        //onButtonPress: |y|
-        //~ctrls.notes.selected().do { |x| ~matrix.mod.add(x, y) }
-
-        ~ctrls.modulation.use {
-
-            //TODO: move connections to q.storage[\matrix, \modulation]
-            ~connections = q.f.getProto(\connections);
-
-
-            //TODO toggle on/off ffs
-            ~onShortPress = { |to|
-                to.postln;
-                q.ctrls.notes.doSelected({ |from|
-                    ~connections.add(from, to);
-                }.inEnvir);
-            };
-
-            //TODO: make connections on connection changes
-        };
+        //TODO: make modulation connections on connection changes
 
         //------------NOTES------------//
 
-        //Unselect
-        q.dev.lpIn.elementAt(\ar, 7).action_({
-            ~ctrls.notes.doSelected(~unselect.(_), {})
-        }.inEnvir);
+        //------- LAUNCHPAD RIGHT COLUMN ----------
+        //E -- Remove all connections
+        (
+            3: [\yellow, {
+                q.storage[\matrix, \modulation].allConnections.size.honk;
+            }],
+            4: [\red, e {
+                ~ctrls.modulation.unselectAll;
+            }],
+            7: [\red, e {
+                ~ctrls.notes.doSelected(~unselect.(_), {})
+            }],
+        ).keysValuesDo { |k, arr|
+            q.dev.lpOut.setArrowColor(k, arr[0]);
+            q.dev.lpIn.elementAt(\ar, k).action_(arr[1]);
+        }
     };
 
     q.updaters.launchSynth = Updater(~launchController, { |what, msg, index, value, other|
         index = q.settings.pitches[index];
-        index.postln;
         switch(value)
         {0} {
             q.releaseBandySynth(index);

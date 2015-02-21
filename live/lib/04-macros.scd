@@ -5,9 +5,9 @@ q.make {
                 currentEnvironment[i.asSymbol].isFunction;
             };
 
-            ~run = { |i|
+            ~run = { |i, play|
                 //TODO: pass CVs/MKtlElements to function
-                currentEnvironment[i.asSymbol].value(q);
+                currentEnvironment[i.asSymbol].value(play, q);
             }
 
         }).putAction_({ |key, value, p|
@@ -15,13 +15,18 @@ q.make {
         });
     };
 
-    ~macros[\0] = { |q|
-        "Just testing".postln;
+    ~macros[\0] = { |play, q|
+        if (play) {
+            "PLAYING".postln;
+        } {
+            "STOPPED".postln;
+        }
+
     };
 
     ~macros[\1] = nil;
-    ~macros[\2] = { |q|
-        "Another test".honk;
+    ~macros[\2] = { |play, q|
+        play.asString.honk;
     };
 }
 

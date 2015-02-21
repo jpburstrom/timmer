@@ -6,6 +6,7 @@ Proto({
     ~actions = List();
     ~indexes = nil;
     ~longPressWaitTime = 0.5;
+    ~setStateFunc = \setState;
 
     //Make buttonAction responding to short & long presses
     //Args: shortPress action, longPress action, waitTime for longPress
@@ -18,7 +19,7 @@ Proto({
                     longPress = true;
                     if (~onLongPress.(key).notNil) {
                         //Set active
-                        ~setState.(key, 2);
+                        currentEnvironment[~setStateFunc].(key, 2);
                     }
                  };
                 ~onButtonDown.(key);
@@ -29,7 +30,7 @@ Proto({
                 if (longPress.not and: { ~isKeyInited.(key) }) {
                     ~onShortPress.(key);
                     //Set active
-                    ~setState.(key, 2);
+                    currentEnvironment[~setStateFunc].(key, 2);
                 };
                 longPress = false;
             }
@@ -69,14 +70,13 @@ Proto({
 
     ~setState = { |k, v|
         ~model[k] = v;
-        //Deactivate active
-        if (v == 2) {
-            ~model.active !? {
-                ~setState.(~model.active, 1)
-            };
-        };
-        ~model.active = k;
+        ~onStateChange.(k, v);
         currentEnvironment.changed(\state, k, v);
+    };
+
+    ~toggleState = { |k|
+        //toggle between 2 and 1;
+        ~setState.(k, 3 - (~model[k] ?? 1));
     };
 
     ~getState = { |k|
@@ -86,4 +86,5 @@ Proto({
     ~indexAt = { |k|
         ~indexes !? { ~indexes[k] };
     }
+
 });

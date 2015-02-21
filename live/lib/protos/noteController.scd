@@ -188,14 +188,22 @@ Proto({
         ~model.selected.includes(k);
     };
 
+    ~selected = {
+        ~model.selected.copy;
+    };
+
     ~doSelected = { |func, allFunc|
         var result;
         allFunc ??  { allFunc = func };
         if (~model.selected.isEmpty.not) {
             result = ~model.selected.asArray.do(func);
         } {
-            result = ~indexes.size.do(allFunc).copy;
+            result = ~indexes.size.do(allFunc);
         };
+    };
+
+    ~doAll = { |func|
+        ~indexes.size.do(func);
     };
 
 
@@ -216,5 +224,11 @@ Proto({
     ~indexAt = { |i|
         ~indexes.at(i);
     };
+
+    //Freeing LaunchPad Mktl on behalf of all
+    ~free = {
+        ~ktl.allElements.do(_.reset);
+        ~ktl.free;
+    }
 
 });

@@ -37,7 +37,9 @@ q.make {
 
     //Modulation
     #[[pedal, amp], [pitch, delay, rev, vol, lfoSpeed,
-        lfoDepth, noiseSpeed, noiseDepth]].allTuples.do { |from, to|
+        lfoDepth, noiseSpeed, noiseDepth]].allTuples.do { |tup|
+        var from, to;
+        #from, to = tup;
         maybeAddCV.([\cvs, \modulation, from, to], \bipolar);
     };
 
@@ -77,6 +79,13 @@ q.make {
 
 
     });
+
+    //------------Matrixes---------------
+
+    q.storage[\matrix, \modulation] = q.f.getProto(\connections);
+    q.storage[\matrix, \fm] = q.f.getProto(\connections);
+
+    //------------------------------------
 
     //---------PREAMPS--------------
     c = Conductor.make({ |con |
