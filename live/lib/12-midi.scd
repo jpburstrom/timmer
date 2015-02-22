@@ -13,9 +13,9 @@ q.make {
         notes: [40,48,56] +.x (0..7)
     );
     var colors = (
-        snapshots: [\off, \lRed, \red],
-        macros: [\off, \lAmber, \amber],
-        modulation: [\off, \lAmber, \yellow]
+        snapshots: [\off, \lRed, #[fRed, red]],
+        macros: [\off, \lAmber, #[fAmber, amber]],
+        modulation: #[off, lAmber, yellow]
     );
 
     var mktl;

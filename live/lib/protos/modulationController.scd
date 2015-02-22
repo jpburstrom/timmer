@@ -45,7 +45,7 @@ x = q.f.getProto(\buttonController).clone({
 
     ~unselectAll = {
         ~model.keysValuesDo { |k, v|
-            if (v == 2) {
+            if (v > 0) {
                 ~setState.(k, 0);
             }
         }
