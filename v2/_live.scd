@@ -10,7 +10,7 @@ var ev = (
     basePath: "/Volumes/HD2/projects/timmer/kod/sc/live"
 
 );
-"live/init.scd".loadRelative[0].(ev);
+"init.scd".loadRelative[0].(ev);
 
 
 //----------------TESTS--------------//
