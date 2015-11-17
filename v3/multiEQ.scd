@@ -47,6 +47,8 @@ Ndef(\multiEQ, {
 	//snd = snd + DelayC.ar(snd, 0.2, LFNoise2.ar(1).range(0.0, amp * 10));
 	Out.kr(~pitchBus, Pitch.kr(snd));
 
+	snd = snd * EnvGen.ar(Env.linen(1, 1, 0.02), Dust.kr(1), timeScale: LFNoise2.kr(1).range(0.05, 1));
+
 	//Reverb. Halvkul.
 	//snd = FreeVerb.ar(snd, 1, 1);
 

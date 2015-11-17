@@ -43,7 +43,7 @@ Ndef(\analysis, {
 	SendReply.kr(onsets, '/onset', [amp, ampLong]);
 	SendReply.kr(silence, '/silence', [ampLong]);
 
-	[onsets, amp, ampLong];
+	[onsets, amp, ampLong, freq];
 });
 )
 
@@ -61,3 +61,4 @@ OSCdef(\pitch).free
 
 
 OSCdef(\silence, { |msg| { SinOsc.ar * 0.1 * EnvGen.ar(Env.perc, doneAction:2) }.play }, '/silence');
+OSCdef(\silence).free
