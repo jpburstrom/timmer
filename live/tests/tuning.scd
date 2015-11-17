@@ -24,3 +24,5 @@ t.gui
 x = Synth(\bandy, [\freq, "G1".namecps * 4, \out, 0, \delayOffset, q.settings.rtlatency], q.settings.syngrp);
 
 
+
+q.settings.rtlatency

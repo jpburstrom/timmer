@@ -4,20 +4,32 @@ Ndef.clear;
 
 SynthDef(\bandy, { |freq=100, delayOffset=0.0094, phase=0.8|
     var
-    in = SoundIn.ar(0),
+    in = SoundIn.ar(1),
     period = freq.reciprocal,
     //Calculate "phase" for frequency, before modulation happens
     totalDelay = ((period - delayOffset) % period) + (period * phase);
 
     //Freq modulation
-    freq = freq * 2.pow((\freqAdjust.kr(0) + \freqMod.kr(0)) * 0.083333333);
+    freq = freq * 2.pow((\freqAdjust.kr(0) + \freqMod.kr(0)));
 
     //Delay modulation (incl phase modulation)
     //
-    totalDelay = totalDelay + \delay.kr(0) + \delayMod.kr(0)
+    totalDelay = totalDelay + \delay.kr(0, 0.1) + \delayMod.kr(0)
     + \phaseMod.ar.range(0, period);
 
     in = BPF.ar(in * \amp.kr(0.0), freq, \rq.kr(0.0289));
+
+    //DEBUG
+    //Patch 0 -> 0 fysiskt på ljudkortet
+    //scope ch 64 och 65
+    OffsetOut.ar(0, in);
+    OffsetOut.ar(64, [in, SoundIn.ar(0)]);
+
+    //DEBUG
+    //test tones
+    //Out.ar(\out.kr, SinOsc.ar(freq) * 0.05);
+
+    //
 
     // Max delay time 1 sec + 20.reciprocal
     in = DelayC.ar(in, 1.05, totalDelay);
@@ -79,7 +91,7 @@ q.tree.on(\groups, {
             //gDelay is bipolar,
             //if < 0, multiply with local delay
             //otherwise add to local
-            if (gDelay.value < 0) {
+            if (gDelay.value <= 0) {
                 out = gDelay.abs * lDelay
             } {
                 out = (gDelay + lDelay)
@@ -90,7 +102,7 @@ q.tree.on(\groups, {
             [[gDelay, lDelay], out]
         };
 
-        ~isProxyNodePlaying = { |node|
+        ~maybeSendProxy = { |node|
             //nodeID is set to nil on .release
             node.objects[0].nodeID.isNil.if {
                 node.send;
@@ -124,6 +136,7 @@ q.tree.on(\groups, {
         .set(\freq, i.midicps, \out, q.bus.bass,
             \delayOffset, latency)
         .setControls([
+            freqAdjust: f.getCV(\global, \pitch),
             phase: f.getCV(\phase, sym),
             amp: f.mapAmp(sym),
             delay: f.mapDelay(sym),
@@ -154,13 +167,13 @@ q.tree.on(\groups, {
     .parentGroup_(~mstfxgrp)
     .source_({
         var snd = In.ar(\out.kr(0));
-        snd = SelectX.ar(\amp.kr(0), [snd, JPverb.ar(snd, 5, 0, 2)]);
+        snd = SelectX.ar(\amp.kr(0), [snd, JPverb.ar(snd, 10, 0, 2)]);
         ReplaceOut.ar(\out.kr(0), snd);
     })
     .bus_(q.bus.bass)
     .setControls([
         amp: f.getCV(\global, \rev)
-    ]);
+    ]).play;
 
     //---------Important: high pass filter------------
     ~fx[\finalHPF] = Synth(\finalHPF, [\freq, 45], q.tree.mstfxgrp);

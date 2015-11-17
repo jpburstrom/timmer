@@ -43,14 +43,17 @@ Proto({
                     if (value == 1) {
                         //TODO toggle select?
                         ~select.(key);
+                        #key, value = [key, value].yield;
 
                     } {
                         if (key == first) {
                             longPress = false;
                             cur.clear;
                             first = false;
+                        } {
+                            #key, value = [key, value].yield;
                         }
-                    }
+                    };
 
                 };
                 if (key == first and: { value == 0 }) {
@@ -229,6 +232,11 @@ Proto({
     ~free = {
         ~ktl.allElements.do(_.reset);
         ~ktl.free;
+    };
+
+    ~noteFor = { |index|
+        q.f.getPitchesForUI[index];
     }
+
 
 });

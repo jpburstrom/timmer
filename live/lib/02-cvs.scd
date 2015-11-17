@@ -21,6 +21,11 @@ q.make {
         }
     };
 
+    //-------------A container for SimpleControllers--------
+
+    ~simpleContainer = q.f.getProto(\simpleContainer);
+
+
     //--------------GLOBAL CVS--------------
 
     //Master CVs
@@ -28,7 +33,7 @@ q.make {
         pitch: \pitch,
         delay: \bipolar,
         rev: \unipolar,
-        amp: \amp,
+        amp: \amp.asSpec.default_(1),
         lfoSpeed: \lofreq,
         lfoDepth: \unipolar,
         noiseSpeed: \lofreq,
@@ -36,27 +41,23 @@ q.make {
     ).keysValuesDo { |k, spec| maybeAddCV.([\cvs, \global, k], spec); };
 
     //Modulation
-    #[[pedal, amp], [pitch, delay, rev, vol, lfoSpeed,
-        lfoDepth, noiseSpeed, noiseDepth]].allTuples.do { |tup|
+    ~settings.paramLists.modTop.do { |tup|
         var from, to;
         #from, to = tup;
         maybeAddCV.([\cvs, \modulation, from, to], \bipolar);
     };
 
-    #[lfo, noise].do { |from, i|
-        [ [ 'pitch', 'delay', 'noiseSpeed', 'noiseDepth' ],
-            [ 'pitch', 'delay', 'lfoSpeed', 'lfoDepth' ] ].at(i).do { |to|
-            maybeAddCV.([\cvs, \modulation, from, to]);
-        }
+    //LFO Modulation
+    ~settings.paramLists.modLFO.do { |tup|
+        var from, to;
+        #from, to = tup;
+        maybeAddCV.([\cvs, \modulation, from, to]);
     };
 
-    //TODO: macros. Where to add specs?
-    /*
     24.do { |i|
         var sym = i.asSymbol;
-        maybeAddCV.([\cvs, \macros, sym]
-    }
-    */
+        maybeAddCV.([\cvs, \macros, sym]);
+    };
 
     //--------------LOCAL CVS----------------
 

@@ -25,7 +25,7 @@ q.make {
         //s.newBusAllocators; //BIG HACK
 
         s.makeBundle(0.1, {
-            ~bass = Bus(\audio, 0);
+            ~bass = Bus(\audio, 1);
         });
 
     }, \boot);

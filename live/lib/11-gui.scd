@@ -64,7 +64,7 @@ defer {
     });
     */
 
-    var pitches = q.settings.pitches.clump(3).collect(_.reverse).flop.flatten;
+    var pitches = q.f.getPitchesForUI;
 
     [
         Phase: \phase,
@@ -88,8 +88,7 @@ defer {
 
     Toolbar.replace(\Global, {
         q.makeui.grid(\Global, 1, 8, nil, Rect(0, 0, 500, 100).center_( Window.availableBounds.center ));
-        #[ pitch, delay, amp, rev,
-            lfoSpeed, lfoDepth, noiseSpeed, noiseDepth].do { |k|
+        q.settings.paramLists.global.do { |k|
             q.makeui.knob(k, q.storage[\cvs, \global, k], \Global, 0.01);
         }
     });
@@ -97,8 +96,7 @@ defer {
     Toolbar.replace(\Mod, {
 
         q.makeui.grid(\Mod, 3, 9, nil, Rect(0, 0, 700, 300).center_( Window.availableBounds.center ));
-        #[[pedal, amp], [pitch, delay, rev, vol, lfoSpeed,
-            lfoDepth, noiseSpeed, noiseDepth]].allTuples.do { |tup, i|
+        q.settings.paramLists.modTop.do { |tup, i|
             var from, to, label;
             #from, to = tup;
             if (i%8 == 0) {
@@ -108,12 +106,12 @@ defer {
         };
         q.makeui.label(\lfoxws, \Mod);
 
-        #[lfo, noise].do { |from, i|
-            [ [ 'pitch', 'delay', 'noiseSpeed', 'noiseDepth' ],
-                [ 'pitch', 'delay', 'lfoSpeed', 'lfoDepth' ] ].at(i).do { |to|
-                q.makeui.knob(to, q.storage[\cvs, \modulation, from, to], \Mod, 0.01);
-            }
-    };
+        q.settings.paramLists.modLFO.do { |tup|
+            var from, to;
+            #from, to = tup;
+            q.makeui.knob(to, q.storage[\cvs, \modulation, from, to], \Mod, 0.01);
+        };
+
     });
 
 }

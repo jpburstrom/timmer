@@ -10,28 +10,40 @@ var init = { |settings|
     };
     KeyDownActions.globalShortcutsEnabled = false;
 
+
     s.options.sampleRate = 48000;
     s.options.hardwareBufferSize = 256;
 
     q = Setup({
         2.wait;
-        "--------%--------".format(
-            s.audioBusAllocator.findAvailable(1).start).underlined.postln;
 
         ~song = "live";
         ~settings = settings;
-        settings.postln;
+        ~settings.paramLists = (
+            global: { #[pitch, delay, rev, amp, lfoSpeed,
+                lfoDepth, noiseSpeed, noiseDepth] },
+            modTop: { |ev| [#[pedal, amp], ev.global].allTuples },
+            modLFO: {
+                #[ lfo, [ pitch, delay, noiseSpeed, noiseDepth ]].allTuples ++
+                #[ noise, [ pitch, delay, lfoSpeed, lfoDepth ] ].allTuples
+            },
+            mod: { |ev| ev.modTop ++ ev.modLFO }
+        );
         ~settings.latencies = List();
-        /*
+        //TODO: device dictionary
         if (s.options.device == "PreSonus FireStudio") {
-            ~settings.latencies.add(0.00425); //extra hardware latency
+            //Assuming hardwareBufferSize = 256;
+            ~settings.latencies.add(193 / s.sampleRate);
+        } {
+            if (s.options.device.beginsWith("Babyface")) {
+                ~settings.latencies.add(139 / s.sampleRate);
+
+            } {
+                "Latency for device '%' unknown. Please check init.scd.".format(s.options.device).warn;
+            }
         };
+        //Multiply latency with 2 (roundtrip)
         ~settings.latencies.add(((s.options.hardwareBufferSize ? 512) * 2) / s.sampleRate);
-        */
-
-        //Assuming hardwareBufferSize = 256;
-        ~settings.latencies.add(0.014708333);
-
         //Safety limiter, see brstrm/StageLimiter.sc
         if (true) {
             StageLimiter.activate;
@@ -56,6 +68,7 @@ var init = { |settings|
         };
 
         ~updaters = ();
+
 
         ~storage = Object.readArchive(q.path.data +/+ "storage.archive") ?? {
             MultiLevelIdentityDictionary.new;

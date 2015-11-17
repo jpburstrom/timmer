@@ -17,9 +17,13 @@ q.make {
 
     ~macros[\0] = { |play, q|
         if (play) {
-            "PLAYING".postln;
+            Ndef(\test, {
+                var snd = SoundIn.ar(1);
+                snd = FreqShift.ar(HPF.ar(snd, 500), -500);
+                snd = DelayC.ar(snd, 5, LFNoise2.kr(0.01).exprange(0.2, 5)) * 4;
+            }).fadeTime_(3).play
         } {
-            "STOPPED".postln;
+            Ndef(\test).stop
         }
 
     };

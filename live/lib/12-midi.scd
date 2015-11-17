@@ -51,7 +51,6 @@ q.make {
 
 
         //Snapshot activation
-
         keys.snapshots.do { |x|
             if (q.snapshots.exists(x)) {
                 ~ctrls.snapshots.setState(x, 1);
@@ -59,7 +58,6 @@ q.make {
         };
 
         //Go through macros and activate slots accordingly
-
         12.do { |i|
             if (~macros.exists(i)) {
                 ~ctrls.macros.setState(i, 1);
@@ -89,14 +87,14 @@ q.make {
         }
     };
 
-    q.updaters.launchSynth = Updater(~launchController, { |what, msg, index, value, other|
-        index = q.settings.pitches[index];
+    q.updaters.launchSynth = Updater(~ctrls.notes, { |what, msg, index, value, other|
+        index = what.noteFor(index);
         switch(value)
         {0} {
-            q.releaseBandySynth(index);
+            q.tree.stopSynth(index);
         }
         {1} {
-            q.createBandySynth(index);
+            q.tree.playSynth(index);
         }
     });
 

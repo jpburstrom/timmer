@@ -71,7 +71,7 @@ x = Proto({
     };
 
     ~connectionsTo = { |x, r=false|
-                ~con[x] !? {
+        ~con[x] !? {
             if (r.not) {
                 ~con[x].from;
             } {
