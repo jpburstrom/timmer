@@ -35,7 +35,7 @@ Proto({
 					~longPressWaitTime.wait;
 					longPress = true;
 					if (rangePress.not) {
-						output = ~onLongPress.(key);
+						~onLongPress.(key) !? { |output|currentEnvironment[~setStateFunc].(key, output) };
 
 					} {
 						"rangePress".postln;
@@ -118,13 +118,13 @@ Proto({
         ~ktl = ktl;
         ~indexes = keys;
 		//Map MKtlElement indexes to ~index indexes
-		~indexMapper = q.dev.lpIn.elementAt(\pad).flat.collectAs({ |k,v| k.index->keys.indexOf(v) }, IdentityDictionary)
+		~indexMapper = q.dev.lpIn.elementAt(~elementGroup).flat.collectAs({ |k,v| k.index->keys.indexOf(v) }, IdentityDictionary)
 		//keep only indexes from ~indexes
 		.select( { |v,k|
 			keys.includes(k.asInt);
 		});
 		keys.do { |x, i|
-            ktl.elementAt(\pad, x).action_(~ktlAction.inEnvir);
+            ktl.elementAt(~elementGroup, x).action_(~ktlAction.inEnvir);
 			~actions.add(~buttonActionFactory.(i));
         };
         currentEnvironment;
