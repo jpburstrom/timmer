@@ -36,7 +36,8 @@ q.make {
 		//Autoflash
 		~dev.lpOut.midiOut.control(0, 0, 40);
 
-		#[
+        //Pairs of key => controllerProtoNames
+       #[
 			current, currentController,
 			target, targetController,
 			paramSelect, paramSelectController,
@@ -48,24 +49,13 @@ q.make {
 			//Connect controller to device IN
 			~ctrls[k] = "protos/%".format(v).import.connect(~dev.lpIn, keys[k]);
 			//Connect view to device OUT
+            //All have same view
 			~views[k] = "protos/buttonView".import.connect(~ctrls[k], ~dev.lpOut);
 			//set colors
 			~views[k].colors = colors[k];
 		};
 
 
-		/*~ctrls.target = "lib/targetController".import.connect(~dev.lpIn, keys.target);
-
-
-        ~ctrls.notes = q.f.getProto(\noteController).connect(~dev.lpIn, keys.notes);
-        ~views.notes = q.f.getProto(\noteView).connect(~ctrls.notes, ~dev.lpOut);
-        [snapshots: \snapshotController,
-            \macros: \macroController,
-            \modulation: \modulationController ].pairsDo { |k, v|
-            ~ctrls[k] = q.f.getProto(v).connect(~dev.lpIn, keys[k]);
-            ~views[k] = q.f.getProto(\buttonView).connect(~ctrls[k], ~dev.lpOut);
-            ~views[k].colors = colors[k];
-        };*/
 
 	};
 

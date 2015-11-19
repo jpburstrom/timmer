@@ -12,6 +12,7 @@ q.make {
     ~bottomEnc = q.dev.bcr.elementAt(\kn).flat;
 
     //----Top encoders-----------
+    //Don't set any model values here -- bottom 32 should do that
     ~topRow = q.dev.bcr.elementAt(\knUp, \1);
     ~topRow.action = { |elem|
         //Index is either 0 or 1 -- check with second row of button rows
@@ -38,7 +39,6 @@ q.make {
     //---------first page: misc----------
     m.add(\pr_1_1, { |elem, grp, row|
         var knobRows = [\1,\2];
-        v[\pr_1_1][~bottomEnc.indexOf(elem)] = elem.value;
 
         //If first two rows, set upper encoder value and set buttons to corresponding row
         if (knobRows.includes(grp.index)) {
@@ -47,12 +47,20 @@ q.make {
             q.dev.bcr.elementAt(\bt, 1 - knobRows.indexOf(grp.index), elem.index).valueAction=0;
         };
 
-        "setting value %".format(elem.value).postln;
+        //TODO: set model values
+        //This is a placeholder
+        v[\pr_1_1][~bottomEnc.indexOf(elem)] = elem.value;
+
+
     }.inEnvir);
 
     //--------------second page: eq gain---------
     m.add(\pr_1_2, { |elem, grp, row|
+
+        //TODO: set model values
+        //This is a placeholder
         v[\pr_1_2][~bottomEnc.indexOf(elem)] = elem.value;
+
     }.inEnvir);
 
     //--------Switch pages with two bottom-right buttons------
