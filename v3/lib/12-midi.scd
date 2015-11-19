@@ -22,6 +22,7 @@ q.make {
 		paramSelect: [\off, \lRed],
         current: [\off, \lRed, #[fRed, red]],
 		target: [\off, \lAmber, \lGreen, \amber, \green],
+		pedalActions: [\off, \lRed],
 
 	);
 
@@ -39,6 +40,7 @@ q.make {
 			current, currentController,
 			target, targetController,
 			paramSelect, paramSelectController,
+			pedalActions, pedalActionController,
 
 			//freezeScale, freezeController,
 			//metaPreset, metaPresetController

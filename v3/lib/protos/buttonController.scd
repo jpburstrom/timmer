@@ -9,6 +9,9 @@ Proto({
     ~longPressWaitTime = 0.5;
 	~doublePressWaitTime = 1;
 	~rangePressKey = nil;
+	~ignoreKeyUps = false;
+	~isDeviceSendingKeyUp = true;
+
 	~listenToSingleKey = nil;
     ~setStateFunc = \setState;
 	~indexMapper;
@@ -20,7 +23,7 @@ Proto({
         { |val|
 			//KEY DOWN
 			var output;
-            if (val == 1) {
+			if (val == 1 && ~isDeviceSendingKeyUp) {
 				//Check if other keys in group are pressed
 				~ignoreKeyUps = false;
 				if (~onRangePress.notNil and: { ~rangePressKey.notNil  }) {
