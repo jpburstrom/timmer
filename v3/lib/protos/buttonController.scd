@@ -3,6 +3,7 @@
 Proto({
     ~model = (active: nil);
     ~states = [\off, \inactive, \active];
+	~elementGroup = \pad;
     ~actions = List();
     ~indexes = nil;
     ~longPressWaitTime = 0.5;
