@@ -9,20 +9,21 @@ q.make {
 		current: [0],
 		target: (1..48),
 		freezeScale: (49..56),
-		metaPreset: (57..64)
+		metaPreset: (57..64),
+		paramSelect: (0..7),
+		pedalActions: (0..7),
+
     );
 	//Colors for state toggling
 	//Short press
 	//Long press
 	//Pass an array to blink between two colors
     var colors = (
+		paramSelect: [\off, \lRed],
         current: [\off, \lRed, #[fRed, red]],
-		target: [\lAmber, \lGreen, \fAmber, \fGreen, \fRed],
+		target: [\off, \lAmber, \lGreen, \amber, \green],
+
 	);
-
-	//Convert zero-based integers to 1-based symbols (change in Launchpad description file)
-	//keys = keys.collect { |k| (k + 1).collect(_.asSymbol) };
-
 
 	~dev = ();
     ~views = ();
@@ -37,6 +38,8 @@ q.make {
 		#[
 			current, currentController,
 			target, targetController,
+			paramSelect, paramSelectController,
+
 			//freezeScale, freezeController,
 			//metaPreset, metaPresetController
 		].pairsDo { |k,v|

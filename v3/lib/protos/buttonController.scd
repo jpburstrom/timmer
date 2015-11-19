@@ -1,7 +1,7 @@
 //buttonController
 //base proto for snapshots & macros
 Proto({
-    ~model = (active: nil);
+    ~model = ();
     ~states = [\off, \inactive, \active];
 	~elementGroup = \pad;
     ~actions = List();
@@ -16,7 +16,7 @@ Proto({
     //Make buttonAction responding to short & long presses
     //Args: shortPress action, longPress action, waitTime for longPress
     ~buttonActionFactory = {  |key|
-		var lpr, dpr, longPress = false, doublePress = false, rangePress = false;
+		var lpr, dpr, longPress = false, doublePress = false;
         { |val|
 			//KEY DOWN
 			var output;
@@ -25,23 +25,20 @@ Proto({
 				~ignoreKeyUps = false;
 				if (~onRangePress.notNil and: { ~rangePressKey.notNil  }) {
 					~listenToSingleKey = key;
-					//lpr.stop;
-					rangePress = true;
-
+					"set single key".debug;
 				} {
 					~rangePressKey = key;
 				};
 				lpr = fork {
 					~longPressWaitTime.wait;
 					longPress = true;
-					if (rangePress.not) {
+					if (~listenToSingleKey.isNil) {
 						~onLongPress.(key) !? { |output|currentEnvironment[~setStateFunc].(key, output) };
 
 					} {
-						"rangePress".postln;
-						~onRangePress.value(~rangePressKey, key, \long);
-						rangePress = false;
-
+						if (~listenToSingleKey == key) {
+							~onRangePress.value(~rangePressKey, key, \long);
+						}
 					}
 
 
@@ -51,8 +48,7 @@ Proto({
 			}
 			//KEY UP
 			{
-				if (~listenToSingleKey.isNil or: { ~listenToSingleKey == key } ) {
-					~listenToSingleKey = nil;
+				if ((~listenToSingleKey.isNil or: { ~listenToSingleKey == key }) and: { ~ignoreKeyUps.not } ) {
 					lpr.stop;
 					dpr.stop;
 
@@ -67,11 +63,10 @@ Proto({
 						//Shortpress is activated only after
 						//key is inited (from longPress or otherwise)
 						if (longPress.not and: { ~isKeyInited.(key) }) {
-							if (rangePress.not) {
+							if (~listenToSingleKey.isNil) {
 								output = ~onShortPress.(key);
 							} {
 								~onRangePress.value(~rangePressKey, key, \short);
-								rangePress = false;
 								~ignoreKeyUps = true;
 							}
 
@@ -81,6 +76,7 @@ Proto({
 
 					};
 					~rangePressKey = nil;
+					~listenToSingleKey = nil;
 
 				} {
 					lpr.stop;
@@ -117,6 +113,7 @@ Proto({
 		var tmp;
         ~ktl = ktl;
         ~indexes = keys;
+		keys.do(~model[_] = 0);
 		//Map MKtlElement indexes to ~index indexes
 		~indexMapper = q.dev.lpIn.elementAt(~elementGroup).flat.collectAs({ |k,v| k.index->keys.indexOf(v) }, IdentityDictionary)
 		//keep only indexes from ~indexes
@@ -152,3 +149,10 @@ Proto({
     }
 
 });
+
+/*
+q.ctrls.paramSelect.actions[0].value(1);
+q.ctrls.paramSelect.actions[2].value(1);
+q.ctrls.paramSelect.actions[2].value(0);
+q.ctrls.paramSelect.actions[0].value(0);
+*/
