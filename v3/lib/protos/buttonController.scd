@@ -120,7 +120,8 @@ Proto({
 		//Map MKtlElement indexes to ~index indexes
 		~indexMapper = q.dev.lpIn.elementAt(~elementGroup).flat.collectAs({ |k,v| k.index->keys.indexOf(v) }, IdentityDictionary)
 		//keep only indexes from ~indexes
-		.select( { |v,k|
+		.select( { |k, v|
+			//FIXME: This doesn't work in targetController...
 			keys.includes(k.asInt);
 		});
 		keys.do { |x, i|
