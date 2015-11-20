@@ -117,13 +117,12 @@ Proto({
         ~ktl = ktl;
         ~indexes = keys;
 		keys.do(~model[_] = 0);
-		//Map MKtlElement indexes to ~index indexes
-		~indexMapper = q.dev.lpIn.elementAt(~elementGroup).flat.collectAs({ |k,v| k.index->keys.indexOf(v) }, IdentityDictionary)
-		//keep only indexes from ~indexes
-		.select( { |k, v|
-			//FIXME: This doesn't work in targetController...
-			keys.includes(k.asInt);
-		});
+		//Map MKtlElement indexes to zero-based numeric indexes
+        tmp = m.elementAt(\pad).flat;
+        ~indexMapper = keys.collectAs({ |k, i| tmp[k].index -> i }, IdentityDictionary);
+
+        //TODO: probably better to do it with a single action for all keys,
+        //but i'm unsure if it will break something. Leave it for now, since not broken (anymore)
 		keys.do { |x, i|
             ktl.elementAt(~elementGroup, x).action_(~ktlAction.inEnvir);
 			~actions.add(~buttonActionFactory.(i));
@@ -132,7 +131,7 @@ Proto({
     };
 
     ~ktlAction = { |e|
-		~indexMapper[e.index] !? { |index|
+       ~indexMapper[e.index] !? { |index|
 		~actions[index].value(e.value);
         }
 

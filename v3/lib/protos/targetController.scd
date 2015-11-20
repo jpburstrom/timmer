@@ -12,6 +12,7 @@
     };
 
 	~onShortPress = { |k|
+        "shortPress %".format(k).postln;
 		0.rrand(4)
 
 	};

@@ -10,7 +10,8 @@
     };
 
     ~onShortPress = { |k|
-		nil
+        k.postln;
+        nil;
     };
 
     ~onStateChange = { |k, v|
