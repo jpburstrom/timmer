@@ -12,6 +12,15 @@ Proto({
 	~ignoreKeyUps = false;
 	~isDeviceSendingKeyUp = true;
 
+    //If exclusive state is set, only one button can have that state
+    //Set it to the state number
+    ~exclusiveState = nil;
+    //if exclusive, set a state that the currently active slot is reset to
+    ~inactiveState = 1;
+    //current exclusive slot
+    ~exclusiveKey = nil;
+
+
 	~listenToSingleKey = nil;
     ~setStateFunc = \setState;
 	~indexMapper;
@@ -138,6 +147,10 @@ Proto({
     };
 
     ~setState = { |k, v|
+        if (~exclusiveState.notNil) {
+            //If we set active, set previous inactive
+            ~doExclusiveCheck.(k, v);
+        };
         ~model[k] = v;
         ~onStateChange.(k, v);
         currentEnvironment.changed(\state, k, v);
@@ -145,6 +158,23 @@ Proto({
 
     ~getState = { |k|
         ~model[k] ?? 0;
+    };
+
+    ~setExclusive = { |k|
+        ~setState.value(k, ~exclusiveState);
+    };
+
+    ~doExclusiveCheck = { |k, v|
+        if (~exclusiveState == v) {
+            ~exclusiveKey !? { |k| ~setState.(k, ~inactiveState) };
+            ~exclusiveKey = k;
+        } {
+            //else if we for some reason are setting it back to an inactive state,
+            //reset ~exclusiveKey
+            if (~exclusiveKey == k) {
+                ~exclusiveKey = nil;
+            }
+        }
     };
 
     ~indexAt = { |k|

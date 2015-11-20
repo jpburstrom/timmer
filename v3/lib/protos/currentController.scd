@@ -5,13 +5,8 @@
 		true;
 	};
 
-    ~onLongPress = { |k|
-		"longPress:%".format(k).postln;
-    };
-
     ~onShortPress = { |k|
-        k.postln;
-        nil;
+       1
     };
 
     ~onStateChange = { |k, v|
