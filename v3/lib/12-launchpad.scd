@@ -55,6 +55,7 @@ q.make {
 			~views[k].colors = colors[k];
 		};
 
+        //TODO: Connect controllers to CVs
 
 
 	};
