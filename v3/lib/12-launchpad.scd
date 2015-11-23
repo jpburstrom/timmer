@@ -19,9 +19,11 @@ q.make {
 	//Long press
 	//Pass an array to blink between two colors
     var colors = (
-		paramSelect: [\off, \lRed],
-        current: [\off, \lRed, #[fRed, red]],
-		target: [\off, \lAmber, \lGreen, \amber, \green],
+        //TODO: set colors
+        current: [\off, #[fRed, red]],
+		target: [\lAmber, \lGreen, \amber, \green],
+
+        paramSelect: [\off, \lRed],
 		pedalActions: [\off, \lRed],
 
 	);
@@ -40,11 +42,11 @@ q.make {
        #[
 			current, currentController,
 			target, targetController,
-			paramSelect, paramSelectController,
-			pedalActions, pedalActionController,
+			freezeScale, freezeController,
+			metaPreset, metaPresetController,
 
-			//freezeScale, freezeController,
-			//metaPreset, metaPresetController
+            paramSelect, paramSelectController,
+			pedalActions, pedalActionController
 		].pairsDo { |k,v|
 			//Connect controller to device IN
 			~ctrls[k] = "protos/%".format(v).import.connect(~dev.lpIn, keys[k]);
