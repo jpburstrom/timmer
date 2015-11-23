@@ -17,7 +17,8 @@ Req.load(['storage'], { |storage|
 	storage.params = params = ().make {
 
 		var createNumberedCVs = { arg num, spec;
-			num.collectAs({ |x| (x + 1).asSymbol ->CV(spec) }, Environment).know_(true);
+			//num.collectAs({ |x| (x + 1).asSymbol ->CV(spec) }, Environment).know_(true);
+            num.collect { CV(spec) };
 		};
 
 
@@ -73,7 +74,7 @@ Req.load(['storage'], { |storage|
 
 
 		//eq is sold separately
-		~eq24 = 24.collectAs({ |x| (x + 1).asSymbol ->CV(\eqGain) }, Environment).know_(true);
+        ~eq24 = 24.collect({CV(\eqGain) });
 	};
 
 

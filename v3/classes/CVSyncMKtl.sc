@@ -14,10 +14,15 @@ CVSyncMktl : CVSync {
 
 	value { this.valueArray }
 
-	valueArray { if (enabled) { "hello %,%".format(cv.input, view.value).postln; cv.input = view.value } }		// called when mktl changes
+	valueArray { if (enabled) { cv.input = view.value } }		// called when mktl changes
 
 	enable { enabled = true }
 	disable { enabled = false }
+
+    remove {
+        cv.removeDependant(this);
+        view.removeAction(this);
+    }
 
 }
 

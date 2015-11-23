@@ -51,8 +51,7 @@ Req.load(#[params], { |params|
 
 	(eq: {
 		makeui.grid(\eq24, 3, 8, nil, Rect(0, 0, 500, 400).center_( Window.availableBounds.center ));
-		(1..24).do { |i|
-			i = i.asSymbol;
+		24.do { |i|
 			v = params.eq24[i];
 			makeui.knob(i, v, \eq24, 0.01);
 		}

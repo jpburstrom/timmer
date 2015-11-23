@@ -2,26 +2,57 @@ Req.load([\devices, \params], { |midi, params|
 
 	midi.make {
 
-		var vals, mfunc, cvsync, bcr, pageSwitchButtons;
+		var
+        vals, //tmp
+        mfunc,
+        cvsync,
+        bcr,
+        pageSwitchButtons,
+        bottomEnc;
 
 		bcr = ~bcr = MKtl(\bcr, "*bcr2000");
-		~bcr.gui;
+		//~bcr.gui;
 		~bcr.elementAt(\kn).reset;
-		~bottomEnc = ~bcr.elementAt(\kn).flat;
+        //A way to access \kn elements by numerical index
+		bottomEnc = ~bcr.elementAt(\kn).flat;
 
-		params.postln;
+        //all CVs
+        vals = ().make {
+            ~pr_1_1 = (params.main.current ++ params.main.target ++ (CV()!8));
+           ~pr_1_2 = params.eq24;
+        };
 
-		cvsync = ().make {
-			~kn1 = ().make {
-				~current = params.main.current.collect { |v, k| v.connectMKtlElement(bcr.elementAt(\kn, \1, k)) };
-				~target = params.main.target.collect { |v, k| v.connectMKtlElement(bcr.elementAt(\kn, \1, k)) };
-			};
-			~kn2 = ();
-			~bottomEnc.do { |k,i|
-				~kn2[k.index] = params.eq24[k.index].connectMKtlElement(k);
-			}
+        //Clean up previously added MKtl->CV connections
+        //vals keeps references to same CVs if we're not reloading that file
+        //so ok, we need to deal with that
+        //But maybe we'll just put a ~bcr.reset at top, does that work?
+        //OTOH would be good if Req.load had a nice way to deal with unloading resources
+        //
+        vals.deepDo(2, { |cv|
+            var deps = cv.dependants;
+            deps.do { |x|
+                if (x.class == CVSyncMktl) {
+                    x.remove;
+                }
+            }
+        });
+
+
+        //
+        cvsync = ().make {
+			~kn1 = params.main.current.collect({ |v, i|
+                   v.connectMKtlElement(bcr.elementAt(\kn, \1, i));
+            })
+            ++
+			params.main.target.collect({ |v, i|
+                v.connectMKtlElement(bcr.elementAt(\kn, \2, i));
+            });
+            //TODO: add third row
+
+            ~kn2 = params.eq24.collect { |v,i| v.connectMKtlElement(bottomEnc[i]) };
 		};
 
+        a = vals.postln;
 		~cvsync = cvsync;
 
 		//----Top encoders-----------
@@ -45,7 +76,6 @@ Req.load([\devices, \params], { |midi, params|
 
 
 		//----Bottom encoders (32)-------
-		vals = (pr_1_1: 0!32, pr_1_2:0!32); //TODO: get preset values
 		mfunc = MFunc();
 
 		//---------first page: misc----------
@@ -59,10 +89,6 @@ Req.load([\devices, \params], { |midi, params|
 				~bcr.elementAt(\bt, 1 - knobRows.indexOf(grp.index), elem.index).valueAction=0;
 			};
 
-			//TODO: set model values
-			//This is a placeholder
-			vals[\pr_1_1][~bottomEnc.indexOf(elem)] = elem.value;
-
 		}.inEnvir);
 
 		//cvfunc.add(\pr_1_1, { |el|
@@ -70,9 +96,7 @@ Req.load([\devices, \params], { |midi, params|
 
 		//--------------second page: eq gain---------
 		mfunc.add(\pr_1_2, { |elem, grp, row|
-
-
-
+            //vals[\pr_1_1][bottomEnc.indexOf(elem)] = elem.value;
 		}.inEnvir);
 
 		//--------Switch pages with two bottom-right buttons------
@@ -81,12 +105,22 @@ Req.load([\devices, \params], { |midi, params|
 		{
 			pageSwitchButtons = ~bcr.elementAt(\pr, \1).flat;
 			~bcr.elementAt(\pr, \1).action = { |elem, grp|
+                var index = pageSwitchButtons.indexOf(elem);
 				mfunc.mode_(elem.name);
-				grp.at(1 - pageSwitchButtons.indexOf(elem)).deviceValue = 0;
-				elem.deviceValue = 127;
+                if (index == 0) {
+                    "enable kn1".postln;
+                    cvsync[\kn1].do(_.enable);
+                    cvsync[\kn2].do(_.disable);
+                } {
+                    "enable kn2".postln;
+                    cvsync[\kn1].do(_.disable);
+                    cvsync[\kn2].do(_.enable);
+                };
+                grp.at(1 - index).deviceValue = 0;
+                elem.deviceValue = 127;
 				//~bcr.elementAt(\kn).disable;
-				~bcr.elementAt(\kn).flat.do({ |x, i|
-					x.value = vals[elem.name][i];
+				bottomEnc.do({ |x, i|
+					x.value = vals[elem.name][i].input;
 				});
 				//~bcr.elementAt(\kn).enable;
 			}.inEnvir;
