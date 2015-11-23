@@ -1,6 +1,11 @@
 //targetController
 "buttonController".import.clone({
 
+	//Set next states for long & short press
+	//like a fsm
+	var longPressNextState = [1, 0, 3, 2];
+	var shortPressNextState = [2, 3, 2, 3];
+
     //0: inactive, random
     //1: inactive, filled
     //2: active, random
@@ -15,15 +20,14 @@
 
     ~onLongPress = { |k|
         //If target is empty, move to slot
-        ~getState.(k) !? { |v|
-            (1 - v.mod(2)) + (2 * v.div(2))
-        } ?? 0;
+		~getState.(k) !? (longPressNextState[_]) ?? 0;
 
     };
 
 	~onShortPress = { |k|
         "shortPress %".format(k).postln;
-		2
+		k.postln;
+		~getState.(k) !? (shortPressNextState[_]) ?? 0;
 	};
 
 

@@ -1,90 +1,103 @@
-q.dev ?? { q.dev = (); } //XXX TEMP
+Req.load([\devices, \params], { |midi, params|
 
-(
-q.make {
+	midi.make {
 
-    var pageSwitchButtons;
+		var vals, mfunc, cvsync, bcr, pageSwitchButtons;
 
-    q.dev.bcr = MKtl(\bcr, "*bcr2000");
-    q.dev.bcr.gui;
-    q.dev.bcr.elementAt(\kn).reset;
+		bcr = ~bcr = MKtl(\bcr, "*bcr2000");
+		~bcr.gui;
+		~bcr.elementAt(\kn).reset;
+		~bottomEnc = ~bcr.elementAt(\kn).flat;
 
-    ~bottomEnc = q.dev.bcr.elementAt(\kn).flat;
+		params.postln;
 
-    //----Top encoders-----------
-    //Don't set any model values here -- bottom 32 should do that
-    ~topRow = q.dev.bcr.elementAt(\knUp, \1);
-    ~topRow.action = { |elem|
-        //Index is either 0 or 1 -- check with second row of button rows
-        var rowIndex = q.dev.bcr.elementAt(\bt, \2, elem.index).value.asInt;
-        q.dev.bcr.elementAt(\kn, rowIndex, elem.index).value = elem.value;
+		cvsync = ().make {
+			~kn1 = ().make {
+				~current = params.main.current.collect { |v, k| v.connectMKtlElement(bcr.elementAt(\kn, \1, k)) };
+				~target = params.main.target.collect { |v, k| v.connectMKtlElement(bcr.elementAt(\kn, \1, k)) };
+			};
+			~kn2 = ();
+			~bottomEnc.do { |k,i|
+				~kn2[k.index] = params.eq24[k.index].connectMKtlElement(k);
+			}
+		};
 
-    }.inEnvir;
+		~cvsync = cvsync;
 
-    //Top encoder buttons----------
-    //Mute/set current to default
-    q.dev.bcr.elementAt(\tr, \1).action = { |elem|
-        //Todo -- set default value? Mute/Solo?
-        if (elem.value == 1) {
-            ~topRow.at(elem.index).valueAction = 0;
-        }
-    }.inEnvir;
+		//----Top encoders-----------
+		~topRow = ~bcr.elementAt(\knUp, \1);
+		~topRow.action = { |elem|
+			//Index is either 0 or 1 -- check with second row of button rows
+			var rowIndex = ~bcr.elementAt(\bt, \2, elem.index).value.asInt;
+			~bcr.elementAt(\kn, rowIndex, elem.index).value = elem.value;
 
+		}.inEnvir;
 
-
-    //----Bottom encoders (32)-------
-    v = (pr_1_1: 0!32, pr_1_2:0!32); //TODO: get preset values
-    m = MFunc();
-
-    //---------first page: misc----------
-    m.add(\pr_1_1, { |elem, grp, row|
-        var knobRows = [\1,\2];
-
-        //If first two rows, set upper encoder value and set buttons to corresponding row
-        if (knobRows.includes(grp.index)) {
-            q.topRow.at(elem.index).value = elem.value;
-            q.dev.bcr.elementAt(\bt, grp.index, elem.index).valueAction=1;
-            q.dev.bcr.elementAt(\bt, 1 - knobRows.indexOf(grp.index), elem.index).valueAction=0;
-        };
-
-        //TODO: set model values
-        //This is a placeholder
-        v[\pr_1_1][~bottomEnc.indexOf(elem)] = elem.value;
+		//Top encoder buttons----------
+		//Mute/set current to default
+		~bcr.elementAt(\tr, \1).action = { |elem|
+			//Todo -- set default value? Mute/Solo?
+			if (elem.value == 1) {
+				~topRow.at(elem.index).valueAction = 0;
+			}
+		}.inEnvir;
 
 
-    }.inEnvir);
 
-    //--------------second page: eq gain---------
-    m.add(\pr_1_2, { |elem, grp, row|
+		//----Bottom encoders (32)-------
+		vals = (pr_1_1: 0!32, pr_1_2:0!32); //TODO: get preset values
+		mfunc = MFunc();
 
-        //TODO: set model values
-        //This is a placeholder
-        v[\pr_1_2][~bottomEnc.indexOf(elem)] = elem.value;
+		//---------first page: misc----------
+		mfunc.add(\pr_1_1, { |elem, grp, row|
+			var knobRows = [\1,\2];
 
-    }.inEnvir);
+			//If first two rows, set upper encoder value and set buttons to corresponding row
+			if (knobRows.includes(grp.index)) {
+				~topRow.at(elem.index).value = elem.value;
+				~bcr.elementAt(\bt, grp.index, elem.index).valueAction=1;
+				~bcr.elementAt(\bt, 1 - knobRows.indexOf(grp.index), elem.index).valueAction=0;
+			};
 
-    //--------Switch pages with two bottom-right buttons------
-    m.makeExclusiveModes(\pageswitch, [\pr_1_1, \pr_1_2]);
+			//TODO: set model values
+			//This is a placeholder
+			vals[\pr_1_1][~bottomEnc.indexOf(elem)] = elem.value;
 
-    {
-        pageSwitchButtons = q.dev.bcr.elementAt(\pr, \1).flat;
-        q.dev.bcr.elementAt(\pr, \1).action = { |elem, grp|
-            m.mode_(elem.name);
-            grp.at(1 - pageSwitchButtons.indexOf(elem)).deviceValue = 0;
-            elem.deviceValue = 127;
-            q.dev.bcr.elementAt(\kn).disable;
-            q.dev.bcr.elementAt(\kn).flat.do({ |x, i|
-                x.valueAction = v[elem.name][i];
-            });
-            q.dev.bcr.elementAt(\kn).enable;
-        }
-    }.value;
+		}.inEnvir);
 
-    //Sync with presets etc
-    q.dev.bcr.elementAt(\kn).action = m;
-    q.dev.bcr.elementAt(\pr, \1, \1).valueAction = 1;
-    q.dev.bcr.sync;
+		//cvfunc.add(\pr_1_1, { |el|
 
-};
 
-)
+		//--------------second page: eq gain---------
+		mfunc.add(\pr_1_2, { |elem, grp, row|
+
+
+
+		}.inEnvir);
+
+		//--------Switch pages with two bottom-right buttons------
+		mfunc.makeExclusiveModes(\pageswitch, [\pr_1_1, \pr_1_2]);
+
+		{
+			pageSwitchButtons = ~bcr.elementAt(\pr, \1).flat;
+			~bcr.elementAt(\pr, \1).action = { |elem, grp|
+				mfunc.mode_(elem.name);
+				grp.at(1 - pageSwitchButtons.indexOf(elem)).deviceValue = 0;
+				elem.deviceValue = 127;
+				//~bcr.elementAt(\kn).disable;
+				~bcr.elementAt(\kn).flat.do({ |x, i|
+					x.value = vals[elem.name][i];
+				});
+				//~bcr.elementAt(\kn).enable;
+			}.inEnvir;
+		}.value;
+
+		//Sync with presets etc
+		~bcr.elementAt(\kn).action = mfunc;
+		~bcr.elementAt(\pr, \1, \1).valueAction = 1;
+		~bcr.sync;
+
+	};
+
+
+});

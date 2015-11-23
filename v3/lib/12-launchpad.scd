@@ -1,15 +1,11 @@
 (
-q.dev !? { |d| d.lpIn !? { |in|
-	in.reset;
-    in.free;
-}};
 q.make {
     //launchPad key mapping
     var keys = (
 		current: [0],
-		target: (1..48),
-		freezeScale: (49..56),
-		metaPreset: (57..64),
+		target: (1..47),
+		freezeScale: (48..55),
+		metaPreset: (56..63),
 		paramSelect: (0..7),
 		pedalActions: (0..7),
 
@@ -21,10 +17,12 @@ q.make {
     var colors = (
         //TODO: set colors
         current: [\off, #[fRed, red]],
-		target: [\lAmber, \lGreen, \amber, \green],
+		target: #[lAmber, lGreen, amber, green],
+		freezeScale: #[lRed, red],
+		metaPreset: #[lAmber, lGreen, amber, green],
 
         paramSelect: [\off, \lRed],
-		pedalActions: [\off, \lRed],
+		pedalActions: #[off, amber, green],
 
 	);
 
@@ -41,9 +39,9 @@ q.make {
         //Pairs of key => controllerProtoNames
        #[
 			current, currentController,
-			target, targetController,
+			target, presetController,
 			freezeScale, freezeController,
-			metaPreset, metaPresetController,
+			metaPreset, presetController,
 
             paramSelect, paramSelectController,
 			pedalActions, pedalActionController
