@@ -1,8 +1,9 @@
 //A require for SC
+//
 Req {
 	classvar instance;
 	classvar <>alwaysReload;
-	var <loaded, <reloaded;
+	var <loaded, <reloaded, <cleanup;
 
 	*new {
 		^super.new.init;
@@ -18,6 +19,13 @@ Req {
 
 	load { |deps, fun, reset=false|
 
+        var ck = thisProcess.nowExecutingPath.asSymbol;
+        if (cleanup[ck].notNil) {
+            cleanup[ck].value;
+        };
+
+        cleanup[ck] = FunctionList();
+
 		if (reset) {
 			this.reloaded.clear;
 		};
@@ -28,20 +36,24 @@ Req {
 		};
 
 		deps = deps.collect { |key|
-			key = key.asSymbol;
+            var path = "%.scd".format(key).resolveRelative;
+            key = path.asSymbol;
 			if (loaded[key].isNil or: { reloaded.includes(key).not }) {
-				loaded[key] = "%.scd".format(key).loadRelative[0];
+				loaded[key] = path.load;
 				reloaded.add(key);
 			};
 			loaded[key].value;
 		}
 
-		^fun.value(*deps);
+        ^fun.valueArray(deps ++ cleanup[ck]);
 	}
+
+
 
 	init {
 		reloaded = Set();
 		loaded = IdentityDictionary();
+        cleanup = IdentityDictionary();
 	}
 
 }
