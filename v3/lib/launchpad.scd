@@ -1,4 +1,4 @@
-Req.load(nil, { |cleanup|
+Req.load([\params], { |params, cleanup|
 
 	var lpIn, lpOut, ctrls, views;
 
@@ -29,11 +29,13 @@ Req.load(nil, { |cleanup|
 
 	);
 
+
 	ctrls = ();
 	views = ();
 
 	lpIn = MKtl('launchpad', "*launchpad-mini", true);
 	if (lpIn.device.notNil) {
+
 		lpOut = LaunchpadOut(lpIn).reset;
 		//Autoflash
 		lpOut.midiOut.control(0, 0, 40);
@@ -57,11 +59,15 @@ Req.load(nil, { |cleanup|
 			views[k].colors = colors[k];
 		};
 
-        //TODO: Connect controllers to CVs
+		"connecting target".postln;
+		ctrls[\target].debug("target");
+		q.targetCV = params.meta.target.debug("cv");
+		ctrls[\target].connectCV(params.meta.target);
 
 
 	};
 
-	lpIn
+	ctrls
+
 
 });

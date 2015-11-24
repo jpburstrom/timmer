@@ -28,10 +28,10 @@ Req {
 			^false
 		};
 
-		if (reload) {
+		if (reload && forceReload.not) {
+			reloaded.clear;
 			forceReload = true;
 		};
-
 		{
 			//add to circular check to make sure we're not entering a feedback loop
 			circularCheck.add(ck);
@@ -57,7 +57,7 @@ Req {
 				depToLoad = dep;
 
 				//we load the path, assuming it contains a Req.load statement
-				if (reloaded.includes(dep).not  or: forceReload) {
+				if (loaded[dep].isNil or: { reloaded.includes(dep).not  and: forceReload }) {
 					if (circularCheck.includes(dep)) {
 						"Req: circular dependency. Not loading Req at %".format(dep).warn;
 					} {

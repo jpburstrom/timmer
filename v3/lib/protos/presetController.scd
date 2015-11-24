@@ -31,11 +31,7 @@
 	};
 
 
-    ~onStateChange = { |k, v|
-        "stateChange: %,%".format(k,v).postln;
-    };
-
-    ~doExclusiveCheck = { |k, v|
+   ~doExclusiveCheck = { |k, v|
         //We have four states, two active and two inactive
         //Deal with it
         if (~exclusiveState.includes(v)) {
@@ -50,5 +46,25 @@
         }
     };
 
+	~connectCV = { |cv|
+		cv.addDependant(currentEnvironment);
+		~onStateChange = { |k, v|
+			cv.value = k;
+		};
+	};
+
+	~update = e { |obj, what, v|
+		[what, v, ~onShortPress].postln;
+		if (what == \synch) {
+			//this should be enough
+			//FIXME: feedback loop
+			var val = ~getState.(v.value) !? (shortPressNextState[_]) ?? 0;
+
+			//HACK: change state without ~onStateChange, to avoid feedback
+			~model[v.value] = val;
+			~model.postln;
+			currentEnvironment.changed(\state, v.value, val);
+		}
+	};
 
 });

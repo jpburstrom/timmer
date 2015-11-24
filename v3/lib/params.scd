@@ -46,7 +46,7 @@ Req.load(['storage'], { |storage|
 		//Meta params are not saved with main presets
 		~meta = Environment(know:true).make {
 			//holds current preset target
-			~target = CV([1, presetCount, \lin, 1, 1]);
+			~target = CV([0, presetCount - 1, \lin, 1, 0]);
 			//Morph value current->target
 			~morph = CV();
 			//preset interpolation time
