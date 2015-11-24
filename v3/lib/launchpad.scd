@@ -1,5 +1,8 @@
-(
-q.make {
+Req.load(nil, { |cleanup|
+
+	var lpIn, lpOut, ctrls, views;
+
+
     //launchPad key mapping
     var keys = (
 		current: [0],
@@ -26,15 +29,14 @@ q.make {
 
 	);
 
-	~dev = ();
-    ~views = ();
-    ~ctrls = ();
+	ctrls = ();
+	views = ();
 
-	~dev.lpIn = MKtl('launchpad', "*launchpad-mini", true);
-	if (~dev.lpIn.device.notNil) {
-		~dev.lpOut = LaunchpadOut(~dev.lpIn).reset;
+	lpIn = MKtl('launchpad', "*launchpad-mini", true);
+	if (lpIn.device.notNil) {
+		lpOut = LaunchpadOut(lpIn).reset;
 		//Autoflash
-		~dev.lpOut.midiOut.control(0, 0, 40);
+		lpOut.midiOut.control(0, 0, 40);
 
         //Pairs of key => controllerProtoNames
        #[
@@ -47,12 +49,12 @@ q.make {
 			pedalActions, pedalActionController
 		].pairsDo { |k,v|
 			//Connect controller to device IN
-			~ctrls[k] = "protos/%".format(v).import.connect(~dev.lpIn, keys[k]);
+			ctrls[k] = "protos/%".format(v).import.connect(lpIn, keys[k]);
 			//Connect view to device OUT
             //All have same view
-			~views[k] = "protos/buttonView".import.connect(~ctrls[k], ~dev.lpOut);
+			views[k] = "protos/buttonView".import.connect(ctrls[k], lpOut);
 			//set colors
-			~views[k].colors = colors[k];
+			views[k].colors = colors[k];
 		};
 
         //TODO: Connect controllers to CVs
@@ -60,14 +62,6 @@ q.make {
 
 	};
 
-}
-);
+	lpIn
 
-/*
-q.dev.lpIn.elementAt(\pad, 0).action
-q.ctrls.current.actions[0].value(1);q.ctrls.current.actions[0].value(0)
-q.dev.lpIn.elementAt(\pad, \1).index
-q.ctrls.current.indexes.indexOf(q.dev.elementAt(\pad, 0))
-q.dev.lpIn.elementAt(\pad, 0).index
-*/
-
+});

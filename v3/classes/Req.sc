@@ -4,7 +4,7 @@ Req {
 	classvar instance;
 	classvar <>alwaysReload;
 	var <loaded, <reloaded, <cleanup, <initFuncs, <updateFuncs;
-	var <>depToLoad, circularCheck;
+	var <>depToLoad, circularCheck, forceReload=false;
 
 	*new {
 		^super.new.init;
@@ -26,6 +26,10 @@ Req {
 		//key, just exit
 		if (depToLoad.notNil and: { depToLoad != ck }) {
 			^false
+		};
+
+		if (reload) {
+			forceReload = true;
 		};
 
 		{
@@ -53,7 +57,7 @@ Req {
 				depToLoad = dep;
 
 				//we load the path, assuming it contains a Req.load statement
-				if (reloaded.includes(dep).not  or: reload) {
+				if (reloaded.includes(dep).not  or: forceReload) {
 					if (circularCheck.includes(dep)) {
 						"Req: circular dependency. Not loading Req at %".format(dep).warn;
 					} {
@@ -80,6 +84,7 @@ Req {
 			//reset recursion tests on error
 			circularCheck.clear;
 			depToLoad = nil;
+			forceReload = false;
 
 			error.throw;
 		});
@@ -87,6 +92,7 @@ Req {
 		//If we're at the end of the recursion, unset depToLoad for next time
 		if (circularCheck.isEmpty) {
 			depToLoad = nil;
+			forceReload = false;
 		};
 
 		loaded[ck] = result = initFunc.valueArray(deps ++ cleanup[ck]);
