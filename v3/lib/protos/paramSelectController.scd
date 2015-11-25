@@ -1,5 +1,8 @@
 //targetController
 "buttonController".import.clone({
+
+    var disableSynch=false;
+
 	~elementGroup = \bt;
 
 	~isKeyInited = {
@@ -38,8 +41,27 @@
     ~onStateChange = { |k, v|
 		"stateChange: %,%".format(k,v).postln;
 		nil
-	}
+	};
 
+	~connectCV = { |cv|
+		cv.addDependant(currentEnvironment);
+		~onStateChange = { |k, v|
+            disableSynch = true;
+            cv.value = cv.value.put(k, v);
+            disableSynch=false;
+
+		};
+	};
+
+    ~update = e { |obj, what, v|
+        if (what == \synch && disableSynch.not) {
+            //this should be enough
+            //FIXME: feedback loop
+            v.value.do { |x, i|
+                ~setState.(i, x);
+            };
+        }
+    };
 
 });
 

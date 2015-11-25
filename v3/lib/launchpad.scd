@@ -80,6 +80,13 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 		);
 
 		ctrls[\metaPreset].connectCV(params.snapshot);
+        ctrls[\metaPreset].storePreset = { |k|
+            "storing preset %".format(k).postln;
+            params.meta_array.do { arg x, i;
+                storage.snapshots[k][i] = x.value;
+            }
+        };
+        ctrls[\metaPreset].deletePreset = { "delete".postln };
 		//snapshots 0-7
 		8.do { |k|
 			ctrls[\metaPreset].setState(k, storage.snapshotsToStore.includes(k).asInt);
@@ -105,7 +112,10 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 
 		8.do(ctrls[\paramSelect].setState(_,1));
 
+        ctrls[\paramSelect].connectCV(params.meta.macroParamSelect);
+        ctrls[\pedalActions].connectCV(params.meta.selectedPedalAction);
 		ctrls[\pedalActions].setState(0, 1)
+
 
 	};
 

@@ -39,7 +39,7 @@ Proto({
         var vals = ~presets[idx];
         if (keys.notNil) { vals = vals.select { |v,k| keys.includes(k) } };
         ~current = idx; //Should we set current?
-        vals.keysValuesDo { |k,v| ~items[k] !? (_.value = v); };
+        vals.do { |v, k| ~items[k] !? (_.value = v); };
     };
 
     //Morph ~current with ~target, update items by default

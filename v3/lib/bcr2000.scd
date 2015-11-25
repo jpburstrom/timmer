@@ -142,5 +142,6 @@ Req.load([\params], { |params, cleanup|
 	8.do { |x| bcr.elementAt(\bt, \1, x).valueAction = 0 };
 
 
+    bcr
 
 });

@@ -1,11 +1,12 @@
 //targetController
 "buttonController".import.clone({
 
+    var disableSynch = false;
+
 	~elementGroup = \arr;
 	~isDeviceSendingKeyUp = false;
-
-	~previous = nil;
-	~current = nil;
+    ~exclusiveState = 1;
+    ~inactiveState = 0;
 
 	~isKeyInited = {
 		true;
@@ -13,13 +14,7 @@
 
 	~onShortPress = { |k|
 		"Select %".format(k).postln;
-		~current !? {
-			~setState.(~current,0);
-		};
-		~previous = ~current;
-		~current = k;
 		1
-
 	};
 
 	/*
@@ -31,10 +26,25 @@
 	};
 	*/
 
+	~connectCV = { |cv|
+		cv.addDependant(currentEnvironment);
+		~onStateChange = { |k, v|
+            if (v == 1) {
+                disableSynch = true;
+                cv.value = k;
+                disableSynch=false;
+            }
 
-	~onStateChange = { |k, v|
-		"stateChange: %,%".format(k,v).postln;
-    }
+		};
+	};
+
+    ~update = e { |obj, what, v|
+        if (what == \synch && disableSynch.not) {
+            //this should be enough
+            ~setState.(v.value, 1);
+        }
+    };
+
 
 
 });

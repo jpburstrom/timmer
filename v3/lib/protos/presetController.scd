@@ -12,6 +12,7 @@
     //3: active, filled
     ~exclusiveState = #[2,3];
     ~inactiveState = #[0,1];
+    ~emptyState = #[0,2];
 
 
 	~isKeyInited = {
@@ -21,6 +22,11 @@
     ~onLongPress = { |k|
         //If target is empty, move to slot
 		var out = ~getState.(k) !? (longPressNextState[_]) ?? 0;
+        if (~emptyState.includes(out)) {
+            ~deletePreset.(k);
+        } {
+            ~storePreset.(k);
+        };
 		out;
 
     };
@@ -48,7 +54,7 @@
 	~connectCV = { |cv|
 		cv.addDependant(currentEnvironment);
 		~onStateChange = { |k, v|
-			if (~exclusiveState.includes(v)) {
+            if (~exclusiveState.includes(v)) {
 				cv.value = k;
 			}
 		};
@@ -57,7 +63,6 @@
 	~update = e { |obj, what, v|
 		if (what == \synch and: { ~exclusiveKey != v.value } ) {
 			//this should be enough
-			//FIXME: feedback loop
 			var val = ~getState.(v.value.asInt) !? (shortPressNextState[_]) ?? 0;
 			~setState.(v.value, val);
 		}
