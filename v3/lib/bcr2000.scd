@@ -17,7 +17,7 @@ Req.load([\params], { |params, cleanup|
 
 	//all CVs
 	vals = ().make {
-		~pr_1_1 = (params.current ++ params.target ++ (CV()!8));
+		~pr_1_1 = (params.current ++ params.target ++ (CV()!8)); //XXX tmp
 		~pr_1_2 = params.eq24;
 	};
 
@@ -134,7 +134,12 @@ Req.load([\params], { |params, cleanup|
 	//Sync with presets etc
 	bcr.elementAt(\kn).action = mfunc;
 	bcr.elementAt(\pr, \1, \1).valueAction = 1;
+
+	//Simulate key up
+	// 8.do { |x| bcr.elementAt(\bt, \1, x).valueAction = 0 };
+
 	bcr.sync;
+	8.do { |x| bcr.elementAt(\bt, \1, x).valueAction = 0 };
 
 
 
