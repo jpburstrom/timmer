@@ -3,8 +3,8 @@
 Req {
 	classvar instance;
 	classvar <>alwaysReload;
-	var <loaded, <reloaded, <cleanup, <initFuncs, <updateFuncs;
-	var <>depToLoad, circularCheck, forceReload=false;
+	var <loaded, <reloaded, <cleanup, <initFuncs, <updateFuncs, <depMap;
+	var <>depToLoad, <circularCheck, forceReload=false;
 
 	*new {
 		^super.new.init;
@@ -45,6 +45,9 @@ Req {
 			initFuncs[ck] = initFunc;
 			updateFuncs[ck] = updateFunc;
 
+			depMap.removeFrom(ck);
+
+
 			//resolve deps
 			//foo/asd => /path/to/foo/asd.scd
 			//foo/asd#thing => /path/to/foo/asd.scd#thing
@@ -54,21 +57,15 @@ Req {
 				var tmpOut;
 				dep = this.prMakeKey(path, keyArray[1]);
 				//We set current dependency to load
-				depToLoad = dep;
+
+				depMap.add(ck, dep);
+
+				//Add dep t
+				//loaded[ck][1].add(dep);
 
 				//we load the path, assuming it contains a Req.load statement
 				if (loaded[dep].isNil or: { reloaded.includes(dep).not  and: forceReload }) {
-					if (circularCheck.includes(dep)) {
-						"Req: circular dependency. Not loading Req at %".format(dep).warn;
-					} {
-						tmpOut = path.load;
-						//A Req.load statement in the include file would have populated the loaded[dep] slot
-						//If not, we put the output of the file instead
-						if (loaded[dep].isNil) {
-							loaded[dep] = tmpOut;
-						}
-
-					};
+					this.prLoadDep(dep);
 				};
 				tmpOut = loaded[dep].value;
 				if (updateFuncs[dep].isFunction) {
@@ -78,7 +75,6 @@ Req {
 			};
 
 			reloaded.add(ck);
-			circularCheck.remove(ck);
 
 		}.try({ |error|
 			//reset recursion tests on error
@@ -89,11 +85,6 @@ Req {
 			error.throw;
 		});
 
-		//If we're at the end of the recursion, unset depToLoad for next time
-		if (circularCheck.isEmpty) {
-			depToLoad = nil;
-			forceReload = false;
-		};
 
 		loaded[ck] = result = initFunc.valueArray(deps ++ cleanup[ck]);
 
@@ -101,6 +92,22 @@ Req {
 		if (updateFunc.isFunction) {
 			result = updateFunc.value(result);
 		};
+
+		//We need to update those who depend on us as well
+		// "loading those who depend on %".format(ck).debug;
+		depMap.to(ck).do(this.prLoadDep(_));
+
+		//If we're at the end of the recursion, unset for next time
+		if (circularCheck.size == 1 and: { circularCheck.includes(ck) } ) {
+
+			depToLoad = nil;
+			forceReload = false;
+			// "done".debug;
+
+		};
+
+		circularCheck.remove(ck);
+
 
 		^result
 	}
@@ -112,9 +119,33 @@ Req {
 		^path.asSymbol;
 	}
 
+	prLoadDep { |dep|
+		var tmpOut, path;
+		depToLoad = dep;
+
+
+		path = dep.asString.split($#)[0];
+
+
+		if (circularCheck.includes(dep)) {
+			"Req: circular dependency. Not loading Req at %".format(dep).warn;
+		} {
+			tmpOut = path.load;
+			//A Req.load statement in the include file would have populated the loaded[dep] slot
+			//If not, we put the output of the file instead
+			if (loaded[dep].isNil) {
+				loaded[dep] = tmpOut;
+			}
+
+		};
+		// loaded[dep].debug("loaded dep");
+	}
+
+
 	init {
 		reloaded = Set();
-		circularCheck = Set();
+		circularCheck = Bag();
+		depMap = Connections();
 		loaded = IdentityDictionary();
         cleanup = IdentityDictionary();
 		initFuncs = IdentityDictionary();
