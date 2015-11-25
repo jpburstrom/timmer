@@ -30,6 +30,12 @@ Req.load(['storage'], { |storage|
 		//these are the cooked values
 		~main = createNumberedCVs.(8); //TODO: bipolar specs?
 
+		~makeCurrent = {
+			~main.do { |cv, i|
+				~current[i].value = cv.value;
+			}
+		}.inEnvir;
+
 		//8 snapshot slots
 		~snapshot = CV([0,7, \lin, 1, 1]);
 
@@ -43,7 +49,7 @@ Req.load(['storage'], { |storage|
 			~presetInterpolationTime = CV([0, maxPresetInterpolationTime]);
 
 			//Selects which macro params are updated/morphed (top row on LP)
-			~macroParamSelect = CV(\binary, 0!8); //Array of 8 values
+			~macroParamSelect = CV(\binary, 1!8); //Array of 8 values
 
 			//Selects current pedal action (LP scene buttons)
 			~selectedPedalAction = CV([0,7,\lin,1,0]);

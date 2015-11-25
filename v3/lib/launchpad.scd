@@ -1,6 +1,6 @@
-Req.load([\params], { |params, cleanup|
+Req.load([\params, \storage], { |params, storage, cleanup|
 
-	var lpIn, lpOut, ctrls, views;
+	var lpIn, lpOut, ctrls, views, clist=List();
 
 
     //launchPad key mapping
@@ -29,6 +29,9 @@ Req.load([\params], { |params, cleanup|
 
 	);
 
+	cleanup.addFunc {
+		clist.do(_.remove);
+	};
 
 	ctrls = ();
 	views = ();
@@ -59,13 +62,50 @@ Req.load([\params], { |params, cleanup|
 			views[k].colors = colors[k];
 		};
 
-		"connecting target".postln;
-		ctrls[\target].debug("target");
-		q.targetCV = params.meta.target.debug("cv");
-		ctrls[\target].connectCV(params.meta.target);
-		ctrls[\metaPreset].connectCV(params.snapshot);
-		ctrls[\freezeScale].connectCV(params.meta.freezeScale);
+		ctrls[\current].setState(0, 1);
 
+		ctrls[\target].connectCV(params.meta.target);
+		//target has presets 1-47
+		keys.target.size.do { |k|
+			ctrls[\target].setState(k, storage.presetsToStore.includes(k + 1).asInt);
+		};
+		clist.add(
+			SimpleController(ctrls[\target]).put(\state, { |obj, what, k, v|
+				if ([0,2].includes(v)) {
+					storage.presetsToStore.remove(k);
+				} {
+					storage.presetsToStore.add(k);
+				}
+			});
+		);
+
+		ctrls[\metaPreset].connectCV(params.snapshot);
+		//snapshots 0-7
+		8.do { |k|
+			ctrls[\metaPreset].setState(k, storage.snapshotsToStore.includes(k).asInt);
+		};
+		clist.add(
+			SimpleController(ctrls[\metaPreset]).put(\state, { |obj, what, k, v|
+				if ([0,2].includes(v)) {
+					storage.snapshotsToStore.remove(k);
+				} {
+					"adding".debug(k);
+					storage.snapshotsToStore.add(k);
+				}
+			});
+		);
+
+		ctrls[\freezeScale].connectCV(params.meta.freezeScale);
+		8.do(ctrls[\freezeScale].setState(_, 0));
+
+		ctrls[\current].onStateChange = params[\makeCurrent]; //a function to move main -> current
+
+
+		//-----upper row---------
+
+		8.do(ctrls[\paramSelect].setState(_,1));
+
+		ctrls[\pedalActions].setState(0, 1)
 
 	};
 
@@ -74,12 +114,3 @@ Req.load([\params], { |params, cleanup|
 
 });
 
-
-/*
-q.params.snapshot.value = 8.rand
-q.params.meta.target.value = 47.rand
-q.target.target.model[0]
-q.target.target.getState(q.params.meta.target.value.asInt)
-q.target.target.setState(0, 3)
-q.target.target.setState(1, 2)
-3 !? ([2,3,2,3][_]) ?? 0

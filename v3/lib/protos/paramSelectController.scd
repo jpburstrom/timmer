@@ -1,3 +1,4 @@
+"shortpress".postln;
 //targetController
 "buttonController".import.clone({
 	~elementGroup = \bt;

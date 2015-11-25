@@ -22,12 +22,15 @@
 
 	};
 
+	/*
 	~onDoublePress = { |k|
 		"Mute/Unmute".postln;
 		~current = ~previous;
 		~setState.(~current, 1);
 		0
 	};
+	*/
+
 
 	~onStateChange = { |k, v|
 		"stateChange: %,%".format(k,v).postln;

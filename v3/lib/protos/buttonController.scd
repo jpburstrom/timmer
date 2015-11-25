@@ -127,7 +127,7 @@ Proto({
         ~indexes = keys;
 		keys.do(~model[_] = 0);
 		//Map MKtlElement indexes to zero-based numeric indexes
-        tmp = ktl.elementAt(\pad).flat;
+        tmp = ktl.elementAt(~elementGroup).flat;
         ~indexMapper = keys.collectAs({ |k, i| tmp[k].index -> i }, IdentityDictionary);
 
         //TODO: probably better to do it with a single action for all keys,

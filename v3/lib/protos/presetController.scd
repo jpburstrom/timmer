@@ -26,8 +26,7 @@
     };
 
 	~onShortPress = { |k|
-        k.postln;
-		~getState.(k) !? (shortPressNextState[_]) ?? 0;
+        ~getState.(k) !? (shortPressNextState[_]) ?? 0;
 	};
 
 

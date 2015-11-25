@@ -54,7 +54,7 @@ Proto({
         };
         //if update == false, only return values
         if (update) {
-            vals.keysValuesDo { |k, v| ~items[k] !? (_.value = v.value); };
+			vals.keys.do { |k| ~items[k] !? (_.value = vals[k].value); };
         };
         vals;
     };
