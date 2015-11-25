@@ -17,7 +17,7 @@ Req.load([\params], { |params, cleanup|
 
 	//all CVs
 	vals = ().make {
-		~pr_1_1 = (params.main.current ++ params.main.target ++ (CV()!8));
+		~pr_1_1 = (params.current ++ params.target ++ (CV()!8));
 		~pr_1_2 = params.eq24;
 	};
 
@@ -37,11 +37,11 @@ Req.load([\params], { |params, cleanup|
 
 	//
 	cvsync = ().make {
-		~kn1 = params.main.current.collect({ |v, i|
+		~kn1 = params.current.collect({ |v, i|
 			v.connectMKtlElement(bcr.elementAt(\kn, \1, i));
 		})
 		++
-		params.main.target.collect({ |v, i|
+		params.target.collect({ |v, i|
 			v.connectMKtlElement(bcr.elementAt(\kn, \2, i));
 		});
 		//TODO: add third row

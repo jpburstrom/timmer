@@ -1,5 +1,5 @@
 Proto({
-    //Dictionary with CVs or similar
+	//Dictionary with CVs or similar
     ~items = nil;
     //Dictionary with preset values
     ~presets = ();
@@ -54,7 +54,7 @@ Proto({
         };
         //if update == false, only return values
         if (update) {
-            vals.keysValuesDo { |k, v| ~items[k] !? (_.value = v); };
+            vals.keysValuesDo { |k, v| ~items[k] !? (_.value = v.value); };
         };
         vals;
     };

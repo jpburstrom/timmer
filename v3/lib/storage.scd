@@ -1,6 +1,7 @@
 Req.load(nil, {
-	q.storage = ();
+	//TODO: load from disk
+	var storage = ();
+	storage.presets ?? { storage.presets = nil!48 };
 
-	q.storage;
-})
-
+	storage;
+});

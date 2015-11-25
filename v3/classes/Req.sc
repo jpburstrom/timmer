@@ -67,7 +67,7 @@ Req {
 				if (loaded[dep].isNil or: { reloaded.includes(dep).not  and: forceReload }) {
 					this.prLoadDep(dep);
 				};
-				tmpOut = loaded[dep].value;
+				tmpOut = loaded[dep];
 				if (updateFuncs[dep].isFunction) {
 					tmpOut = updateFuncs[dep].value(tmpOut);
 				};
@@ -95,7 +95,7 @@ Req {
 
 		//We need to update those who depend on us as well
 		// "loading those who depend on %".format(ck).debug;
-		depMap.to(ck).do(this.prLoadDep(_));
+		//depMap.to(ck).do(this.prLoadDep(_));
 
 		//If we're at the end of the recursion, unset for next time
 		if (circularCheck.size == 1 and: { circularCheck.includes(ck) } ) {
@@ -138,11 +138,13 @@ Req {
 			}
 
 		};
-		// loaded[dep].debug("loaded dep");
+		loaded[dep].debug("loaded dep %".format(dep));
 	}
 
 
 	init {
+		forceReload = false;
+		depToLoad = nil;
 		reloaded = Set();
 		circularCheck = Bag();
 		depMap = Connections();

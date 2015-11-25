@@ -43,7 +43,7 @@ Proto({
 				};
 				lpr = fork {
 					~longPressWaitTime.wait;
-					longPress = true;
+					longPress = ~onLongPress.notNil;
 					if (~listenToSingleKey.isNil) {
 						~onLongPress.(key) !? { |output|currentEnvironment[~setStateFunc].(key, output) };
 
@@ -151,7 +151,7 @@ Proto({
             //If we set active, set previous inactive
             ~doExclusiveCheck.(k, v);
         };
-        ~model[k] = v;
+	    ~model[k] = v;
         ~onStateChange.(k, v);
         currentEnvironment.changed(\state, k, v);
     };

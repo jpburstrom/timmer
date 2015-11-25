@@ -20,13 +20,13 @@
 
     ~onLongPress = { |k|
         //If target is empty, move to slot
-		~getState.(k) !? (longPressNextState[_]) ?? 0;
+		var out = ~getState.(k) !? (longPressNextState[_]) ?? 0;
+		out;
 
     };
 
 	~onShortPress = { |k|
-        "shortPress %".format(k).postln;
-		k.postln;
+        k.postln;
 		~getState.(k) !? (shortPressNextState[_]) ?? 0;
 	};
 
@@ -49,21 +49,18 @@
 	~connectCV = { |cv|
 		cv.addDependant(currentEnvironment);
 		~onStateChange = { |k, v|
-			cv.value = k;
+			if (~exclusiveState.includes(v)) {
+				cv.value = k;
+			}
 		};
 	};
 
 	~update = e { |obj, what, v|
-		[what, v, ~onShortPress].postln;
-		if (what == \synch) {
+		if (what == \synch and: { ~exclusiveKey != v.value } ) {
 			//this should be enough
 			//FIXME: feedback loop
-			var val = ~getState.(v.value) !? (shortPressNextState[_]) ?? 0;
-
-			//HACK: change state without ~onStateChange, to avoid feedback
-			~model[v.value] = val;
-			~model.postln;
-			currentEnvironment.changed(\state, v.value, val);
+			var val = ~getState.(v.value.asInt) !? (shortPressNextState[_]) ?? 0;
+			~setState.(v.value, val);
 		}
 	};
 

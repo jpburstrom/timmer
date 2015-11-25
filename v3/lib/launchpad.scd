@@ -63,6 +63,8 @@ Req.load([\params], { |params, cleanup|
 		ctrls[\target].debug("target");
 		q.targetCV = params.meta.target.debug("cv");
 		ctrls[\target].connectCV(params.meta.target);
+		ctrls[\metaPreset].connectCV(params.snapshot);
+		ctrls[\freezeScale].connectCV(params.meta.freezeScale);
 
 
 	};
@@ -71,3 +73,13 @@ Req.load([\params], { |params, cleanup|
 
 
 });
+
+
+/*
+q.params.snapshot.value = 8.rand
+q.params.meta.target.value = 47.rand
+q.target.target.model[0]
+q.target.target.getState(q.params.meta.target.value.asInt)
+q.target.target.setState(0, 3)
+q.target.target.setState(1, 2)
+3 !? ([2,3,2,3][_]) ?? 0

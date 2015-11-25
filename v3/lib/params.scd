@@ -12,33 +12,23 @@ Req.load(['storage'], { |storage|
 	//All CVs should be stored in IdentityDictionaries with symbol keys
 	//sequences of CVs should start at 1
 	//
-	storage.presets ?? { storage.presets = (); };
 
-	storage.params = params = ().make {
+	params = ().make {
 
 		var createNumberedCVs = { arg num, spec;
 			//num.collectAs({ |x| (x + 1).asSymbol ->CV(spec) }, Environment).know_(true);
             num.collect { CV(spec) };
 		};
 
-
-		var presetCount = 47;
+		var presetCount = storage.presets.size - 1; //target preset count
 		var maxPresetInterpolationTime = 10;
 
-		//main presets
-		//blendable
-		~main = Environment(know:true).make {
-
-			//Macro for current
-			~current = createNumberedCVs.(8); //TODO: bipolar specs?
-
-
-
-			//Macro for target
-			~target = createNumberedCVs.(8); //TODO: bipolar specs?
-
-		};
-
+		//Macro for current
+		~current = createNumberedCVs.(8); //TODO: bipolar specs?
+		//Macro for target
+		~target = createNumberedCVs.(8); //TODO: bipolar specs?
+		//these are the cooked values
+		~main = createNumberedCVs.(8); //TODO: bipolar specs?
 
 		//8 snapshot slots
 		~snapshot = CV([0,7, \lin, 1, 1]);
@@ -77,6 +67,11 @@ Req.load(['storage'], { |storage|
         ~eq24 = 24.collect({CV(\eqGain) });
 	};
 
+
+	// presetCount.do { |x|
+	// 	params.main.current.collect {
+	// 	}
+	// };
 
 
 
