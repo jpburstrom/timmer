@@ -37,7 +37,6 @@ Proto({
 				~ignoreKeyUps = false;
 				if (~onRangePress.notNil and: { ~rangePressKey.notNil  }) {
 					~listenToSingleKey = key;
-					"set single key".debug;
 				} {
 					~rangePressKey = key;
 				};
@@ -179,8 +178,12 @@ Proto({
 
     ~indexAt = { |k|
         ~indexes !? { ~indexes[k] };
-    }
+    };
 
+	~free = {
+		//ddwCommon quark
+		currentEnvironment.releaseFromDependencies;
+	}
 });
 
 /*
