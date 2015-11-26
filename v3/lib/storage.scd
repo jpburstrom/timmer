@@ -3,6 +3,8 @@ Req.load(['params'], { |params, cleanup|
 	//Kolla på hur gamla grejer har gjort detta
 	var storage = Proto({
 
+		var path = "../data/storage.archive".resolveRelative;
+
 		~things = (); //saveable?
 
 		~storeSnapshot = { |k|
@@ -17,13 +19,17 @@ Req.load(['params'], { |params, cleanup|
 			params.getPresetParams.do { arg x, i;
 				~presets[k][i] = x.value;
 			};
+			~save.value;
 		};
 
 
 		~save = {
+			"FIXME: implement storage storing".warn;
+			~things.writeArchive(path);
 		};
 
 		~load = {
+			~things = Object.readArchive(path);
 		};
 
 
