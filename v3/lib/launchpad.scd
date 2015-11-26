@@ -61,16 +61,18 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 		};
 
 		ctrls[\current].setState(0, 1);
+		ctrls[\current].onStateChange = {
+			storage.storePreset(0);
+			params.makeCurrent;
+		};
 
 		ctrls[\target].connectCV(params.meta.target);
 		ctrls[\target].updateFromStorage(storage.presetsToStore);
-		ctrls[\target].storePreset = { arg x; storage.storePreset(x+1) };
+		ctrls[\target].storePreset = { arg x; storage.storePreset(x+1);  };
 
 		ctrls[\metaPreset].connectCV(params.snapshot);
 		ctrls[\metaPreset].updateFromStorage(storage.snapshotsToStore);
 		ctrls[\metaPreset].storePreset = (storage.storeSnapshot(_));
-
-		ctrls[\metaPreset].clearPresets = { "clear all presets".postln };
 
 
 		//snapshots 0-7
