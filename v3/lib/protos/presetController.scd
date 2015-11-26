@@ -3,7 +3,8 @@
 
 	//Set next states for long & short press
 	//like a fsm
-	var longPressNextState = [1, 0, 3, 2];
+	var rangePrev;
+	var longPressNextState = [1, 1, 3, 3];
 	var shortPressNextState = [2, 3, 2, 3];
 
     //0: inactive, random
@@ -67,5 +68,17 @@
 			~setState.(v.value, val);
 		}
 	};
+
+	~onRangePress = { |k,v|
+		var range = [k,v];
+		var tgt = [0, ~indexes.size - 1];
+		if (range == tgt and: { range == rangePrev } ) {
+			~clearPresets.value(*range);
+			rangePrev = nil;
+		} {
+			rangePrev = [k,v];
+		}
+	};
+
 
 });
