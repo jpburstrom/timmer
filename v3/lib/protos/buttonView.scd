@@ -26,7 +26,7 @@ Proto({
             if (c[1].notNil) {
 				//Short blinking
                 ~blinkRout[k] = fork {
-                    0.3.wait;
+                    0.1.wait;
                     ~lpOut.setColor(ctl, c[1]);
                 }
             }

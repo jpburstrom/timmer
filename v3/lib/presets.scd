@@ -36,12 +36,6 @@ Req.load(['storage', 'params'], { |storage, params, cleanup|
 		params.current[i].value = x;
 	};
 
-	//Morph CV, filter indices with macroParamSelect
-	clist.add (params.meta.morph.action = { |cv|
-		var selected = params.meta.macroParamSelect.value.rejectIndices(_ == 0);
-		presets.morph(cv.value, selected);
-	});
-
     //--------SNAPSHOTS----------
 
     //get lots of random presets

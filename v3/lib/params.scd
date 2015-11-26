@@ -1,5 +1,5 @@
-Req.load(['storage'], { |storage|
-	var params;
+Req.load(nil, { |cleanup|
+	var params, presetCount;
 
 	//eqGain: 32-band eq gain
 	Spec.add(\eqGain, [-6, 6, \db, 0, 0]);
@@ -11,7 +11,7 @@ Req.load(['storage'], { |storage|
 	//sequences of CVs should start at 1
 	//
 
-	params = ().make {
+	params = Proto({
 
 
 		var createNumberedCVs = { arg num, spec;
@@ -19,11 +19,12 @@ Req.load(['storage'], { |storage|
             num.collect { CV(spec) };
 		};
 
-		var presetCount = storage.presets.size - 1; //target preset count
 		var maxPresetInterpolationTime = 10;
 
-        ~randomize = { |ev, key|
-            ev[key].collect { |cv|
+		~presetCount = presetCount = 48; //current + target preset count
+
+        ~randomize = { |key|
+            currentEnvironment[key].collect { |cv|
                 if (cv.size == 0) {
                     cv.spec.map(1.0.rand);
                 } {
@@ -32,6 +33,40 @@ Req.load(['storage'], { |storage|
             }
         };
 
+		~pedalActions = [
+			//---0: MORPH-------------
+			//Morph ~current with ~target, update items
+			{
+				var vals;
+				"running pedalaction 0".debug;
+				~meta.macroParamSelect.value.do { |x, i|
+					[x, i].debug("macparam");
+					if (x == 1) {
+						"updating slot %".format(i).postln;
+						~main[i].value = ~current[i].blend(~target[i], ~meta.morph).value;
+					}
+				}
+
+			};
+		];
+
+
+		~makeCurrent = {
+			~main.do { |cv, i|
+				~current[i].value = cv.value;
+			}
+		};
+
+		//"API" for getting saveable params
+		~getSnapshotParams = {
+			~meta_array;
+		};
+
+		~getPresetParams = {
+			~main;
+		};
+
+
 		//Macro for current
 		~current = createNumberedCVs.(8); //TODO: bipolar specs?
 		//Macro for target
@@ -39,11 +74,6 @@ Req.load(['storage'], { |storage|
 		//these are the cooked values
 		~main = createNumberedCVs.(8); //TODO: bipolar specs?
 
-		~makeCurrent = {
-			~main.do { |cv, i|
-				~current[i].value = cv.value;
-			}
-		}.inEnvir;
 
 		//8 snapshot slots
 		~snapshot = CV([0,7, \lin, 1, 1]);
@@ -82,10 +112,31 @@ Req.load(['storage'], { |storage|
             ~meta[k];
         }).flat;
 
-
 		//eq is sold separately
         ~eq24 = 24.collect({CV(\eqGain) });
-	};
+
+
+
+		//
+		~current.do(_.addDependant(currentEnvironment));
+		~target.do(_.addDependant(currentEnvironment));
+		~meta.morph.addDependant(currentEnvironment);
+
+		~update = { |changer, what|
+			what.postln;
+			if (what == \synch) {
+				~pedalActions[~meta.selectedPedalAction.value].value;
+			}
+		};
+
+		//TMP
+		~meta.morph.connect(~slider = Slider(nil, Rect(2000, 0, 100, 400)).front);
+
+		cleanup.addFunc {
+			~slider.close;
+		}
+
+	});
 
 
 	// presetCount.do { |x|

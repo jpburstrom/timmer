@@ -1,6 +1,6 @@
 Req.load([\params, \storage], { |params, storage, cleanup|
 
-	var lpIn, lpOut, ctrls, views, clist=List();
+	var lpIn, lpOut, ctrls, views;
 
 
     //launchPad key mapping
@@ -19,18 +19,17 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 	//Pass an array to blink between two colors
     var colors = (
         //TODO: set colors
-        current: [\off, #[fRed, red]],
-		target: #[lAmber, lGreen, amber, green],
+        current: #[off, [off, red]],
+		target: #[lAmber, [off, lGreen], amber, [off, green]],
 		freezeScale: #[lRed, red],
 		metaPreset: #[lAmber, lGreen, amber, green],
 
-        paramSelect: [\off, \lRed],
+        paramSelect: #[off, lRed],
 		pedalActions: #[off, amber, green],
 
 	);
-
 	cleanup.addFunc {
-		clist.do(_.remove);
+		ctrls.do(_.free);
 	};
 
 	ctrls = ();
@@ -49,7 +48,6 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 			target, presetController,
 			freezeScale, freezeController,
 			metaPreset, presetController,
-
             paramSelect, paramSelectController,
 			pedalActions, pedalActionController
 		].pairsDo { |k,v|
@@ -65,47 +63,33 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 		ctrls[\current].setState(0, 1);
 
 		ctrls[\target].connectCV(params.meta.target);
-		//target has presets 1-47
-		keys.target.size.do { |k|
-			ctrls[\target].setState(k, storage.presetsToStore.includes(k + 1).asInt);
-		};
-		clist.add(
-			SimpleController(ctrls[\target]).put(\state, { |obj, what, k, v|
-				if ([0,2].includes(v)) {
-					storage.presetsToStore.remove(k);
-				} {
-					storage.presetsToStore.add(k);
-				}
-			});
-		);
+		ctrls[\target].updateFromStorage(storage.presetsToStore);
+		ctrls[\target].storePreset = (storage.storePreset(_));
 
 		ctrls[\metaPreset].connectCV(params.snapshot);
-        ctrls[\metaPreset].storePreset = { |k|
-            "storing preset %".format(k).postln;
-            params.meta_array.do { arg x, i;
-                storage.snapshots[k][i] = x.value;
-            }
-        };
-        ctrls[\metaPreset].deletePreset = { "delete".postln };
+		ctrls[\metaPreset].updateFromStorage(storage.snapshotsToStore);
+		ctrls[\metaPreset].storePreset = (storage.storeSnapshot(_));
+
+		ctrls[\metaPreset].clearPresets = { "clear all presets".postln };
+
+
 		//snapshots 0-7
 		8.do { |k|
 			ctrls[\metaPreset].setState(k, storage.snapshotsToStore.includes(k).asInt);
 		};
-		clist.add(
-			SimpleController(ctrls[\metaPreset]).put(\state, { |obj, what, k, v|
-				if ([0,2].includes(v)) {
-					storage.snapshotsToStore.remove(k);
-				} {
-					"adding".debug(k);
-					storage.snapshotsToStore.add(k);
-				}
-			});
-		);
+		SimpleController(ctrls[\metaPreset]).put(\state, { |obj, what, k, v|
+			if ([0,2].includes(v)) {
+				storage.snapshotsToStore.remove(k);
+			} {
+				"adding".debug(k);
+				storage.snapshotsToStore.add(k);
+			}
+		});
 
 		ctrls[\freezeScale].connectCV(params.meta.freezeScale);
 		8.do(ctrls[\freezeScale].setState(_, 0));
 
-		ctrls[\current].onStateChange = params[\makeCurrent]; //a function to move main -> current
+		//ctrls[\current].onStateChange = params[\makeCurrent]; //a function to move main -> current
 
 
 		//-----upper row---------
@@ -115,6 +99,7 @@ Req.load([\params, \storage], { |params, storage, cleanup|
         ctrls[\paramSelect].connectCV(params.meta.macroParamSelect);
         ctrls[\pedalActions].connectCV(params.meta.selectedPedalAction);
 		ctrls[\pedalActions].setState(0, 1)
+
 
 
 	};

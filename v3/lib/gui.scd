@@ -49,12 +49,23 @@ Req.load(#[params], { |params|
         };
     };
 
-	(eq: {
-		makeui.grid(\eq24, 3, 8, nil, Rect(0, 0, 500, 400).center_( Window.availableBounds.center ));
-		24.do { |i|
-			v = params.eq24[i];
-			makeui.knob(i, v, \eq24, 0.01);
-		}
-	}
-	).eq
+	Proto({
+		~eq = {
+			makeui.grid(\eq24, 3, 8, nil, Rect(1600, 0, 500, 400));
+			24.do { |i|
+				var v = params.eq24[i];
+				makeui.knob(i, v, \eq24, 0.01);
+			}
+		};
+
+		~main = {
+			makeui.grid(\main, 1, 8, nil, Rect(1600, 0, 500, 100));
+			8.do { |i|
+				var v = params.main[i];
+				makeui.knob(i, v, \main, 0.01);
+			}
+		};
+
+	}).main;
+
 });

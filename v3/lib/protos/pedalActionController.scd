@@ -41,7 +41,7 @@
     ~update = e { |obj, what, v|
         if (what == \synch && disableSynch.not) {
             //this should be enough
-            ~setState.(v.value, 1);
+		    ~setState.(v.value, 1);
         }
     };
 

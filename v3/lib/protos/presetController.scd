@@ -6,6 +6,7 @@
 	var rangePrev;
 	var longPressNextState = [1, 1, 3, 3];
 	var shortPressNextState = [2, 3, 2, 3];
+	var clearPresetNextState = [0, 0, 2, 2];
 
     //0: inactive, random
     //1: inactive, filled
@@ -23,13 +24,8 @@
     ~onLongPress = { |k|
         //If target is empty, move to slot
 		var out = ~getState.(k) !? (longPressNextState[_]) ?? 0;
-        if (~emptyState.includes(out)) {
-            ~deletePreset.(k);
-        } {
-            ~storePreset.(k);
-        };
+		~storePreset.(k);
 		out;
-
     };
 
 	~onShortPress = { |k|
@@ -79,6 +75,24 @@
 			rangePrev = [k,v];
 		}
 	};
+
+	~clearPresets = { |from, to|
+		(from..to).do { |x|
+			~setState.(x, clearPresetNextState[~getState.(x)]);
+		}
+	};
+
+	~updateFromStorage = { |toStore|
+		//target has presets 1-47
+		~indexes.size.do { |k|
+			~setState.(k, toStore.includes(k + 1).asInt);
+		};
+	};
+
+	~storePreset = {
+		"storing preset not implemented".warn;
+	};
+
 
 
 });

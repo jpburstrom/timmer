@@ -1,7 +1,31 @@
-Req.load(nil, {
+Req.load(['params'], { |params, cleanup|
 	//TODO: load from disk
-	var storage = ();
-	storage.presets ?? { storage.presets = nil ! 48 };
+	//Kolla på hur gamla grejer har gjort detta
+	var storage = Proto({
+
+		~things = (); //saveable?
+
+		~storeSnapshot = { |k|
+			params.getSnapshotParams.do { arg x, i;
+				~snapshots[k][i] = x.value;
+			}
+		};
+
+		~storePreset = { |k|
+			params.getPresetParams.do { arg x, i;
+				~presets[k][i] = x.value;
+			};
+		};
+
+		~save = {
+		};
+
+		~load = {
+		};
+
+
+	});
+	storage.presets ?? { storage.presets = nil ! params.presetCount };
 	storage.presetsToStore = storage.presets.rejectIndices(_ == nil).asSet;
 
 	storage.snapshots ?? { storage.snapshots = nil ! 8 };

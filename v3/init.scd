@@ -4,5 +4,3 @@ Req.load(['lib/storage', 'lib/params', 'lib/presets', 'lib/devices', 'lib/gui'],
         q.params = params;
         q.storage = storage;
 }, reload:true);
-
-
