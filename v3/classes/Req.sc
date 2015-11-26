@@ -32,61 +32,61 @@ Req {
 			reloaded.clear;
 			forceReload = true;
 		};
-		{
-			//add to circular check to make sure we're not entering a feedback loop
-			circularCheck.add(ck);
+		//add to circular check to make sure we're not entering a feedback loop
+		circularCheck.add(ck);
 
-			if (cleanup[ck].notNil) {
-				cleanup[ck].value;
+		if (cleanup[ck].notNil) {
+			cleanup[ck].value;
+		};
+
+		cleanup[ck] = FunctionList();
+
+		initFuncs[ck] = initFunc;
+		updateFuncs[ck] = updateFunc;
+
+		depMap.removeFrom(ck);
+
+
+		//resolve deps
+		//foo/asd => /path/to/foo/asd.scd
+		//foo/asd#thing => /path/to/foo/asd.scd#thing
+		deps = deps.collect { |dep|
+			var keyArray = dep.asString.split($#);
+			var path = "%.scd".format(keyArray[0]).resolveRelative;
+			var tmpOut;
+			dep = this.prMakeKey(path, keyArray[1]);
+			//We set current dependency to load
+			depToLoad = dep;
+
+			depMap.add(ck, dep);
+
+			//Add dep t
+			//loaded[ck][1].add(dep);
+
+			//we load the path, assuming it contains a Req.load statement
+			if (loaded[dep].isNil or: { reloaded.includes(dep).not  and: forceReload }) {
+				this.prLoadDep(dep);
 			};
-
-			cleanup[ck] = FunctionList();
-
-			initFuncs[ck] = initFunc;
-			updateFuncs[ck] = updateFunc;
-
-			depMap.removeFrom(ck);
-
-
-			//resolve deps
-			//foo/asd => /path/to/foo/asd.scd
-			//foo/asd#thing => /path/to/foo/asd.scd#thing
-			deps = deps.collect { |dep|
-				var keyArray = dep.asString.split($#);
-				var path = "%.scd".format(keyArray[0]).resolveRelative;
-				var tmpOut;
-				dep = this.prMakeKey(path, keyArray[1]);
-				//We set current dependency to load
-
-				depMap.add(ck, dep);
-
-				//Add dep t
-				//loaded[ck][1].add(dep);
-
-				//we load the path, assuming it contains a Req.load statement
-				if (loaded[dep].isNil or: { reloaded.includes(dep).not  and: forceReload }) {
-					this.prLoadDep(dep);
-				};
-				tmpOut = loaded[dep];
-				if (updateFuncs[dep].isFunction) {
-					tmpOut = updateFuncs[dep].value(tmpOut);
-				};
-				tmpOut
+			tmpOut = loaded[dep];
+			if (updateFuncs[dep].isFunction) {
+				tmpOut = updateFuncs[dep].value(tmpOut);
 			};
+			tmpOut
+		};
 
-			reloaded.add(ck);
+		reloaded.add(ck);
 
-		}.try({ |error|
+		try {
+			loaded[ck] = result = initFunc.valueArray(deps ++ cleanup[ck]);
+		} { |error|
+
 			//reset recursion tests on error
-			circularCheck.clear;
+			circularCheck = IdentityBag();
 			depToLoad = nil;
 			forceReload = false;
-
 			error.throw;
-		});
+		};
 
-
-		loaded[ck] = result = initFunc.valueArray(deps ++ cleanup[ck]);
 
 		//If we have an updateFunc, filter the result through that
 		if (updateFunc.isFunction) {
@@ -99,7 +99,6 @@ Req {
 
 		//If we're at the end of the recursion, unset for next time
 		if (circularCheck.size == 1 and: { circularCheck.includes(ck) } ) {
-
 			depToLoad = nil;
 			forceReload = false;
 			// "done".debug;
@@ -126,6 +125,8 @@ Req {
 
 		path = dep.asString.split($#)[0];
 
+		// path.debug("trying to load");
+		// circularCheck.debug("circularcheck");
 
 		if (circularCheck.includes(dep)) {
 			"Req: circular dependency. Not loading Req at %".format(dep).warn;
@@ -138,7 +139,7 @@ Req {
 			}
 
 		};
-		loaded[dep].debug("loaded dep %".format(dep));
+		// loaded[dep].debug("loaded dep %".format(dep));
 	}
 
 
@@ -146,7 +147,7 @@ Req {
 		forceReload = false;
 		depToLoad = nil;
 		reloaded = Set();
-		circularCheck = Bag();
+		circularCheck = IdentityBag();
 		depMap = Connections();
 		loaded = IdentityDictionary();
         cleanup = IdentityDictionary();
