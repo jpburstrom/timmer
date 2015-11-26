@@ -37,11 +37,12 @@ Req.load([\params], { |params, cleanup|
 
 	//
 	cvsync = ().make {
-		~kn1 = params.current.collect({ |v, i|
+		~kn1 =
+		params.target.collect({ |v, i|
 			v.connectMKtlElement(bcr.elementAt(\kn, \1, i));
 		})
 		++
-		params.target.collect({ |v, i|
+		params.current.collect({ |v, i|
 			v.connectMKtlElement(bcr.elementAt(\kn, \2, i));
 		});
 		//TODO: add third row
@@ -139,7 +140,7 @@ Req.load([\params], { |params, cleanup|
 	// 8.do { |x| bcr.elementAt(\bt, \1, x).valueAction = 0 };
 
 	bcr.sync;
-	8.do { |x| bcr.elementAt(\bt, \1, x).valueAction = 0 };
+	8.do { |x| bcr.elementAt(\bt, \2, x).valueAction = 0 };
 
 
     bcr
