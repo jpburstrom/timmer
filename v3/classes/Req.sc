@@ -25,7 +25,7 @@ Req {
 		//If we're loading dependencies, and this load statement doesn't match the
 		//key, just exit
 		if (depToLoad.notNil and: { depToLoad != ck }) {
-			^false
+			^nil
 		};
 
 		if (reload && forceReload.not) {
