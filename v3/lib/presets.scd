@@ -2,6 +2,7 @@ Req.load(['storage', 'params'], { |storage, params, cleanup|
 
 	var presets = "protos/presetCentral".import;
 	var snapshots = "protos/presetCentral".import;
+
 	var clist = List();
 
 	cleanup.addFunc({
@@ -20,6 +21,13 @@ Req.load(['storage', 'params'], { |storage, params, cleanup|
 	presets.items = params.main;
 	presets.current = 0;
 	presets.target = 1;
+
+	//Copy values from params.target to current preset
+	params.target.do { |cv, i|
+		clist.add(SimpleController(cv).put(\synch, {
+			presets.presets[presets.target][i] = cv.value;
+		}));
+	};
 
 	//Target CV
     //TODO: move to presetCentral
@@ -51,15 +59,17 @@ Req.load(['storage', 'params'], { |storage, params, cleanup|
     snapshots.items = params.meta_array;
     snapshots.current = 0;
 
+	//Copy values from snapshots.current to current snapshot
+	params.meta_array.do { |cv, i|
+		clist.add(SimpleController(cv).put(\synch, {
+			snapshots.presets[snapshots.current][i] = cv.value;
+		}));
+	};
     //TODO: move to presetCentral. How cleanup?
     clist.add(params.snapshot.action = { |cv|
         var prev = snapshots.presets[snapshots.current];
-        prev.debug("prev");
         snapshots.getPreset(cv.value.asInt);
         params.meta_array.do {|cv, i|
-            //TODO: store previous on preset change
-            //This doesn't work
-            //prev[i] = cv.value;
             cv.value = snapshots.presets[snapshots.current][i];
         }
     });
