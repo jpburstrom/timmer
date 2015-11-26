@@ -64,7 +64,7 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 
 		ctrls[\target].connectCV(params.meta.target);
 		ctrls[\target].updateFromStorage(storage.presetsToStore);
-		ctrls[\target].storePreset = (storage.storePreset(_));
+		ctrls[\target].storePreset = { arg x; storage.storePreset(x+1) };
 
 		ctrls[\metaPreset].connectCV(params.snapshot);
 		ctrls[\metaPreset].updateFromStorage(storage.snapshotsToStore);

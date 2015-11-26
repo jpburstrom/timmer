@@ -38,11 +38,8 @@ Req.load(nil, { |cleanup|
 			//Morph ~current with ~target, update items
 			{
 				var vals;
-				"running pedalaction 0".debug;
 				~meta.macroParamSelect.value.do { |x, i|
-					[x, i].debug("macparam");
 					if (x == 1) {
-						"updating slot %".format(i).postln;
 						~main[i].value = ~current[i].blend(~target[i], ~meta.morph).value;
 					}
 				}
@@ -123,7 +120,6 @@ Req.load(nil, { |cleanup|
 		~meta.morph.addDependant(currentEnvironment);
 
 		~update = { |changer, what|
-			what.postln;
 			if (what == \synch) {
 				~pedalActions[~meta.selectedPedalAction.value].value;
 			}
@@ -132,9 +128,9 @@ Req.load(nil, { |cleanup|
 		//TMP
 		~meta.morph.connect(~slider = Slider(nil, Rect(2000, 0, 100, 400)).front);
 
-		cleanup.addFunc {
+		cleanup.addFunc({
 			~slider.close;
-		}
+		}.inEnvir);
 
 	});
 

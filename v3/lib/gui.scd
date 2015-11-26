@@ -1,4 +1,4 @@
-Req.load(#[params], { |params|
+Req.load(#[params], { |params, cleanup|
 	var makeui;
     var gui = ();
     var knobCounts = IdentityDictionary();
@@ -59,7 +59,7 @@ Req.load(#[params], { |params|
 		};
 
 		~main = {
-			makeui.grid(\main, 1, 8, nil, Rect(1600, 0, 500, 100));
+			var ui = makeui.grid(\main, 1, 8, nil, Rect(1600, 0, 500, 100));
 			8.do { |i|
 				var v = params.main[i];
 				makeui.knob(i, v, \main, 0.01);
@@ -67,5 +67,8 @@ Req.load(#[params], { |params|
 		};
 
 	}).main;
+
+	cleanup.addFunc { gui.window.do(_.close) };
+
 
 });

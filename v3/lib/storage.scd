@@ -6,12 +6,14 @@ Req.load(['params'], { |params, cleanup|
 		~things = (); //saveable?
 
 		~storeSnapshot = { |k|
+			k.debug("storing snapshot");
 			params.getSnapshotParams.do { arg x, i;
 				~snapshots[k][i] = x.value;
 			}
 		};
 
 		~storePreset = { |k|
+			k.debug("storing preset");
 			params.getPresetParams.do { arg x, i;
 				~presets[k][i] = x.value;
 			};
