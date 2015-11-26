@@ -22,9 +22,10 @@ Req.load(nil, { |cleanup|
 		var maxPresetInterpolationTime = 10;
 
 		~presetCount = presetCount = 48; //current + target preset count
+        ~snapshotCount = 8;
 
         ~randomize = { |key|
-            currentEnvironment[key].collect { |cv|
+            ~getParams.(key).collect { |cv|
                 if (cv.size == 0) {
                     cv.spec.map(1.0.rand);
                 } {
@@ -55,12 +56,11 @@ Req.load(nil, { |cleanup|
 		};
 
 		//"API" for getting saveable params
-		~getSnapshotParams = {
-			~meta_array;
-		};
-
-		~getPresetParams = {
-			~main;
+		~getParams = { |key|
+            var x = switch (key)
+            { \presets } { ~main }
+            { \snapshots  } { ~meta_array };
+            x
 		};
 
 
