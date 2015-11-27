@@ -41,11 +41,7 @@ Req.load(nil, { |cleanup|
 			//Morph ~current with ~target, update items
 			{
 				var vals;
-				~meta.macroParamSelect.value.do { |x, i|
-					if (x == 1) {
-						~main[i].value = ~current[i].blend(~target[i], ~meta.morph).value;
-					}
-				}
+
 
 			};
 		];
@@ -98,7 +94,7 @@ Req.load(nil, { |cleanup|
 			~morph = CV();
 
 			//Randomize ~main
-			~random = CV();
+			~random = CV([0, 0.5]);
 
 			//holds current preset target
 			~target = CV([1, presetCount-1, \lin, 1, 0]);
@@ -142,10 +138,19 @@ Req.load(nil, { |cleanup|
 		~current.do(_.addDependant(currentEnvironment));
 		~target.do(_.addDependant(currentEnvironment));
 		~meta.morph.addDependant(currentEnvironment);
+		~meta.random.addDependant(currentEnvironment);
 
 		~update = { |changer, what|
 			if (what == \synch) {
-				~pedalActions[~meta.selectedPedalAction.value].value;
+				~meta.macroParamSelect.value.do { |x, i|
+					if (x == 1) {
+						var val, rand;
+						r = ~meta.random.value;
+						val = ~current[i].input.blend(~target[i].input, ~meta.morph.input);
+						~main[i].input = val + (r - val).max(0) + r.rand2
+
+					}
+				}
 			}
 		};
 
