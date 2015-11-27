@@ -77,7 +77,6 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 		//controller outputs values from 0-47, but this CV needs 1-48
 		ctrls[\target].connectStorage(storage, \presets, 1);
 		ctrls[\target].connectCV(params.meta.target, 1);
-		ctrls[\target].storePreset = { arg x; storage.storePreset(x+1);  };
 
 		ctrls[\metaPreset].connectStorage(storage, \snapshots);
 		ctrls[\metaPreset].connectCV(params.snapshot);
