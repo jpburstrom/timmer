@@ -66,6 +66,13 @@ Req.load(['params'], { |params, cleanup|
 
 		};
 
+		~backup = {
+			var dir = path.resolveRelative.dirname +/+ "backup";
+			var file = path.basename.splitext;
+			File.mkdir(dir);
+			File.copy(path, dir +/+ file[0] ++ Date.getDate.stamp ++ "." ++ file[1]);
+		};
+
 		~load = {
             var z;
             if (File.exists(path)) {
