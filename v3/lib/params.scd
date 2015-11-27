@@ -21,6 +21,8 @@ Req.load(nil, { |cleanup|
 
 		var maxPresetInterpolationTime = 10;
 
+		var metaKeys;
+
 		~presetCount = presetCount = 48; //current + target preset count
         ~snapshotCount = 8;
 
@@ -92,10 +94,15 @@ Req.load(nil, { |cleanup|
 
 		//Meta params are not saved with main presets
 		~meta = Environment(know:true).make {
-			//holds current preset target
-			~target = CV([1, presetCount, \lin, 1, 0]);
 			//Morph value current->target
 			~morph = CV();
+
+			//Randomize ~main
+			~random = CV();
+
+			//holds current preset target
+			~target = CV([1, presetCount-1, \lin, 1, 0]);
+
 			//preset interpolation time
 			~presetInterpolationTime = CV([0, maxPresetInterpolationTime]);
 
@@ -119,8 +126,10 @@ Req.load(nil, { |cleanup|
 
 		};
 
-        //preset likes 1-dim arrays
-        ~meta_array = ~meta.keys.asArray.sort.collect({ |k|
+
+
+		//preset likes 1-dim arrays
+		~meta_array = ~meta.keys.asArray.sort.collect({ |k|
             ~meta[k];
         }).flat;
 

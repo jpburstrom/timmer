@@ -38,14 +38,23 @@ Req.load([\params], { |params, cleanup|
 	//
 	cvsync = ().make {
 		~kn1 =
+
 		params.target.collect({ |v, i|
 			v.connectMKtlElement(bcr.elementAt(\kn, \1, i));
 		})
 		++
 		params.current.collect({ |v, i|
 			v.connectMKtlElement(bcr.elementAt(\kn, \2, i));
+		})
+		++
+		#[morph, random, target, presetInterpolationTime].collect({ |k, i|
+			params.meta[k].connectMKtlElement(bcr.elementAt(\kn, \3, i))
+		})
+		++
+		params.meta.featureMap.collect({ |cv, i|
+			cv.connectMKtlElement(bcr.elementAt(\kn, \3, i+4));
 		});
-		//TODO: add third row
+
 
 		~kn2 = params.eq24.collect { |v,i| v.connectMKtlElement(bottomEnc[i]) };
 	};
