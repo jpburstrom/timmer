@@ -3,7 +3,9 @@ CVSyncMktl : CVSync {
 	var <enabled=true;
 	update { | changer, what ...moreArgs |	// called when CV changes
 		switch( what,
-			\synch, { if (enabled) { view.value = cv.input } }
+			\synch, { if (enabled) {
+				view.value = cv.input
+			} }
 		);
 	}
 
@@ -14,7 +16,12 @@ CVSyncMktl : CVSync {
 
 	value { this.valueArray }
 
-	valueArray { if (enabled) { cv.input = view.value } }		// called when mktl changes
+	valueArray { if (enabled) {
+		enabled = false;
+		cv.input = view.value;
+		enabled = true;
+
+	} }		// called when mktl changes
 
 	enable { enabled = true }
 	disable { enabled = false }
