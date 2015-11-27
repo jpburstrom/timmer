@@ -1,14 +1,85 @@
 Proto({
 	//Dictionary with CVs or similar
-    ~items = nil;
-    //Dictionary with preset values
-    ~presets = ();
-    ~current = 0;
-    ~target = 0;
 
-    ~setItems = { arg items;
-        ~items = items;
-    };
+	//Raw params, constantly updating current and target presets
+    ~currentParams = nil;
+	~targetParams = nil;
+
+	//The output params, collected when saving preset
+	~cookedParams = nil;
+
+	//Dictionary with preset values
+    ~presets = ();
+	//Index to static presets
+    ~currentIndex = 0;
+	//index to static presets
+    ~targetIndex = 1;
+
+	~controllers = List();
+
+	//Set groups of params
+	//If morph is needed, all three should be set
+	//otherwise just one is needed
+	~setParams = { |cooked, current, target|
+		var c = ~controllers;
+		~free.value;
+		if (current.isNil) {
+			current = cooked;
+		};
+		if (target.isNil) {
+			~morph = ~morphInactive;
+		} {
+			~morph = ~morphActive;
+			//Constantly update from target params to target preset
+			target.do { |cv, i|
+				//Do a first update from presets
+				cv.value = ~presets[~targetIndex][i];
+				//then hook up to sync from cv
+				c.add(cv.action_({
+					~presets[~targetIndex][i] = cv.value;
+				}.inEnvir));
+			};
+		};
+		current.do { |cv, i|
+			//Do a first update from presets
+			cv.value = ~presets[~currentIndex][i];
+			//then hook up to sync from cv
+			c.add(cv.action_({
+				~presets[~currentIndex][i] = cv.value;
+			}.inEnvir));
+		};
+
+		~cookedParams = cooked;
+		~currentParams = current;
+		~targetParams = target;
+	};
+
+	//Set current index with a value or CV
+	~setCurrentIndex = { |val|
+		~setIndex.value(\currentIndex, \currentParams, val);
+	};
+
+	//Set target index with a value or CV
+	~setTargetIndex = { |val|
+		~setIndex.value(\targetIndex, \targetParams, val);
+	};
+
+	~setIndex = { |indexKey, paramsKey, val|
+		var c = ~controllers;
+		if (val.isKindOf(CV)) {
+			[indexKey, paramsKey, val].debug("CV found");
+			c.add (val.action_({ |cv|
+				currentEnvironment.[indexKey] = cv.value.asInt;
+				currentEnvironment[paramsKey].do { |param, i|
+					param.value = ~presets[currentEnvironment[indexKey]][i];
+				}
+			}.inEnvir));
+
+		} {
+			currentEnvironment[indexKey] = val;
+		}
+
+	};
 
     ~setPresetContainer = { arg c;
         ~presets = c;
@@ -16,7 +87,7 @@ Proto({
 
 
     ~addPreset = { arg index;
-        ~presets[index] = ~items.collect(_.value);
+        ~presets[index] = ~cookedParams.collect(_.value);
     };
 
     ~removePreset = { arg index;
@@ -25,37 +96,48 @@ Proto({
 
 
     ~setCurrent = { |key|
-        ~current = key;
+        ~currentIndex = key;
     };
 
     ~setTarget = { |key|
-        ~target = key;
+        ~targetIndex = key;
     };
 
-    //Get preset, update items by default
+    //Get preset, update cooked by default
     //Optionally pass keys to select subset of items
     ~getPreset = { arg index, keys,update(true);
         var idx = index ?? ~current;
         var vals = ~presets[idx];
         if (keys.notNil) { vals = vals.select { |v,k| keys.includes(k) } };
-        ~current = idx; //Should we set current?
-        vals.do { |v, k| ~items[k] !? (_.value = v); };
+        ~currentIndex = idx; //Should we set current?
+        vals.do { |v, k| ~cookedParams[k] !? (_.value = v); };
     };
 
-    //Morph ~current with ~target, update items by default
+	~morphInactive = {
+		"Morph needs target params".warn;
+		nil
+	};
+
+    //Morph ~currentIndex with ~targetIndex, update items by default
     //Optionally pass keys to select subset of items
-    ~morph = { |amt, keys, update(true)|
+    ~morphActive = { |amt, keys, update(true)|
         var vals;
         if (keys.isNil) {
-            vals = ~presets[~current].blend(~presets[~target], amt);
+            vals = ~presets[~currentIndex].blend(~presets[~targetIndex], amt);
         } {
-            vals = ~presets[~current].select({ |v,k| keys.includes(k) })
-            .blend(~presets[~target], amt, false);
+            vals = ~presets[~currentIndex].select({ |v,k| keys.includes(k) })
+            .blend(~presets[~targetIndex], amt, false);
         };
         //if update == false, only return values
         if (update) {
-			vals.keys.do { |k| ~items[k] !? (_.value = vals[k].value); };
+			vals.keys.do { |k| ~cookedParams[k] !? (_.value = vals[k].value); };
         };
         vals;
     };
+
+	~free = {
+		//ddwCommon quark
+		~controllers.do(_.remove);
+		currentEnvironment.releaseFromDependencies;
+	}
 });

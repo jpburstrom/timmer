@@ -9,9 +9,5 @@
        1
     };
 
-    ~onStateChange = { |k, v|
-		"stateChange: %,%".format(k,v).postln;
-    }
-
 
 });

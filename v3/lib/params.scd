@@ -73,12 +73,12 @@ Req.load(nil, { |cleanup|
 
 
 		//8 snapshot slots
-		~snapshot = CV([0,7, \lin, 1, 1]);
+		~snapshot = CV([0,7, \lin, 1, 0]);
 
 		//Meta params are not saved with main presets
 		~meta = Environment(know:true).make {
 			//holds current preset target
-			~target = CV([0, presetCount - 1, \lin, 1, 0]);
+			~target = CV([1, presetCount, \lin, 1, 0]);
 			//Morph value current->target
 			~morph = CV();
 			//preset interpolation time

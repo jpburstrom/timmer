@@ -13,7 +13,9 @@
         1
     };
 
+
    ~connectCV = { |cv|
+
 		cv.addDependant(currentEnvironment);
 		~onStateChange = { |k, v|
 			if (~exclusiveState == v) {

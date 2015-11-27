@@ -16,6 +16,7 @@ Req.load(['params'], { |params, cleanup|
 			params.getPresetParams.do { arg x, i;
 				~presets[k][i] = x.value;
 			};
+			~toStore[\presets].add(k);
 			~save.value;
 		};
 
@@ -23,28 +24,36 @@ Req.load(['params'], { |params, cleanup|
 			k.debug("storing snapshot");
 			params.getSnapshotParams.do { arg x, i;
 				~snapshots[k][i] = x.value;
-			}
+			};
+			~toStore[\snapshots].add(k);
+			~save.value;
 		};
 
         ~removePreset = { |k|
             k.debug("removing preset");
             ~toStore[\presets].remove(k);
             params.getParams(\presets)[k] = params.randomize(\presets);
+			~save.value;
         };
 
         ~removeSnapshot = { |k|
             k.debug("removing snapshot");
             ~toStore[\snapshots].remove(k);
             params.getParams(\snapshots)[k] = params.randomize(\snapshots);
+			~save.value;
         };
 
-        ~getPresets = {
+		~getPresets = {
             ~things[\presets];
         };
 
         ~getSnapshots = {
             ~things[\snapshots];
         };
+
+		~getActiveKeys = { |k|
+			~toStore[k];
+		};
 
 		~save = {
             var z;
@@ -88,8 +97,9 @@ Req.load(['params'], { |params, cleanup|
 		};
 
         ~maybeRandomize = { |container, num|
-            var c = ~things[container];
-            if (c[num].isNil) {
+			var c = ~things[container];
+			if (c[num].isNil) {
+				[container, num].debug("randomizing");
                 c[num] = params.randomize(container);
             }
         };
@@ -105,6 +115,7 @@ Req.load(['params'], { |params, cleanup|
 
 
 	});
-    q.storage = storage;
+	storage.load;
+    q.storage = storage; //XXX temp
 	storage;
 });

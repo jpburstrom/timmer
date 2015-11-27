@@ -16,6 +16,7 @@
     ~inactiveState = #[0,1];
     ~emptyState = #[0,2];
 
+	~cvOffset = 0;
 
 	~isKeyInited = {
 		true;
@@ -48,20 +49,32 @@
         }
     };
 
-	~connectCV = { |cv|
+	//Connect to CV with a possible offset
+	~connectCV = { |cv, offset(0)|
+		~cvOffset = offset;
 		cv.addDependant(currentEnvironment);
+
+		//Force update from CV
+		~exclusiveKey.debug("Exclusive key");
+		~exclusiveKey = nil;
+		cv.changed(\synch, cv);
+
 		~onStateChange = { |k, v|
-            if (~exclusiveState.includes(v)) {
-				cv.value = k;
+			"stateChange: %,%".format(k,v).postln;
+			if (~exclusiveState.includes(v)) {
+				cv.value = k + ~cvOffset;
 			}
 		};
+
 	};
 
-	~update = e { |obj, what, v|
-		if (what == \synch and: { ~exclusiveKey != v.value } ) {
+	~update = e { |obj, what, k|
+		k = (k.value - ~cvOffset).asInt;
+		//Get update from CV, but only if key has changed
+		if (what == \synch and: { ~exclusiveKey != k } ) {
 			//this should be enough
-			var val = ~getState.(v.value.asInt) !? (shortPressNextState[_]) ?? 0;
-			~setState.(v.value, val);
+			var val = ~getState.(k) !? (shortPressNextState[_]) ?? 0;
+			~setState.(k, val);
 		}
 	};
 
@@ -82,10 +95,12 @@
 		}
 	};
 
-	~updateFromStorage = { |toStore|
-		//target has presets 1-47
+	//update from storage, with a possible offset
+	~updateFromStorage = { |toStore, offset(0)|
+		//Update state to "filled"  for each index, if storage's toStore flag is set
+		toStore.debug("toStore");
 		~indexes.size.do { |k|
-			~setState.(k, toStore.includes(k + 1).asInt);
+			~setState.(k, toStore.includes(k + offset).asInt);
 		};
 	};
 

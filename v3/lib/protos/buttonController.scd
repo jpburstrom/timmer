@@ -145,7 +145,7 @@ Proto({
 
     };
 
-    ~setState = { |k, v|
+	~setState = { |k, v|
         if (~exclusiveState.notNil) {
             //If we set active, set previous inactive
             ~doExclusiveCheck.(k, v);
@@ -158,6 +158,12 @@ Proto({
     ~getState = { |k|
         ~model[k] ?? 0;
     };
+
+	~setAll = { |v|
+
+		~indexes.size.do(~setState.(_, v))
+
+	};
 
     ~setExclusive = { |k|
         ~setState.value(k, ~exclusiveState);

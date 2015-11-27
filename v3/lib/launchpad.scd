@@ -66,42 +66,22 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 			params.makeCurrent;
 		};
 
-		ctrls[\target].connectCV(params.meta.target);
-		ctrls[\target].updateFromStorage(storage.presetsToStore);
-		ctrls[\target].storePreset = { arg x; storage.storePreset(x+1);  };
-
-		ctrls[\metaPreset].connectCV(params.snapshot);
-		ctrls[\metaPreset].updateFromStorage(storage.snapshotsToStore);
-		ctrls[\metaPreset].storePreset = (storage.storeSnapshot(_));
-
-
-		//snapshots 0-7
-		8.do { |k|
-			ctrls[\metaPreset].setState(k, storage.snapshotsToStore.includes(k).asInt);
-		};
-		SimpleController(ctrls[\metaPreset]).put(\state, { |obj, what, k, v|
-			if ([0,2].includes(v)) {
-				storage.snapshotsToStore.remove(k);
-			} {
-				"adding".debug(k);
-				storage.snapshotsToStore.add(k);
-			}
-		});
 
 		ctrls[\freezeScale].connectCV(params.meta.freezeScale);
-		8.do(ctrls[\freezeScale].setState(_, 0));
-
-		//ctrls[\current].onStateChange = params[\makeCurrent]; //a function to move main -> current
-
-
-		//-----upper row---------
-
-		8.do(ctrls[\paramSelect].setState(_,1));
+		ctrls[\freezeScale].setAll(0);
 
         ctrls[\paramSelect].connectCV(params.meta.macroParamSelect);
         ctrls[\pedalActions].connectCV(params.meta.selectedPedalAction);
-		ctrls[\pedalActions].setState(0, 1)
 
+		//Connect to CV with an offset
+		//controller outputs values from 0-47, but this CV needs 1-48
+		ctrls[\target].updateFromStorage(storage.getActiveKeys(\presets), 1);
+		ctrls[\target].connectCV(params.meta.target, 1);
+		ctrls[\target].storePreset = { arg x; storage.storePreset(x+1);  }; //TODO
+
+		ctrls[\metaPreset].updateFromStorage(storage.getActiveKeys(\snapshots));
+		ctrls[\metaPreset].connectCV(params.snapshot);
+		ctrls[\metaPreset].storePreset = (storage.storeSnapshot(_)); //TODO
 
 
 	};

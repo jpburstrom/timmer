@@ -39,7 +39,7 @@
 	};
 
     ~onStateChange = { |k, v|
-		"stateChange: %,%".format(k,v).postln;
+		//"stateChange: %,%".format(k,v).postln;
 		nil
 	};
 
