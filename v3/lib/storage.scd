@@ -13,8 +13,8 @@ Req.load(['params'], { |params, cleanup|
 
 		~storePreset = { |k|
 			k.debug("storing preset");
-			params.getPresetParams.do { arg x, i;
-				~presets[k][i] = x.value;
+			params.getParams(\presets).do { arg x, i;
+				~things[\presets][k][i] = x.value;
 			};
 			~toStore[\presets].add(k);
 			~save.value;
@@ -22,8 +22,8 @@ Req.load(['params'], { |params, cleanup|
 
 		~storeSnapshot = { |k|
 			k.debug("storing snapshot");
-			params.getSnapshotParams.do { arg x, i;
-				~snapshots[k][i] = x.value;
+			params.getParams(\snapshots).do { arg x, i;
+				~things[\snapshots][k][i] = x.value;
 			};
 			~toStore[\snapshots].add(k);
 			~save.value;
@@ -32,15 +32,15 @@ Req.load(['params'], { |params, cleanup|
         ~removePreset = { |k|
             k.debug("removing preset");
             ~toStore[\presets].remove(k);
-            params.getParams(\presets)[k] = params.randomize(\presets);
-			~save.value;
+	        params.setParams(\presets, nil);
+    		~save.value;
         };
 
         ~removeSnapshot = { |k|
             k.debug("removing snapshot");
             ~toStore[\snapshots].remove(k);
-            params.getParams(\snapshots)[k] = params.randomize(\snapshots);
-			~save.value;
+            params.setParams(\presets, nil);
+    		~save.value;
         };
 
 		~getPresets = {

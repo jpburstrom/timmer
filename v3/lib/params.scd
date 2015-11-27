@@ -63,6 +63,21 @@ Req.load(nil, { |cleanup|
             x
 		};
 
+		//"API" for getting saveable params
+		~setParams = { |key, values|
+            var x = switch (key)
+            { \presets } { ~main }
+            { \snapshots  } { ~meta_array };
+
+			if (values.isNil) {
+				values = ~randomize.(key);
+			};
+
+			x.do { |cv, i|
+				cv.value = values[i]
+			}
+		};
+
 
 		//Macro for current
 		~current = createNumberedCVs.(8); //TODO: bipolar specs?
