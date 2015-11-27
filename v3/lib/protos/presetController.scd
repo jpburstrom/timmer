@@ -17,6 +17,7 @@
     ~emptyState = #[0,2];
 
 	~cvOffset = 0;
+	~storageKey = nil;
 
 	~isKeyInited = {
 		true;
@@ -68,13 +69,17 @@
 
 	};
 
-	~update = e { |obj, what, k|
-		k = (k.value - ~cvOffset).asInt;
+	~update = e { |obj, what, kgrp|
+		var k = (kgrp.value - ~cvOffset).asInt;
 		//Get update from CV, but only if key has changed
 		if (what == \synch and: { ~exclusiveKey != k } ) {
 			//this should be enough
 			var val = ~getState.(k) !? (shortPressNextState[_]) ?? 0;
 			~setState.(k, val);
+		} {
+			if (what == \activeKeys and: { ~storageKey == kgrp }) {
+				~updateFromStorage.(obj, kgrp);
+			}
 		}
 	};
 
@@ -91,22 +96,41 @@
 
 	~clearPresets = { |from, to|
 		(from..to).do { |x|
-			~setState.(x, clearPresetNextState[~getState.(x)]);
+			~deletePreset.(x);
 		}
 	};
 
 	//update from storage, with a possible offset
-	~updateFromStorage = { |toStore, offset(0)|
+	~connectStorage = { |storage, key, offset(0)|
 		//Update state to "filled"  for each index, if storage's toStore flag is set
-		toStore.debug("toStore");
-		~indexes.size.do { |k|
-			~setState.(k, toStore.includes(k + offset).asInt);
+		var toStore = storage.getActiveKeys(key);
+		storage.addDependant(currentEnvironment);
+		~storageKey = key;
+		~updateFromStorage = { |obj, group, force(false)|
+			if (group == key) {
+				~indexes.size.do { |k|
+					var tmp = ~getState.(k).mod(2);
+					var new = toStore.includes(k + offset).asInt;
+					if (new != tmp or: { force }) {
+						~setState.(k, new);
+					}
+				};
+			}
 		};
+		~storePreset = { arg x; "attempting to store".postln; storage.storeToGroup(key, x+offset);  };
+		~deletePreset = { arg x; storage.removeFromGroup(key, x+offset);  };
+
+		~updateFromStorage.value(storage, key, true);
+
 	};
 
 	~storePreset = {
-		"storing preset not implemented".warn;
+		"connect to storage to store".warn;
 	};
+
+	~deletePreset = {
+		"connect to storage to delete".warn;
+	}
 
 
 

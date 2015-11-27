@@ -75,11 +75,11 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 
 		//Connect to CV with an offset
 		//controller outputs values from 0-47, but this CV needs 1-48
-		ctrls[\target].updateFromStorage(storage.getActiveKeys(\presets), 1);
+		ctrls[\target].connectStorage(storage, \presets, 1);
 		ctrls[\target].connectCV(params.meta.target, 1);
 		ctrls[\target].storePreset = { arg x; storage.storePreset(x+1);  };
 
-		ctrls[\metaPreset].updateFromStorage(storage.getActiveKeys(\snapshots));
+		ctrls[\metaPreset].connectStorage(storage, \snapshots);
 		ctrls[\metaPreset].connectCV(params.snapshot);
 		ctrls[\metaPreset].storePreset = (storage.storeSnapshot(_)); //TODO
 

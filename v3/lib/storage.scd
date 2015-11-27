@@ -11,37 +11,30 @@ Req.load(['params'], { |params, cleanup|
             snapshots: Set()
         );
 
-		~storePreset = { |k|
-			k.debug("storing preset");
-			params.getParams(\presets).do { arg x, i;
-				~things[\presets][k][i] = x.value;
+		~storeToGroup = { |grp, k|
+			"Storing % in grp %".format(k, grp).postln;
+			params.getParams(grp).do { arg x, i;
+				~things[grp][k][i] = x.value;
 			};
-			~toStore[\presets].add(k);
+			~toStore[grp].add(k);
+			currentEnvironment.changed(\activeKeys, grp);
 			~save.value;
 		};
 
-		~storeSnapshot = { |k|
-			k.debug("storing snapshot");
-			params.getParams(\snapshots).do { arg x, i;
-				~things[\snapshots][k][i] = x.value;
-			};
-			~toStore[\snapshots].add(k);
-			~save.value;
-		};
+		~storePreset = (~storeToGroup.(\presets, _));
+		~storeSnapshot = (~storeToGroup.(\snapshots, _));
 
-        ~removePreset = { |k|
-            k.debug("removing preset");
-            ~toStore[\presets].remove(k);
-	        params.setParams(\presets, nil);
+        ~removeFromGroup = { |grp, k|
+			~toStore[grp].remove(k);
+			~things[grp][k] = params.randomize(grp);
+			[grp, k].debug("removing preset");
+            currentEnvironment.changed(\activeKeys, grp);
     		~save.value;
         };
 
-        ~removeSnapshot = { |k|
-            k.debug("removing snapshot");
-            ~toStore[\snapshots].remove(k);
-            params.setParams(\presets, nil);
-    		~save.value;
-        };
+		~removeSnapshot = (~removeFromGroup.(\snapshots,_));
+		~removePreset = (~removeFromGroup.(\presets,_));
+
 
 		~getPresets = {
             ~things[\presets];
