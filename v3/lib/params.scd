@@ -2,7 +2,7 @@ Req.load(nil, { |cleanup|
 	var params, presetCount;
 
 	//eqGain: 32-band eq gain
-	Spec.add(\eqGain, [-6, 6, \db, 0, 0]);
+	Spec.add(\eqGain, [-24, 12, \db, 0, 0]);
 	//0->empty, 1->inactive, 2->active
 	Spec.add(\presetState, [0, 2, \lin, 1, 0]);
 	//47 preset slots
@@ -56,6 +56,7 @@ Req.load(nil, { |cleanup|
 		//"API" for getting saveable params
 		~getParams = { |key|
             var x = switch (key)
+			{ \eq } { ~eq24 }
             { \presets } { ~main }
             { \snapshots  } { ~meta_array };
             x
@@ -63,9 +64,7 @@ Req.load(nil, { |cleanup|
 
 		//"API" for getting saveable params
 		~setParams = { |key, values|
-            var x = switch (key)
-            { \presets } { ~main }
-            { \snapshots  } { ~meta_array };
+			var x = ~getParams.(key);
 
 			if (values.isNil) {
 				values = ~randomize.(key);

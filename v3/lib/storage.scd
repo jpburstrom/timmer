@@ -3,19 +3,19 @@ Req.load(['params'], { |params, cleanup|
 	//Kolla på hur gamla grejer har gjort detta
 	var storage = Proto({
 
-        var storageVersion = "0.1"; //Avoid float rounding errors
+        var storageVersion = "0.1.1"; //Avoid float rounding errors
 		var path = "../data/storage.zarchive".resolveRelative;
 
-        ~toStore = (
+		//Sets of indexes to store
+		~toStore = (
             presets: Set(),
             snapshots: Set()
         );
 
+		//Store preset k in group grp
 		~storeToGroup = { |grp, k|
 			"Storing % in grp %".format(k, grp).postln;
-			params.getParams(grp).do { arg x, i;
-				~things[grp][k][i] = x.value;
-			};
+			~things[grp][k] = params.getParams(grp).collect(_.value);
 			~toStore[grp].add(k);
 			currentEnvironment.changed(\activeKeys, grp);
 			~save.value;
@@ -24,6 +24,7 @@ Req.load(['params'], { |params, cleanup|
 		~storePreset = (~storeToGroup.(\presets, _));
 		~storeSnapshot = (~storeToGroup.(\snapshots, _));
 
+		//Remove a stored preset
         ~removeFromGroup = { |grp, k|
 			~toStore[grp].remove(k);
 			~things[grp][k] = params.randomize(grp);
@@ -35,7 +36,6 @@ Req.load(['params'], { |params, cleanup|
 		~removeSnapshot = (~removeFromGroup.(\snapshots,_));
 		~removePreset = (~removeFromGroup.(\presets,_));
 
-
 		~getPresets = {
             ~things[\presets];
         };
@@ -46,6 +46,45 @@ Req.load(['params'], { |params, cleanup|
 
 		~getActiveKeys = { |k|
 			~toStore[k];
+		};
+
+		//Save current state in group
+		~saveSingle = { |group, path|
+			var x, saver;
+			saver = {
+				x = params.getParams(group).collect(_.value);
+				~prWrite.(x, path);
+			}.inEnvir;
+			if (path.isNil) {
+				Dialog.savePanel({ |p|
+					path = p.splitext;
+					if (path[1].isNil) { path[1] = "zarchive" };
+					path = "%.%".format(*path);
+					saver.value;
+				});
+			} {
+				saver.value;
+			}
+		};
+
+		//Save current state in group
+		~loadSingle = { |group, path, storeToKey|
+			var x, loader;
+			loader = {
+				params.setParams(group, ~prRead.(path));
+				if (storeToKey.notNil) {
+					~storeToGroup.(group, storeToKey);
+				}
+			}.inEnvir;
+			if (path.isNil) {
+				Dialog.openPanel({ |p|
+					path = p;
+					loader.value
+				});
+			} {
+				loader.value
+			}
+
 		};
 
 		~save = {
@@ -60,9 +99,7 @@ Req.load(['params'], { |params, cleanup|
                     };
                 }
             };
-            z = ZArchive.write(path);
-            z.writeItem(x);
-            z.writeClose;
+			~prWrite.(x, path);
 
 		};
 
@@ -76,9 +113,7 @@ Req.load(['params'], { |params, cleanup|
 		~load = {
             var z;
             if (File.exists(path)) {
-                z = ZArchive.read(path);
-                ~things = z.readItem;
-                z.close;
+				~things = ~prRead.(path);
                 if (~things.version != storageVersion) {
                     "creating new storage".inform;
                     ~createStorage.value;
@@ -94,6 +129,10 @@ Req.load(['params'], { |params, cleanup|
             params.snapshotCount.do { |x|
                 ~maybeRandomize.(\snapshots, x);
             };
+			//A bit of a hack
+			//Set eq from preset 0
+			//Since we're not doing it anywhere else
+			params.setParams(\eq, ~things.eq[0]);
 		};
 
         ~maybeRandomize = { |container, num|
@@ -107,11 +146,28 @@ Req.load(['params'], { |params, cleanup|
         ~createStorage = {
             ~things = (
                 version: storageVersion,
-                presets: (),
+				eq: (),
+				presets: (),
                 snapshots: ()
+
             );
             ~save.value;
-        }
+        };
+
+		~prWrite = { |x, p|
+			z = ZArchive.write(p);
+            z.writeItem(x);
+            z.writeClose;
+		};
+
+		~prRead = { |p|
+			var things;
+			z = ZArchive.read(p);
+			things = z.readItem;
+			z.close;
+			things;
+
+		}
 
 
 	});

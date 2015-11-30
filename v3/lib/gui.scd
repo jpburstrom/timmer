@@ -1,4 +1,4 @@
-Req.load(#[params], { |params, cleanup|
+Req.load(#[params, storage], { |params, storage, cleanup|
 	var makeui;
     var gui = ();
     var knobCounts = IdentityDictionary();
@@ -16,13 +16,13 @@ Req.load(#[params], { |params, cleanup|
             knobCounts[label] = 0;
             bounds = bounds ?? { Rect(0,0,400,400).center_( Window.availableBounds.center ) };
             gui.windows[label] !? { gui.windows[label].close };
-            parent !? { cls = View };
-            gui.windows[label] = cls.perform(\new, label.asString.capitalize).front
-            .layout_(GridLayout.perform(\rows, nil ! rows ! cols))
-            .bounds_(bounds)
-            .background_(Color.rand(0.8, 1))
-            ;
-        };
+            gui.windows[label] = parent.notNil.if(
+				{ View(parent, bounds) },
+				{ Window(label.asString.capitalize, bounds).front }
+			).layout_(GridLayout.perform(\rows, nil ! rows ! cols))
+			.background_(Color.rand(0.8, 1));
+
+	    };
         ~knob = { |ev, label, cv, parent=\default, keystep=0.01|
             var ui, knob, number, rows, count = knobCounts[parent];
             rows = rw[parent]; // get rows from grid creation
@@ -38,6 +38,16 @@ Req.load(#[params], { |params, cleanup|
             gui.windows[parent].layout.add(ui, count div: rows, count % rows);
             ui
         };
+		~button = { |ev, states, action, parent, rowspan(1), colspan(1)|
+			var ui, knob, number, rows, count = knobCounts[parent];
+			rows = rw[parent];
+			knobCounts[parent] = count + colspan;
+			if (states.isKindOf(String)) {
+				states = [[states, Color.black, Color.white]];
+			};
+			ui = Button().states_(states).action_(action);
+			gui.windows[parent].layout.addSpanning(ui, count div: rows, count % rows, rowspan, colspan);
+		};
         ~label = { |ev, label, parent|
             var count = knobCounts[parent];
             var rows = rw[parent];
@@ -50,25 +60,65 @@ Req.load(#[params], { |params, cleanup|
     };
 
 	Proto({
-		~eq = {
-			makeui.grid(\eq24, 3, 8, nil, Rect(1600, 0, 500, 400));
+		~eq = { |parent|
+			var ui = makeui.grid(\eq24, 2, 12, parent, Rect(1600, 0, 500, 400));
+			var labels = (36..60).midiname;
 			24.do { |i|
 				var v = params.eq24[i];
-				makeui.knob(i, v, \eq24, 0.01);
-			}
-		};
+				makeui.knob(labels[i], v, \eq24, 0.01);
+			};
 
-		~main = {
-			var ui = makeui.grid(\main, 1, 8, nil, Rect(1600, 0, 500, 100));
+			//Store to storage.zarchive
+			makeui.button("Store", {
+				storage.storeToGroup(\eq, 0);
+			}, \eq24, 1, 2);
+
+			//Save to separate file
+			makeui.button("Save as", {
+				storage.saveSingle(\eq);
+			}, \eq24, 1, 2);
+
+			//Load separate file
+			makeui.button("Open", {
+				//Load and store to preset 0
+				storage.loadSingle(\eq, nil, 0);
+			}, \eq24, 1, 2);
+
+
+		};
+		~main = { |parent|
+			var ui = makeui.grid(\main, 1, 8, parent, Rect(1600, 0, 500, 100));
 			8.do { |i|
 				var v = params.main[i];
 				makeui.knob(i, v, \main, 0.01);
+			};
+		};
+		~meta = { |parent|
+			var ui;
+			var labels = [\morph, \random, \target, \presetInterpolationTime];
+			ui = makeui.grid(\meta, 1, 8, parent, Rect(1600, 0, 500, 100));
+			labels.do { |k|
+				var v = params.meta[k];
+				makeui.knob(k.asString[..12], v, \meta, 0.01);
+			};
+
+			4.do { arg i;
+				var v = params.meta.featureMap[i];
+				makeui.knob("Feature %".format(i+1), v, \meta, 0.01);
 			}
 		};
+		~makeWindow = {
+			var p = Window.new("Hello", Rect(1600, 0, 800, 400)).front.layout_(VLayout());
+			~eq.value(p.layout);
+			~main.value(p.layout);
+			~meta.value(p.layout);
+			gui.windows[\mainWindow] = p;
+			p
 
-	}).main;
+		}
 
-	cleanup.addFunc { gui.window.do(_.close) };
+	}).makeWindow;
 
+	cleanup.addFunc { gui.windows.do(_.close) };
 
 });
