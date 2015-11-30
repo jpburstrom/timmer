@@ -56,7 +56,6 @@
 		cv.addDependant(currentEnvironment);
 
 		//Force update from CV
-		~exclusiveKey.debug("Exclusive key");
 		~exclusiveKey = nil;
 		cv.changed(\synch, cv);
 

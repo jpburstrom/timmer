@@ -23,6 +23,9 @@ Req.load(nil, { |cleanup|
 
 		var metaKeys;
 
+		//Array of frequencies for EQ
+		~eqFreqs = (36..59).midicps;
+
 		~presetCount = presetCount = 48; //current + target preset count
         ~snapshotCount = 8;
 
@@ -129,7 +132,7 @@ Req.load(nil, { |cleanup|
         }).flat;
 
 		//eq is sold separately
-        ~eq24 = 24.collect({CV(\eqGain) });
+        ~eq24 = ~eqFreqs.size.collect({CV(\eqGain) });
 
 
 

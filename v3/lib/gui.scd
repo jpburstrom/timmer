@@ -23,10 +23,10 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 			.background_(Color.rand(0.8, 1));
 
 	    };
-        ~knob = { |ev, label, cv, parent=\default, keystep=0.01|
+        ~knob = { |ev, label, cv, parent=\default, keystep=0.01, rowspan(1), colspan(1)|
             var ui, knob, number, rows, count = knobCounts[parent];
             rows = rw[parent]; // get rows from grid creation
-            knobCounts[parent] = count + 1; //increment ui counter
+            knobCounts[parent] = count + colspan; //increment ui counter
             ui = VLayout(
                 knob = Knob().keystep_(keystep),
                 number = NumberBox().maxDecimals_(4),
@@ -35,7 +35,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
             ).spacing_(0).margins_(0);
             cv.connect(knob);
             cv.connect(number);
-            gui.windows[parent].layout.add(ui, count div: rows, count % rows);
+            gui.windows[parent].layout.addSpanning(ui, count div: rows, count % rows, rowspan, colspan);
             ui
         };
 		~button = { |ev, states, action, parent, rowspan(1), colspan(1)|
@@ -48,13 +48,13 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 			ui = Button().states_(states).action_(action);
 			gui.windows[parent].layout.addSpanning(ui, count div: rows, count % rows, rowspan, colspan);
 		};
-        ~label = { |ev, label, parent|
+        ~label = { |ev, label, parent, rowspan(1), colspan(1)|
             var count = knobCounts[parent];
             var rows = rw[parent];
-            knobCounts[parent] = count + 1;
-            gui.windows[parent].layout.add(
+            knobCounts[parent] = count + colspan;
+            gui.windows[parent].layout.addSpanning(
                 StaticText().string_(label.asString.capitalize).align_(\top),
-                count div:rows, count % rows
+                count div:rows, count % rows, rowspan, colspan
             );
         };
     };
@@ -62,8 +62,9 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 	Proto({
 		~eq = { |parent|
 			var ui = makeui.grid(\eq24, 2, 12, parent, Rect(1600, 0, 500, 400));
-			var labels = (36..60).midiname;
-			24.do { |i|
+			var labels = params.eqFreqs.cpsname;
+			makeui.label("EQ", \eq24, 1, 12);
+			params.eqFreqs.size.do { |i|
 				var v = params.eq24[i];
 				makeui.knob(labels[i], v, \eq24, 0.01);
 			};
@@ -71,6 +72,11 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 			//Store to storage.zarchive
 			makeui.button("Store", {
 				storage.storeToGroup(\eq, 0);
+			}, \eq24, 1, 2);
+
+			//Store to storage.zarchive
+			makeui.button("Revert", {
+				storage.loadToGroup(\eq, 0);
 			}, \eq24, 1, 2);
 
 			//Save to separate file
@@ -88,6 +94,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 		};
 		~main = { |parent|
 			var ui = makeui.grid(\main, 1, 8, parent, Rect(1600, 0, 500, 100));
+			makeui.label("Main", \main, 1, 8);
 			8.do { |i|
 				var v = params.main[i];
 				makeui.knob(i, v, \main, 0.01);

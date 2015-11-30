@@ -33,6 +33,10 @@ Req.load(['params'], { |params, cleanup|
     		~save.value;
         };
 
+		~loadToGroup = { |grp, k|
+			params.setParams(grp, ~things[grp][k]);
+		};
+
 		~removeSnapshot = (~removeFromGroup.(\snapshots,_));
 		~removePreset = (~removeFromGroup.(\presets,_));
 
@@ -117,6 +121,7 @@ Req.load(['params'], { |params, cleanup|
                 if (~things.version != storageVersion) {
                     "creating new storage".inform;
                     ~createStorage.value;
+					//TODO: copy old storage into new?
                 };
                 ~toStore[\presets] = ~things.presets.keys;
                 ~toStore[\snapshots] = ~things.snapshots.keys;
@@ -132,14 +137,14 @@ Req.load(['params'], { |params, cleanup|
 			//A bit of a hack
 			//Set eq from preset 0
 			//Since we're not doing it anywhere else
-			params.setParams(\eq, ~things.eq[0]);
+			~loadToGroup.(\eq, 0);
+
 		};
 
         ~maybeRandomize = { |container, num|
 			var c = ~things[container];
 			if (c[num].isNil) {
-				[container, num].debug("randomizing");
-                c[num] = params.randomize(container);
+	            c[num] = params.randomize(container);
             }
         };
 
