@@ -21,7 +21,13 @@ Req.load(#[params, synth], { |params, synth, cleanup|
 		params.meta.morph.input_(val/127);
 	};
 
+	actions[1] = { |val|
+		params.meta.random.input_(val/127);
+	};
 
+	actions[2] = { |val|
+		params.meta.target.input_(val/127);
+	};
 
 	//------Freeze pedals---------------
 

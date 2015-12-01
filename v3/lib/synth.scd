@@ -1,66 +1,101 @@
 Req.load(#[params, proxyspace], { |params, px, cleanup|
 
 	var clist = List();
+	//Double bass input
+	var dbin = 1;
+	//Double bass output
 	var dbout = 2;
 
 	cleanup.addFunc {
 		clist.do(_.free);
 	};
 
-	px[\feedbass][0] = {
-		var snd, presnd;
-		var freqs = params.eqFreqs;
-		var ctl = NamedControl.kr(\eqGain, 0 ! freqs.size);
-		var amp;
-		//--- EQ ---//
-		//Steep highpass
-		snd = SoundIn.ar(1);
-		amp = Amplitude.ar(snd, 0.1, 0.1).lag(0.5);
+	px.push;
+
+	~testtone = { SinOsc.ar(180) * 0.1 };
+
+	~bass = {
+		SoundIn.ar(dbin);
+	};
+
+	~eq = {
+		var snd, ctl, freqs;
+		freqs = params.eqFreqs;
+		snd = \in.ar;
+		ctl = NamedControl.kr(\eqGain, 0 ! freqs.size);
+
+		//Highpass filter
 		4.do { snd = HPF.ar(snd, 60) };
+
+		//n-band EQ
 		freqs.do { |freq, i|
 			//see http://new-supercollider-mailing-lists-forums-use-these.2681727.n2.nabble.com/What-is-rq-really-td5619928.html
 			//0.03125 = 1 / 16 (0.5 semitones between -3 db)
 			snd = BPeakEQ.ar(snd, freq, 0.0625, \eqGain.kr[i]);
 		};
 
-		//Out.ar(~freezeBus, snd);
+		//Steep highshelf to cut high frequencies
 		snd = BHiShelf.ar(snd, 300, 1, -32);
 
-		//Out.kr(~pitchBus, Pitch.kr(snd));
+	};
 
-		//snd = snd * EnvGen.ar(Env.linen(1, 1, 0.02), Dust.kr(1), timeScale: LFNoise2.kr(1).range(0.05, 1));
+	//Mod delay
+	~microshift = {
+		var depth, speed, range, lfo, trig;
+		var lagtime = 0.1;
+		depth = \depth.kr(0, 0);
+		speed = \speed.kr(0, 0);
+		range = (depth/ (speed * 2)).min(1);
+		speed = speed.lag(lagtime);
+		depth = depth.lag(lagtime);
+		// trig = Latch.kr(Changed.kr(range),
+		lfo = LinXFade2.ar(SinOsc.ar(speed), LFDNoise3.ar(speed), K2A.ar(\mix.kr(0)));
+		//If value is changed, move to max for a while
+		//lfo = LinXFade2.ar(K2A.ar((depth * 2) - 1), lfo, K2A.ar((Trig.kr(Changed.kr(range), lagtime) * -2) + 1).lag(lagtime));
+		lfo = lfo.clip2.range(0, range.lag(lagtime));
+		DelayC.ar(\in.ar, 2, lfo);
+	};
 
-		snd = snd * 12.dbamp;
+	~microshift.addSpec(
+		\depth, [0.0, 1.0, 8],
+		\speed, [1.0, 20, \exp, 0, 0.1, "hz"],
+		\mix, [-1, 1, \lin]
+	);
 
+	~output = {
+		var snd = \in.ar * 12.dbamp;
 		snd = Compander.ar(snd, snd, 0.1, 1, 0.33);
 		snd
 	};
 
-	//Mod delay
-	px[\microshift] = { arg snd, depth, speed, mix;
-		var lfo = LinXFade2.ar(SinOsc.ar(speed), LFDNoise3.ar(speed), mix);
-		snd = DelayC.ar(snd, 2, lfo.poll);
+
+	//-------ROUTING---------------
+
+	//Serial routing
+	#[bass, microshift, eq, output].doAdjacentPairs { |in, out|
+		px[out].set(\in, px[in]);
 	};
 
-	px[\microshift].addSpec(
-		\depth, [0.0, 12.0, \lin],
-		\speed, [0.1, 20, \exp, 0, 0.1, "hz"],
-		\mix, [0.0, 1, \lin]
-	);
+	~output.play(dbout);
 
+	//-------MAPPINGS-------------
 
 	//TODO: Map controls to parameters, like this
-	clist.add(q.params.main[0].action_({ |cv|
-		px[\microshift].set(\depth, px[\microshift].getSpec(\depth).map(cv.input));
-	}));
+	#[depth, speed, mix].do { |param, i|
+		clist.add(params.main[i].action_({ |cv|
+			px[\microshift].set(param, px[\microshift].getSpec(param).map(cv.input));
+		}));
+	};
 
-	q.params.eq24.do { |cv, i|
-		clist.add(cv.action = { |v| px[\feedbass].set(\eqGain, q.params.eq24.collect(_.value)) });
+	params.eq24.do { |cv, i|
+		clist.add(cv.action = { |v| px[\feedbass].set(\eqGain, params.eq24.collect(_.value)) });
 	};
 
 
 
 	px[\feedbass].play(dbout);
+
+	px.pop;
 
 	//Synth control proto
 	Proto({
@@ -75,6 +110,4 @@ Req.load(#[params, proxyspace], { |params, px, cleanup|
 
 
 	});
-
-	q.px = px;
 });

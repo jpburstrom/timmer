@@ -9,5 +9,8 @@ Req.load(#[params], { |params, cleanup|
 
 	px = ProxySpace(s, \timmer);
 
+	q.px = px;
+
+	px
 });
 
