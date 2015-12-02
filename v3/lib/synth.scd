@@ -160,7 +160,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		microshift, speed,
 		microshift, mix,
 		resonance, amp,
-		decimator, amount
+		//decimator, amount
 	]
 	.pairsDo { |np, param, i|
 		i = i/2; //pairsDo outputs 0,2,4...

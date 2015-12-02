@@ -162,7 +162,6 @@ Req.load(nil, { |cleanup|
 		cleanup.addFunc({
 			~slider.close;
 		}.inEnvir);
-
 	});
 
 
