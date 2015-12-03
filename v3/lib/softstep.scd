@@ -2,6 +2,16 @@ Req.load(#[params, synth], { |params, synth, cleanup|
 	var srcID, pedalNum, actions, pedalFunc;
 	var ss, ssLeds, ssLedWait, ssNum, makeAction;
 
+	//TODO: store previous value and compare
+	var softset = { |cv, value, within=0.1|
+		var curr;
+		curr = cv.input;
+		value = value / 127;
+		if (absdif(curr, value) <= within) {
+			cv.input = value;
+		}
+	};
+
 	SoftStep.connect;
 
 
@@ -18,15 +28,16 @@ Req.load(#[params, synth], { |params, synth, cleanup|
 	}, pedalNum, 0, srcID);
 
 	actions[0] = { |val|
-		params.meta.morph.input_(val/127);
+		softset.(params.meta.morph, val);
 	};
 
 	actions[1] = { |val|
-		params.meta.random.input_(val/127);
+		softset.(params.meta.random, val);
+
 	};
 
 	actions[2] = { |val|
-		params.meta.target.input_(val/127);
+		softset.(params.meta.target, val);
 	};
 
 	//------Freeze pedals---------------
