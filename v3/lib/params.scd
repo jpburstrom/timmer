@@ -69,6 +69,8 @@ Req.load(nil, { |cleanup|
 		~setParams = { |key, values|
 			var x = ~getParams.(key);
 
+			[key, values].debug("setting params");
+
 			if (values.isNil) {
 				values = ~randomize.(key);
 			};
@@ -174,6 +176,7 @@ Req.load(nil, { |cleanup|
 
 	//TODO: update storage
 	//reset CV values
+	q.params = params;
 	params
 
 })

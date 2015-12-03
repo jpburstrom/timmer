@@ -9,6 +9,11 @@ s.waitForBoot {
 			q.params = params;
 			q.storage = storage;
 			q.presets = presets;
+
+			params.current.do(_.changed(\synch));
+
+
 	}, reload:true);
 
 };
+

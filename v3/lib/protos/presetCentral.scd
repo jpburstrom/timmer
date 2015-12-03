@@ -40,13 +40,17 @@ Proto({
 				}.inEnvir));
 			};
 		};
+
 		current.do { |cv, i|
 			//Do a first update from presets
 			cv.value = ~presets[~currentIndex][i];
+
 			//then hook up to sync from cv
+
 			c.add(cv.action_({
 				~presets[~currentIndex][i] = cv.value;
 			}.inEnvir));
+
 		};
 
 		~cookedParams = cooked;
@@ -67,9 +71,8 @@ Proto({
 	~setIndex = { |indexKey, paramsKey, val|
 		var c = ~controllers;
 		if (val.isKindOf(CV)) {
-			[indexKey, paramsKey, val].debug("CV found");
 			c.add (val.action_({ |cv|
-				currentEnvironment.[indexKey] = cv.value.asInt;
+				currentEnvironment[indexKey] = cv.value.asInt;
 				currentEnvironment[paramsKey].do { |param, i|
 					param.value = ~presets[currentEnvironment[indexKey]][i];
 				}

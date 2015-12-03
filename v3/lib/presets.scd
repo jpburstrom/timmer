@@ -16,13 +16,15 @@ p = Req.load(['params', 'storage'], { |params, storage, cleanup|
 	presets.setCurrentIndex(0);
 	presets.setTargetIndex(params.meta.target);
 
+
     //--------SNAPSHOTS----------
 
 	snapshots.setPresetContainer(storage.getSnapshots);
 	snapshots.setParams(params.meta_array);
 	snapshots.setCurrentIndex(params.snapshot);
 
-	[presets, params];
+	[presets, snapshots];
+
 
 });
 

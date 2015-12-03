@@ -43,8 +43,6 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		ampLong
 	};
 
-	~ampTilt.gui;
-
 	~onsets = { arg threshold=0.1, relaxtime=2, floor=0.5;
 		var onsets, chain = FFT(LocalBuf(512), ~bass.ar);
 		onsets = Onsets.kr(chain, threshold, \wphase, relaxtime: relaxtime, floor:floor);

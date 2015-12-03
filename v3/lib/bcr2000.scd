@@ -7,7 +7,8 @@ Req.load([\params], { |params, cleanup|
 	bcr,
 	topRow,
 	pageSwitchButtons,
-	bottomEnc;
+	bottomEnc,
+	lastRowCVs;
 
 	bcr = MKtl(\bcr, "*bcr2000");
 	//bcr.gui;
@@ -15,9 +16,12 @@ Req.load([\params], { |params, cleanup|
 	//A way to access \kn elements by numerical index
 	bottomEnc = bcr.elementAt(\kn).flat;
 
+
+	lastRowCVs = #[morph, random, target, presetInterpolationTime].collect(params.meta[_]) ++ params.meta.featureMap;
+
 	//all CVs
 	vals = ().make {
-		~pr_1_1 = (params.current ++ params.target ++ (CV()!8)); //XXX tmp
+		~pr_1_1 = params.target ++ params.current ++ lastRowCVs;
 		~pr_1_2 = params.eq24;
 	};
 
@@ -37,26 +41,14 @@ Req.load([\params], { |params, cleanup|
 
 	//
 	cvsync = ().make {
-		~kn1 =
+		~kn1 = bottomEnc.collect({ |v, i|
+			vals[\pr_1_1][i].connectMKtlElement(v);
 
-		params.target.collect({ |v, i|
-			v.connectMKtlElement(bcr.elementAt(\kn, \1, i));
-		})
-		++
-		params.current.collect({ |v, i|
-			v.connectMKtlElement(bcr.elementAt(\kn, \2, i));
-		})
-		++
-		#[morph, random, target, presetInterpolationTime].collect({ |k, i|
-			params.meta[k].connectMKtlElement(bcr.elementAt(\kn, \3, i))
-		})
-		++
-		params.meta.featureMap.collect({ |cv, i|
-			cv.connectMKtlElement(bcr.elementAt(\kn, \3, i+4));
 		});
+		~kn2 = bottomEnc.collect({ |v, i|
+			vals[\pr_1_2][i].connectMKtlElement(v);
 
-
-		~kn2 = params.eq24.collect { |v,i| v.connectMKtlElement(bottomEnc[i]) };
+		});
 	};
 
 	//----Top encoders-----------
@@ -151,6 +143,15 @@ Req.load([\params], { |params, cleanup|
 	bcr.sync;
 	8.do { |x| bcr.elementAt(\bt, \2, x).valueAction = 0 };
 
+
+	//Reload everything button
+	bcr.elementAt(\pr, \2, \2).action = { |elem|
+
+		if (elem.value == 1) {
+			elem.value = 0;
+			"../init.scd".loadRelative;
+		}
+	};
 
     bcr
 

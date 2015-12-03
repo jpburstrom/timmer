@@ -95,6 +95,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 		~main = { |parent|
 			var ui = makeui.grid(\main, 1, 8, parent, Rect(1600, 0, 500, 100));
 			makeui.label("Main", \main, 1, 8);
+			params.main.collect(_.value).debug("paramsmain");
 			8.do { |i|
 				var v = params.main[i];
 				makeui.knob(i, v, \main, 0.01);
