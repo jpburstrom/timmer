@@ -27,17 +27,34 @@ Req.load(#[params, synth], { |params, synth, cleanup|
 
 	}, pedalNum, 0, srcID);
 
+	//Set pedal actions where params.meta.selectedPedalAction is...
+	//(See params.scd)
+	//0: Morph
 	actions[0] = { |val|
 		softset.(params.meta.morph, val);
 	};
 
+	//1: Parameter randomization
 	actions[1] = { |val|
 		softset.(params.meta.random, val);
 
 	};
 
+	//2: Preset select (Target)
 	actions[2] = { |val|
 		softset.(params.meta.target, val);
+	};
+
+	//3: Interpolation time
+	actions[3] = { |val|
+		softset.(params.meta.interpolationTime, val);
+	};
+
+	//4-7: featureMap, mapping audio features to parameters
+	4.do { |i|
+		actions[i+4] = { |val|
+			softset.(params.meta.featureMap[i], val);
+		};
 	};
 
 	//------Freeze pedals---------------
@@ -50,7 +67,7 @@ Req.load(#[params, synth], { |params, synth, cleanup|
 		{ |val|
 
 			if (val == 1) {
-				var w = synth.triggerFreezeSynth(x) * 0.5;
+				var w = synth.triggerFreezeSynth(x) * 0.5; //Returns synth duration
 				ssLedWait[x].stop;
 				ssLeds.set(x, 1, 1);
 				ssLedWait[x] = fork {
