@@ -8,6 +8,14 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 
 	var px = proxyobj.proxyspace;
 
+	var data = (
+		//Minor + major pentatonic, from
+		//Octave above open strings
+		//0-3: E-G major pentatonic
+		//4-7: E-G minor pentatonic
+		scales: 	[\E1, \A1, \D2, \G2].collect({ |x| [x.namemidi + [0,2,4,7,9], x.namemidi + [0,3,5,7,10]]}).flop.flat.clump(5);
+	);
+
 	proxyobj.postln;
 
 	cleanup.addFunc {
@@ -115,7 +123,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 	~resonance = {
 		var out, snd = \in.ar;
 		var base = "D1".namecps;
-		var freqs = ("D3".namemidi + [0,2,4,7,9]).midicps; //stretch
+		var freqs = \freqs.kr(data.scales[2]);
 		var amps = freqs.size.collect(0.2.rrand(0.8));
 		var decay = freqs.size.collect(5);
 		var pitch = Latch.kr(~pitch.kr(2)[0] / base, ~onsets.kr(1)).max(0.25).min(2);
@@ -173,7 +181,9 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 	};
 
 
-	px[\feedbass].play(dbout);
+	clist.add(params.meta.freezeScale.action = { |cv| px[\resonance].set(\freqs, data.scales[cv.value]) });
+
+	~resonance.gui; //XXX tmp
 
 	px.pop;
 
