@@ -1,5 +1,4 @@
 Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
-
 	var clist = List();
 	//Double bass input
 	var dbin = 1;
@@ -15,6 +14,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		//4-7: E-G minor pentatonic
 		scales: 	[\E2, \A2, \D3, \G3].collect({ |x| [x.namemidi + [0,2,4,7,9], x.namemidi + [0,3,5,7,10]]}).flop.flat.clump(5);
 	);
+
 
 	//Calculate modulation output from a specific parameter
 	//where modnp is a nodeproxy with 2 .kr outputs, and param is any parameter to be modulated
@@ -194,10 +194,11 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 	//RESONANCE
 	~resonance = {
 		var out, snd = \in.ar;
-		var freqs = (\notes.kr(data.scales[2]) + (~modDetune.kr(2)[0] * LFNoise2.kr(1) * 0.5)).midicps;
-		var amps = freqs.size.collect(0.2.rrand(0.8));
-		var decay = freqs.size.collect(5);
-		var pitch = 1;//Latch.kr(~pitch.kr(2)[0] / base, ~onsets.kr(1)).max(0.25).min(2);
+        var freqs, amps, decay, pitch;
+        freqs = (\notes.kr(data.scales[2]) + (~modDetune.kr(2)[0] * LFNoise2.kr(1) * 0.5)).midicps;
+		amps = freqs.size.collect(0.2.rrand(0.8));
+		decay = freqs.size.collect(5);
+		pitch = 1;//Latch.kr(~pitch.kr(2)[0] / base, ~onsets.kr(1)).max(0.25).min(2);
 
 		//TODO: correct mapping amp -> lFnoise
 		//TODO: scales from freezeScale
@@ -302,6 +303,10 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		px[\eq].set(\eqGain, params.eq24.collect(_.value));
 
 	};
+
+    clist.add(params.meta.freezeScale.action = { |cv|
+        px[\resonance].set(\notes, data.scales[cv.value]);
+    });
 
 	//Amplitude -> different things
 	#[modMLFODepth, modTLFODepth, modDetune, modReverbMix].do { |k, i|
