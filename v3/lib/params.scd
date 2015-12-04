@@ -96,7 +96,7 @@ Req.load(nil, { |cleanup|
 			~morph = CV();
 
 			//Randomize ~main
-			~random = CV([0, 0.5]);
+			~random = CV([0, 0.5, 8]);
 
 			//holds current preset target
 			~target = CV([1, presetCount-1, \lin, 1, 0]);
