@@ -17,7 +17,7 @@ Req.load([\params], { |params, cleanup|
 	bottomEnc = bcr.elementAt(\kn).flat;
 
 
-	lastRowCVs = #[morph, random, target, presetInterpolationTime].collect(params.meta[_]) ++ params.meta.featureMap;
+	lastRowCVs = #[morph, random, target, interpolationTime].collect(params.meta[_]) ++ params.meta.featureMap;
 
 	//all CVs
 	vals = ().make {

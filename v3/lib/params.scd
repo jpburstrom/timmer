@@ -19,8 +19,6 @@ Req.load(nil, { |cleanup|
             num.collect { CV(spec) };
 		};
 
-		var maxPresetInterpolationTime = 10;
-
 		var metaKeys;
 
 		//Array of frequencies for EQ
@@ -103,8 +101,9 @@ Req.load(nil, { |cleanup|
 			//holds current preset target
 			~target = CV([1, presetCount-1, \lin, 1, 0]);
 
-			//preset interpolation time
-			~presetInterpolationTime = CV([0, maxPresetInterpolationTime]);
+			//Interpolation time
+			//Used to
+			~interpolationTime = CV();
 
 			//Selects which macro params are updated/morphed (top row on LP)
             ~macroParamSelect = CV([0,1,\lin,1,1], 1!8); //Array of 8 values
@@ -118,7 +117,7 @@ Req.load(nil, { |cleanup|
 			//Controlled with foot pedal
 			~featureMap = createNumberedCVs.(4);
 
-			//Enable feature map (1-4)
+			//Enable feature map (1-4) (currently unused)
 			~featureMapEnable = createNumberedCVs.(4, \binary);
 
 			//Select current scale for freeze pedals
@@ -128,8 +127,11 @@ Req.load(nil, { |cleanup|
 
 
 
-		//preset likes 1-dim arrays
-		~meta_array = ~meta.keys.asArray.sort.collect({ |k|
+		//preset likes 1-dimensional arrays
+		//order is arbitrary, but needs to be consistent for preset loading
+		//so to be able to add/change name of elements, we hardcode the order
+		~meta_array = #[ featureMap, featureMapEnable, freezeScale, macroParamSelect,
+			morph, interpolationTime, random, selectedPedalAction, target ].collect({ |k|
             ~meta[k];
         }).flat;
 

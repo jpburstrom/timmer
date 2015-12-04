@@ -103,7 +103,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 		};
 		~meta = { |parent|
 			var ui;
-			var labels = [\morph, \random, \target, \presetInterpolationTime];
+			var labels = [\morph, \random, \target, \interpolationTime];
 			ui = makeui.grid(\meta, 1, 8, parent, Rect(1600, 0, 500, 100));
 			labels.do { |k|
 				var v = params.meta[k];
