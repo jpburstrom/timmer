@@ -32,8 +32,6 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
         dbout = 0;
     };
 
-	proxyobj.postln;
-
 	cleanup.addFunc {
 		clist.do(_.free);
 	};
@@ -201,8 +199,9 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 	~resonance = {
 		var out, snd = \in.ar;
         var freqs, amps, decay, pitch;
-        freqs = (\notes.kr(data.scales[2]) + (~modDetune.kr(2)[0] * LFNoise2.kr(1) * 0.5)).midicps;
-		amps = freqs.size.collect(0.2.rrand(0.8));
+        freqs = \notes.kr(data.scales[2]);
+        freqs = (freqs + {~modDetune.kr(2)[0] * LFNoise2.kr(1) * 2}.dup(freqs.size) ).midicps;
+        amps = freqs.size.collect(0.2.rrand(0.8));
 		decay = freqs.size.collect(5);
 		pitch = 1;//Latch.kr(~pitch.kr(2)[0] / base, ~onsets.kr(1)).max(0.25).min(2);
 
@@ -242,7 +241,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 				apScale: apScale.lag(0.5)
 			);
 
-			XFade2.ar(src, verb, calcModMap.(~modReverbMix, \mix.kr(0)).linlin(0,1,-1,1));
+                XFade2.ar(src, verb, calcModMap.(~modReverbMix, \mix.kr(0)).linlin(0,1,-1,1));
 		};
 		~reverb.set('animDepth', 1.0, 'animRate', 0.3981071705535, 'combScale', 1.3639149005216, 'predelay', 0.0, 'hfDamping', 0.76666666666667, 'revTime', 6.6408278506348, 'inFilter', 0.55);
 	};
@@ -282,7 +281,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 	//Pairs of nodeproxy, param
 	//map to index of params.main
 
-	//TODO: set to current CV values
+    //TODO: make this list global somehow
 	#[
 		microshift, depth,
 		microshift, speed,
@@ -291,7 +290,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		tremolo, speed,
 		tremolo, mix,
 		resonance, amp,
-		reverb, amp
+		reverb, mix
 		//decimator, amount
 	]
 	.pairsDo { |np, param, i|
