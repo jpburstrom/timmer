@@ -26,6 +26,12 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 
 	};
 
+    //for testing
+    if (s.options.device == "Boris") {
+        dbin = 0;
+        dbout = 0;
+    };
+
 	proxyobj.postln;
 
 	cleanup.addFunc {
