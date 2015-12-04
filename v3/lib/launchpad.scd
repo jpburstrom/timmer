@@ -35,57 +35,59 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 	ctrls = ();
 	views = ();
 
-	lpIn = MKtl('launchpad', "*launchpad-mini", true);
-	if (lpIn.device.notNil) {
+    lpIn = MKtl('launchpad', "*launchpad-mini", true);
+    if (lpIn.device.notNil) {
 
-		lpOut = LaunchpadOut(lpIn).reset;
-		//Autoflash
-		lpOut.midiOut.control(0, 0, 40);
+        lpOut = LaunchpadOut(lpIn).reset;
 
-        //Pairs of key => controllerProtoNames
-       #[
-			current, currentController,
-			target, presetController,
-			freezeScale, freezeController,
-			metaPreset, presetController,
-            paramSelect, paramSelectController,
-			pedalActions, pedalActionController
-		].pairsDo { |k,v|
-			//Connect controller to device IN
-			ctrls[k] = "protos/%".format(v).import.connect(lpIn, keys[k]);
-			//Connect view to device OUT
-            //All have same view
-			views[k] = "protos/buttonView".import.connect(ctrls[k], lpOut);
-			//set colors
-			views[k].colors = colors[k];
-		};
+        //Autoflash
+        lpOut.midiOut.control(0, 0, 40);
+    };
 
-		ctrls[\current].setState(0, 1);
-		ctrls[\current].onStateChange = {
-			storage.storePreset(0);
-			params.makeCurrent;
-		};
+    //Pairs of key => controllerProtoNames
+    #[
+        current, currentController,
+        target, presetController,
+        freezeScale, freezeController,
+        metaPreset, presetController,
+        paramSelect, paramSelectController,
+        pedalActions, pedalActionController
+    ].pairsDo { |k,v|
+        //Connect controller to device IN
+        ctrls[k] = "protos/%".format(v).import.connect(lpIn, keys[k]);
+        //Connect view to device OUT
+        //All have same view
+        views[k] = "protos/buttonView".import.connect(ctrls[k], lpOut);
+        //set colors
+        views[k].colors = colors[k];
+    };
 
-
-		ctrls[\freezeScale].connectCV(params.meta.freezeScale);
-		ctrls[\freezeScale].setAll(0);
-
-        ctrls[\paramSelect].connectCV(params.meta.macroParamSelect);
-        ctrls[\pedalActions].connectCV(params.meta.selectedPedalAction);
-
-		//Connect to CV with an offset
-		//controller outputs values from 0-47, but this CV needs 1-48
-		ctrls[\target].connectStorage(storage, \presets, 1);
-		ctrls[\target].connectCV(params.meta.target, 1);
-
-		ctrls[\metaPreset].connectStorage(storage, \snapshots);
-		ctrls[\metaPreset].connectCV(params.snapshot);
-		ctrls[\metaPreset].storePreset = (storage.storeSnapshot(_)); //TODO
+    ctrls[\current].setState(0, 1);
+    ctrls[\current].onStateChange = {
+        storage.storePreset(0);
+        params.makeCurrent;
+    };
 
 
-	};
+    ctrls[\freezeScale].connectCV(params.meta.freezeScale);
+    ctrls[\freezeScale].setAll(0);
 
-	ctrls
+    ctrls[\paramSelect].connectCV(params.meta.macroParamSelect);
+    ctrls[\pedalActions].connectCV(params.meta.selectedPedalAction);
+
+    //Connect to CV with an offset
+    //controller outputs values from 0-47, but this CV needs 1-48
+    ctrls[\target].connectStorage(storage, \presets, 1);
+    ctrls[\target].connectCV(params.meta.target, 1);
+
+    ctrls[\metaPreset].connectStorage(storage, \snapshots);
+    ctrls[\metaPreset].connectCV(params.snapshot);
+    ctrls[\metaPreset].storePreset = (storage.storeSnapshot(_)); //TODO
+
+
+
+
+    ctrls
 
 
 });

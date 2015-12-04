@@ -12,7 +12,9 @@ Proto({
 		~lpOut = view;
 
 		~elementGroup = ~controller.elementGroup;
-        ctl.addDependant(currentEnvironment);
+        if (view.notNil) {
+            ctl.addDependant(currentEnvironment);
+        };
         currentEnvironment;
 
     };
