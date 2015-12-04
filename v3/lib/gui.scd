@@ -92,14 +92,24 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 
 
 		};
-		~main = { |parent|
-			var ui = makeui.grid(\main, 1, 8, parent, Rect(1600, 0, 500, 100));
-			makeui.label("Main", \main, 1, 8);
-			params.main.collect(_.value).debug("paramsmain");
-			8.do { |i|
-				var v = params.main[i];
-				makeui.knob(i, v, \main, 0.01);
-			};
+        #[main, current, target].do { |key|
+            currentEnvironment[key] = { |parent|
+                var ui = makeui.grid(key, 1, 8, parent, Rect(1600, 0, 500, 100));
+                makeui.label(key.asString.capitalize, key, 1, 8);
+                [
+                    "Mshift Depth",
+                    "Mshift Speed",
+                    "Mshift Mix",
+                    "Tremol Depth",
+                    "Tremol Speed",
+                    "Tremol Mix",
+                    "Reson Amp",
+                    "Reverb Mix"
+                ].do { |k, i|
+                    var v = params[key][i];
+                    makeui.knob(k, v, key, 0.01);
+                };
+            };
 		};
 		~meta = { |parent|
 			var ui;
@@ -110,15 +120,17 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 				makeui.knob(k.asString[..12], v, \meta, 0.01);
 			};
 
-			4.do { arg i;
+            ["Amp=>DLFO", "Amp=>ALFO", "Amp=>Detune", "Amp=>Reverb"].do { arg k, i;
 				var v = params.meta.featureMap[i];
-				makeui.knob("Feature %".format(i+1), v, \meta, 0.01);
+				makeui.knob(k, v, \meta, 0.01);
 			}
 		};
 		~makeWindow = {
 			var p = Window.new("Hello", Rect(1600, 0, 800, 400)).front.layout_(VLayout());
 			~eq.value(p.layout);
 			~main.value(p.layout);
+			~target.value(p.layout);
+			~current.value(p.layout);
 			~meta.value(p.layout);
 			gui.windows[\mainWindow] = p;
 			p
