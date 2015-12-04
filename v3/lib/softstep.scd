@@ -2,13 +2,16 @@ Req.load(#[params, synth], { |params, synth, cleanup|
 	var srcID, pedalNum, actions, pedalFunc;
 	var ss, ssLeds, ssLedWait, ssNum, makeAction;
 
-	//TODO: store previous value and compare
-	var softset = { |cv, value, within=0.1|
-		var curr;
-		curr = cv.input;
-		value = value / 127;
-		if (absdif(curr, value) <= within) {
-			cv.input = value;
+	var softset, softsetFact = {
+		var prev;
+		{ |cv, value, within=0.02|
+			var curr;
+			curr = cv.input;
+			value = value / 127;
+			if (absdif(curr, value) <= within or: { cv.value == prev }) {
+				cv.input = value;
+				prev = cv.value;
+			}
 		}
 	};
 
@@ -20,6 +23,7 @@ Req.load(#[params, synth], { |params, synth, cleanup|
 	srcID = MIDIIn.findPort("SSCOM", "Port 1").uid;
 	pedalNum = 86; //cc for pedal;
 	actions = nil ! 8;
+	softset = softsetFact ! 8;
 	pedalFunc = MIDIFunc.cc({ arg val;
 
 		actions[params.meta.selectedPedalAction.value].value(127 - val);
@@ -30,30 +34,31 @@ Req.load(#[params, synth], { |params, synth, cleanup|
 	//Set pedal actions where params.meta.selectedPedalAction is...
 	//(See params.scd)
 	//0: Morph
+
 	actions[0] = { |val|
-		softset.(params.meta.morph, val);
+		softset[0].(params.meta.morph, val);
 	};
 
 	//1: Parameter randomization
 	actions[1] = { |val|
-		softset.(params.meta.random, val);
+		softset[1].(params.meta.random, val);
 
 	};
 
 	//2: Preset select (Target)
 	actions[2] = { |val|
-		softset.(params.meta.target, val);
+		softset[2].(params.meta.target, val);
 	};
 
 	//3: Interpolation time
 	actions[3] = { |val|
-		softset.(params.meta.interpolationTime, val);
+		softset[3].(params.meta.interpolationTime, val);
 	};
 
 	//4-7: featureMap, mapping audio features to parameters
 	4.do { |i|
 		actions[i+4] = { |val|
-			softset.(params.meta.featureMap[i], val);
+			softset[i+4].(params.meta.featureMap[i], val);
 		};
 	};
 
