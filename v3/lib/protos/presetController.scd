@@ -60,7 +60,6 @@
 		cv.changed(\synch, cv);
 
 		~onStateChange = { |k, v|
-			"stateChange: %,%".format(k,v).postln;
 			if (~exclusiveState.includes(v)) {
 				cv.value = k + ~cvOffset;
 			}

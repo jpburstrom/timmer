@@ -74,7 +74,11 @@ Req.load(nil, { |cleanup|
 			};
 
 			x.do { |cv, i|
-				cv.value = values[i]
+				if (values[i].isKindOf(cv.value.class).not) {
+					"params.setParams: Value with index % of key % couldn't be set".format(i, key).warn;
+				} {
+					cv.value = values[i]
+				}
 			}
 		};
 
@@ -160,12 +164,6 @@ Req.load(nil, { |cleanup|
 			}
 		};
 
-		//TMP
-		~meta.morph.connect(~slider = Slider(nil, Rect(2000, 0, 100, 400)).front);
-
-		cleanup.addFunc({
-			~slider.close;
-		}.inEnvir);
 	});
 
 

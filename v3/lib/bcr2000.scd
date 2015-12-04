@@ -12,6 +12,7 @@ Req.load([\params], { |params, cleanup|
 
 	bcr = MKtl(\bcr, "*bcr2000");
 	//bcr.gui;
+	bcr.reset;
 	bcr.elementAt(\kn).reset;
 	//A way to access \kn elements by numerical index
 	bottomEnc = bcr.elementAt(\kn).flat;
