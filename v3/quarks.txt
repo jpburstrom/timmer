@@ -1,0 +1,9 @@
+/Volumes/HD2/projects/timmer/kod/sc/v3/classes=
+/Users/johannes/Library/Application Support/SuperCollider/downloaded-quarks/XML=https://github.com/supercollider-quarks/XML@a32e434250b33cdbb4d08b97f547e972ad7d915
+/Users/johannes/Library/Application Support/SuperCollider/downloaded-quarks/wslib=https://github.com/supercollider-quarks/wslib
+/Users/johannes/Library/Application Support/SuperCollider/downloaded-quarks/crucial-library=https://github.com/crucialfelix/crucial-library@tags/4.1.5
+/Users/johannes/Library/Application Support/SuperCollider/downloaded-quarks/ddwCommon=https://github.com/jamshark70/ddwCommon@aee49e98bd4a75503976aff4f5e38361ccbb46e
+/Users/johannes/Library/Application Support/SuperCollider/downloaded-quarks/ddwPrototype=https://github.com/jamshark70/ddwPrototype@a2c6e2f35feab504126b495973d8095533116e9
+/Users/johannes/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive=https://github.com/crucialfelix/ZArchive@tags/1.0.0
+/Users/johannes/Library/Application Support/SuperCollider/downloaded-quarks/adclib=https://github.com/supercollider-quarks/adclib@1c041a2337705b58949d7ff39eed15fe0a44332
+/Users/johannes/Library/Application Support/SuperCollider/downloaded-quarks/JITLibExtensions=https://github.com/supercollider-quarks/JITLibExtensions@ff112cfff9a58a312c3e3f56086f3788411121d
