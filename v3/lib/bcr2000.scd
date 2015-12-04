@@ -23,6 +23,7 @@ Req.load([\params], { |params, cleanup|
 	vals = ().make {
 		~pr_1_1 = params.target ++ params.current ++ lastRowCVs;
 		~pr_1_2 = params.eq24;
+		~knUp = params.main;
 	};
 
 	cleanup.addFunc({
@@ -49,9 +50,19 @@ Req.load([\params], { |params, cleanup|
 			vals[\pr_1_2][i].connectMKtlElement(v);
 
 		});
+
+		~knUp = bcr.elementAt(\knUp, \1).collect({ |v, i|
+			vals[\knUp][i].connectMKtlElement(v);
+		});
 	};
 
 	//----Top encoders-----------
+
+
+
+
+
+	/*
 	topRow = bcr.elementAt(\knUp, \1);
 	topRow.action = { |elem|
 		//Index is either 0 or 1 -- check with second row of button rows
@@ -69,7 +80,6 @@ Req.load([\params], { |params, cleanup|
 		}
 	}.inEnvir;
 
-
 	{
 		var other = [\2, \1];
 		var kn = bcr.elementAt(\kn);
@@ -83,7 +93,9 @@ Req.load([\params], { |params, cleanup|
 		}.inEnvir
 
 	}.value;
+	*/
 
+	/*
 	//----Bottom encoders (32)-------
 	mfunc = MFunc();
 
@@ -92,11 +104,13 @@ Req.load([\params], { |params, cleanup|
 		var knobRows = [\1,\2];
 
 		//If first two rows, set upper encoder value and set buttons to corresponding row
+
 		if (knobRows.includes(grp.index)) {
 			topRow.at(elem.index).value = elem.value;
 			bcr.elementAt(\bt, grp.index, elem.index).value = 1;
 			bcr.elementAt(\bt, 1 - knobRows.indexOf(grp.index), elem.index).value = 0;
 		};
+
 
 	}.inEnvir);
 
@@ -110,12 +124,13 @@ Req.load([\params], { |params, cleanup|
 
 	//--------Switch pages with two bottom-right buttons------
 	mfunc.makeExclusiveModes(\pageswitch, [\pr_1_1, \pr_1_2]);
+	*/
 
 	{
 		pageSwitchButtons = bcr.elementAt(\pr, \1).flat;
 		bcr.elementAt(\pr, \1).action = { |elem, grp|
 			var index = pageSwitchButtons.indexOf(elem);
-			mfunc.mode_(elem.name);
+			//mfunc.mode_(elem.name);
 			if (index == 0) {
 				cvsync[\kn1].do(_.enable);
 				cvsync[\kn2].do(_.disable);
@@ -134,13 +149,14 @@ Req.load([\params], { |params, cleanup|
 	}.value;
 
 	//Sync with presets etc
-	bcr.elementAt(\kn).action = mfunc;
+	//bcr.elementAt(\kn).action = mfunc;
 	bcr.elementAt(\pr, \1, \1).valueAction = 1;
 
 	//Simulate key up
 	// 8.do { |x| bcr.elementAt(\bt, \1, x).valueAction = 0 };
 
 	bcr.sync;
+
 	8.do { |x| bcr.elementAt(\bt, \2, x).valueAction = 0 };
 
 
