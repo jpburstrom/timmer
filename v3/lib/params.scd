@@ -21,6 +21,8 @@ Req.load(nil, { |cleanup|
 
 		var metaKeys;
 
+        var paramUpdater;
+
 		//Array of frequencies for EQ
 		~eqFreqs = (36..59).midicps;
 
@@ -148,19 +150,33 @@ Req.load(nil, { |cleanup|
 		~current.do(_.addDependant(currentEnvironment));
 		~target.do(_.addDependant(currentEnvironment));
 		~meta.morph.addDependant(currentEnvironment);
-		~meta.random.addDependant(currentEnvironment);
+		//XXX Is it a good idea to let random update all values?
+        ~meta.random.addDependant(currentEnvironment);
+
+        paramUpdater = { |i|
+            var val, r;
+            r = ~meta.random.value;
+            val = ~current[i].input.blend(~target[i].input, ~meta.morph.input);
+            ~main[i].input = val + (r - val).max(0) + r.rand2
+        }.inEnvir;
 
 		~update = { |changer, what|
 			if (what == \synch) {
-				~meta.macroParamSelect.value.do { |x, i|
-					if (x == 1) {
-						var val, rand;
-						r = ~meta.random.value;
-						val = ~current[i].input.blend(~target[i].input, ~meta.morph.input);
-						~main[i].input = val + (r - val).max(0) + r.rand2
-
-					}
-				}
+                //If param from ~current or ~target has changed, only update that column
+                //Otherwise (random or morph) update all in ~meta.macroParamSelect
+                ~current.indexOf(changer) !? { |i|
+                    paramUpdater.value(i);
+                } ?? {
+                    ~target.indexOf(changer) !? { |i|
+                        paramUpdater.value(i);
+                    } ?? {
+                        ~meta.macroParamSelect.value.do { |x, i|
+                            if (x == 1) {
+                                paramUpdater.value(i);
+                            }
+                        }
+                    }
+                }
 			}
 		};
 
