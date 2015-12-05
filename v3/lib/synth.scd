@@ -175,7 +175,8 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		speed = \speed.kr(0, 0.1);
 		lfo = LinXFade2.ar(SinOsc.ar(speed), LFDNoise3.ar(speed), K2A.ar(\mix.kr(0)));
 		lfo = ((1 - depth) + (depth * lfo * 128)).clip(-1,1); //offset
-		\in.ar * lfo;
+        //Extra input for ~freezer
+        (\in.ar + \in2.ar(0)) * lfo;
 	};
 
 	~tremolo.addSpec(
@@ -212,7 +213,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		//snd = snd + Ringz.ar((snd * PinkNoise.ar) * EnvGen.ar(Env.perc, ~onsets.kr(1)), 1200, 1, 0.1);
 		out = DynKlank.ar(`[freqs, amps, decay], DelayC.ar(snd * \amp.kr(0), 0.02, 0.02) * EnvGen.ar(Env.perc(0, 0.2), ~onsets.kr(1)), pitch) * -36.dbamp;
 		// out = Compander.ar(out, out, 0.05, 1, 0.33);
-		snd + out;
+        snd + out ;
 	};
 
 
@@ -318,17 +319,44 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		clist.add(params.meta.featureMap[i].action = { |cv| px[k].set(\amp, cv.value) });
 	};
 
+
+    //------------Freeze-----------
+
+    ~freezer.prime({
+        var snd, chain;
+        var fftsize = 8192;
+        var wait=fftsize*SampleDur.ir;
+        snd = \in.ar;
+        chain = FFT(LocalBuf(fftsize), snd);
+        chain = PV_MagSmooth(chain, Latch.kr(1, TDelay.kr(Impulse.kr(0), wait)));
+        snd = IFFT(chain);
+        //TODO: check/fix envelope
+        snd = snd * EnvGen.ar(Env([0, 0, 1], [wait, 1], [0, -2])); //fade up before time-based processing
+        snd = PitchShift.ar(snd, 0.6, \ratio.kr(1));
+        snd = snd * EnvGen.ar(Env([1, 1, 0], [\dur.kr(4) * 0.75, \dur.kr * 0.25], [0, 2]), doneAction:2); //fade down to not leave anything on the bus
+        snd
+    });
+
+    ~freezer.set(\in, ~eq);
+    ~tremolo.set(\in2, ~freezer);
+    //~freezer.play;
+
+
+    px.pop;
 	//Synth control proto
-	Proto({
+	q.trigger = Proto({
 
 
 
-		~triggerFreezeSynth = { |degree|
-			"TODO: trig freeze synth, degree %".format(degree).postln;
-
-			4; //output duration of synth
+        ~triggerFreezeSynth = { |ratio(1)|
+            var dur = params.meta.interpolationTime.value.linlin(0,1,4,30);
+            "trig freeze synth, ratio %, dur %".format(ratio, dur).postln;
+            px[\freezer].spawn([\dur, dur, \ratio, ratio]);
+			dur; //output duration of synth
 		};
 
 
 	});
+
+    q.trigger
 });
