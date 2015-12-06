@@ -352,7 +352,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 			snd = snd * EnvGen.ar(Env([0, 0, 1], [wait, 1], [0, -2])); //fade up before time-based processing
 			snd = PitchShift.ar(snd, 0.6, \ratio.kr(1));
 			snd = snd * EnvGen.ar(Env([1, 1, 0], [\dur.kr(4) * 0.75, \dur.kr * 0.25], [0, 2]), doneAction:2); //fade down to not leave anything on the bus
-			snd
+			snd * 0.3; //magic volume number
 		});
 
 		~freezer.set(\in, ~microshift);
@@ -369,7 +369,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		~triggerFreezeSynth = { |ratioIndex|
 			var ratio = ~ratios[ratioIndex];
 			var dur = params.meta.interpolationTime.value.linlin(0,1,4,30);
-			"trig freeze synth, ratio %, dur %".format(ratio, dur).postln;
+			// "trig freeze synth, ratio %, dur %".format(ratio, dur).postln;
 			px[\freezer].spawn([\dur, dur, \ratio, ratio]);
 			dur; //output duration of synth
 		};
