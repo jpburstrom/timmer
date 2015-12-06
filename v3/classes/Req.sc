@@ -112,8 +112,9 @@ Req {
 	}
 
 	prMakeKey { |path, hash|
+        path = File.realpath(path);
 		if (hash.notNil) {
-			path = File.realpath(path) ++ "#" ++ hash;
+			path = path ++ "#" ++ hash;
 		}
 		^path.asSymbol;
 	}
