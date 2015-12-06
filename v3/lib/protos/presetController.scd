@@ -83,8 +83,7 @@
 
 	~onRangePress = { |k,v|
 		var range = [k,v];
-		var tgt = [0, ~indexes.size - 1];
-		if (range == tgt and: { range == rangePrev } ) {
+		if (range == rangePrev) {
 			~clearPresets.value(*range);
 			rangePrev = nil;
 		} {
