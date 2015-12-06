@@ -5,8 +5,6 @@ Req.load(#[params], { |params, cleanup|
 	cleanup.addFunc {
 		p.do(_.adieu);
 		px.proxyspace.end(0).remove;
-		px.input
-
 	};
 
 	px.proxyspace = ProxySpace(s, \timmer);
