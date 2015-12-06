@@ -144,7 +144,8 @@ Req.load(nil, { |cleanup|
         }).flat;
 
 		//eq is sold separately
-        ~eq24 = ~eqFreqs.size.collect({CV(\eqGain) });
+		//24 \eqGain cvs + 1 preamp
+		~eq24 = ~eqFreqs.size.collect({CV(\eqGain) }).add(CV([-12,12,\db,0.0,0]));
 
 
 

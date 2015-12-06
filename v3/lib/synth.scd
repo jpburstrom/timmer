@@ -27,7 +27,6 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 
 	};
 
-	"------Start adding synths----".postln;
 
 	//for testing
 	if (s.options.device == "Boris") {
@@ -100,36 +99,35 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 			~simpleGate.kr.lagud(0.05, 1) < 1;
 		};
 
-		s.bind {
-			//Modulations
-			//Sending array with value + maxvalue
-			~modMLFODepth = {
-				[(\amp.kr * \mod.kr(0).lagud(\lag.kr(1), 0.1)) * 0.1, \amp.kr * 0.1];
-
-			};
-
-
-			~modTLFODepth = {
-				[(\amp.kr * \mod.kr(0).lagud(\lag.kr(1), 0.1)), \amp.kr];
-			};
-
-			//Detune freeze + resonance
-			~modDetune = {
-				[\amp.kr - (\amp.kr * \mod.kr(0).lagud(0.1, \lag.kr(1))), \amp.kr];
-			};
-
-			~modReverbMix = {
-				//Low amp = more reverb
-				//Multiply with dry/wet
-				[\amp.kr - (\amp.kr * \mod.kr(0).lagud(0.1, \lag.kr(1))), \amp.kr];
-			};
-
-			~modMLFODepth.set(\mod, ~ampCooked);
-			~modTLFODepth.set(\mod, ~ampCooked);
-			~modDetune.set(\mod, ~ampCooked);
-			~modReverbMix.set(\mod, ~ampCooked);
+		//Modulations
+		//Sending array with value + maxvalue
+		~modMLFODepth = {
+			[(\amp.kr * \mod.kr(0).lagud(\lag.kr(1), 0.1)) * 0.1, \amp.kr * 0.1];
 
 		};
+
+
+		~modTLFODepth = {
+			[(\amp.kr * \mod.kr(0).lagud(\lag.kr(1), 0.1)), \amp.kr];
+		};
+
+		//Detune freeze + resonance
+		~modDetune = {
+			[\amp.kr - (\amp.kr * \mod.kr(0).lagud(0.1, \lag.kr(1))), \amp.kr];
+		};
+
+		~modReverbMix = {
+			//Low amp = more reverb
+			//Multiply with dry/wet
+			[\amp.kr - (\amp.kr * \mod.kr(0).lagud(0.1, \lag.kr(1))), \amp.kr];
+		};
+
+		~modMLFODepth.set(\mod, ~ampCooked);
+		~modTLFODepth.set(\mod, ~ampCooked);
+		~modDetune.set(\mod, ~ampCooked);
+		~modReverbMix.set(\mod, ~ampCooked);
+
+
 
 		//Mod delay
 		~microshift = {
@@ -157,7 +155,8 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 		~eq = {
 			var snd, ctl, freqs;
 			freqs = params.eqFreqs;
-			snd = \in.ar;
+			snd = \in.ar + \in2.ar;
+			snd = snd * \preamp.kr(0).dbamp;
 			ctl = NamedControl.kr(\eqGain, 0 ! freqs.size);
 
 			//Highpass filter
@@ -175,6 +174,10 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 
 		};
 
+		~eq.addSpec(
+			\preamp, [-12, 12, \db, 0.0, 0]
+		);
+
 		~tremolo = {
 			var depth, speed, lfo;
 			var mod, modMax;
@@ -183,7 +186,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 			lfo = LinXFade2.ar(SinOsc.ar(speed), LFDNoise3.ar(speed), K2A.ar(\mix.kr(0)));
 			lfo = ((1 - depth) + (depth * lfo * 128)).clip(-1,1); //offset
 			//Extra input for ~freezer
-			(\in.ar + \in2.ar(0)) * lfo;
+			\in.ar * lfo;
 		};
 
 		~tremolo.addSpec(
@@ -312,14 +315,22 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 
 		//EQ
 		params.eq24.do { |cv, i|
-			clist.add(cv.action = { |v| px[\eq].set(\eqGain, params.eq24.collect(_.value)) });
-			px[\eq].set(\eqGain, params.eq24.collect(_.value));
-
+			if (i < 24) {
+				clist.add(cv.action = { |v| px[\eq].set(\eqGain, params.eq24.collect(_.value)) });
+			} {
+				clist.add(cv.action = { |cv|
+					px[\eq].set(\preamp, cv.value);
+				});
+				px[\eq].set(\preamp, cv.value);
+			}
 		};
+		px[\eq].set(\eqGain, params.eq24.collect(_.value));
+
 
 		clist.add(params.meta.freezeScale.action = { |cv|
 			px[\resonance].set(\notes, data.scales[cv.value]);
 		});
+
 
 		//Amplitude -> different things
 		#[modMLFODepth, modTLFODepth, modDetune, modReverbMix].do { |k, i|
@@ -344,8 +355,8 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 			snd
 		});
 
-		~freezer.set(\in, ~eq);
-		~tremolo.set(\in2, ~freezer);
+		~freezer.set(\in, ~microshift);
+		~eq.set(\in2, ~freezer);
 		//~freezer.play;
 
 	};
@@ -353,10 +364,10 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 	px.pop;
 	//Synth control proto
 	q.trigger = Proto({
+		~ratios = [3/4, 4/5, 6/7, 7/8, 1, 6/5, 5/4, 4/3, 11/8, 3/2];
 
-
-
-		~triggerFreezeSynth = { |ratio(1)|
+		~triggerFreezeSynth = { |ratioIndex|
+			var ratio = ~ratios[ratioIndex];
 			var dur = params.meta.interpolationTime.value.linlin(0,1,4,30);
 			"trig freeze synth, ratio %, dur %".format(ratio, dur).postln;
 			px[\freezer].spawn([\dur, dur, \ratio, ratio]);

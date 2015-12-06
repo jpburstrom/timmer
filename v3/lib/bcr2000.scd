@@ -57,6 +57,9 @@ Req.load([\params], { |params, cleanup|
 		});
 	};
 
+	//Last knob on last group is connected to preamp
+	params.eq24[24].connectMKtlElement(bcr.elementAt(\knUp, \4, \8))
+
 	//----Top encoders-----------
 
 
@@ -163,10 +166,9 @@ Req.load([\params], { |params, cleanup|
 
 	//Reload everything button
 	bcr.elementAt(\pr, \2, \2).action = { |elem|
-
 		if (elem.value == 1) {
 			elem.value = 0;
-			"../init.scd".loadRelative;
+			"TODO: reload".postln;
 		}
 	};
 
