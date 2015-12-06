@@ -6,6 +6,11 @@ Req.load(['params'], { |params, cleanup|
         var storageVersion = "0.1.1"; //Avoid float rounding errors
 		var path = "../data/storage.zarchive".resolveRelative;
 
+		//Things get constantly updated from params
+		~things = ();
+		//These only get updated when loading from disk
+		~revertThings = ();
+
 		//Sets of indexes to store
 		~toStore = (
             presets: Set(),
@@ -32,12 +37,17 @@ Req.load(['params'], { |params, cleanup|
     		~save.value;
         };
 
-		~loadToGroup = { |grp, k|
-			params.setParams(grp, ~things[grp][k]);
-		};
 
 		~removeSnapshot = (~removeFromGroup.(\snapshots,_));
 		~removePreset = (~removeFromGroup.(\presets,_));
+
+		~loadToGroup = { |grp, k|
+			params.setParams(grp, ~revertThings[grp][k]);
+		};
+
+		~loadSnapshot = (~loadToGroup.(\snapshots,_));
+		~loadPreset = (~loadToGroup.(\presets,_));
+
 
 		~getPresets = {
             ~things[\presets];
@@ -133,6 +143,7 @@ Req.load(['params'], { |params, cleanup|
             params.snapshotCount.do { |x|
                 ~maybeRandomize.(\snapshots, x);
             };
+			~revertThings = ~things.deepCopy;
 			//A bit of a hack
 			//Set eq from preset 0
 			//Since we're not doing it anywhere else
