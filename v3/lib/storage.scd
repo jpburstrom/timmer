@@ -90,7 +90,7 @@ Req.load(['params'], { |params, cleanup|
 
 		};
 
-		~save = {
+		~save = { |p|
             var z;
 			var x = ~things.deepCopy;
             [\presets, \snapshots].do { |grp|
@@ -100,7 +100,8 @@ Req.load(['params'], { |params, cleanup|
                     };
                 }
             };
-			~prWrite.(x, path);
+			p ?? { p = path };
+           ~prWrite.(x, p);
 
 		};
 
@@ -111,10 +112,11 @@ Req.load(['params'], { |params, cleanup|
 			File.copy(path, dir +/+ file[0] ++ Date.getDate.stamp ++ "." ++ file[1]);
 		};
 
-		~load = {
+		~load = { |p|
             var z;
-            if (File.exists(path)) {
-				~things = ~prRead.(path);
+			p ?? { p = path };
+            if (File.exists(p)) {
+				~things = ~prRead.(p);
                 if (~things.version != storageVersion) {
                     "creating new storage".inform;
                     ~createStorage.value;
@@ -136,6 +138,20 @@ Req.load(['params'], { |params, cleanup|
 			//Since we're not doing it anywhere else
 			~loadToGroup.(\eq, 0);
 
+		};
+
+		~loadDialog = {
+			Dialog.openPanel({ |p|
+				~load.value(p);
+				//TODO later think about how to load everything more smoothly
+				~loadToGroup.(\snapshots, 0);
+				~loadToGroup.(\presets, params.meta.target.value.asInt);
+
+			}.inEnvir);
+		};
+
+		~saveDialog = {
+			Dialog.savePanel(~save.inEnvir);
 		};
 
         ~maybeRandomize = { |container, num|

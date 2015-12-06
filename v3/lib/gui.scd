@@ -57,6 +57,15 @@ Req.load(#[params, storage], { |params, storage, cleanup|
                 count div:rows, count % rows, rowspan, colspan
             );
         };
+		~spacer = { |ev, parent, rowspan(1), colspan(1)|
+            var count = knobCounts[parent];
+            var rows = rw[parent];
+            knobCounts[parent] = count + colspan;
+            gui.windows[parent].layout.addSpanning(
+				View(),
+                count div:rows, count % rows, rowspan, colspan
+            );
+        };
     };
 
 	Proto({
@@ -125,6 +134,20 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 				makeui.knob(k, v, \meta, 0.01);
 			}
 		};
+		~utils = { |parent|
+			//Save to separate file
+			var ui = makeui.grid(\utils, 1, 8, parent, Rect(1600, 0, 500, 100));
+			makeui.button("Save as", {
+				storage.saveDialog;
+			}, \utils);
+
+			//Load separate file
+			makeui.button("Open", {
+				//Load and store to preset 0
+				storage.loadDialog;
+			},  \utils);
+			makeui.spacer(\utils, 1, 6);
+		};
 		~makeWindow = {
 			var p = Window.new("Hello", Rect(1600, 0, 800, 400)).front.layout_(VLayout());
 			~eq.value(p.layout);
@@ -132,6 +155,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 			~target.value(p.layout);
 			~current.value(p.layout);
 			~meta.value(p.layout);
+			~utils.value(p.layout);
 			gui.windows[\mainWindow] = p;
 			p
 

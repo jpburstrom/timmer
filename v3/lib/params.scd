@@ -57,17 +57,19 @@ Req.load(nil, { |cleanup|
 		};
 
 		//"API" for getting saveable params
-		~getParams = { |key|
-            var x = switch (key)
+		//if set is true, get the params that should be set
+		~getParams = { |key, set(false)|
+            var x;
+			x = switch (key)
 			{ \eq } { ~eq24 }
-            { \presets } { ~main }
+			{ \presets } { if (set) { ~target } { ~main } }
             { \snapshots  } { ~meta_array ++ ~current };
             x
 		};
 
 		//"API" for getting saveable params
 		~setParams = { |key, values|
-			var x = ~getParams.(key);
+			var x = ~getParams.(key, true);
 
 			[key, values].debug("setting params");
 
