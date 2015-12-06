@@ -61,7 +61,7 @@ Req.load(nil, { |cleanup|
             var x = switch (key)
 			{ \eq } { ~eq24 }
             { \presets } { ~main }
-            { \snapshots  } { ~meta_array };
+            { \snapshots  } { ~meta_array ++ ~current };
             x
 		};
 

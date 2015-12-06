@@ -20,7 +20,7 @@ p = Req.load(['params', 'storage'], { |params, storage, cleanup|
     //--------SNAPSHOTS----------
 
 	snapshots.setPresetContainer(storage.getSnapshots);
-	snapshots.setParams(params.meta_array);
+	snapshots.setParams(params.getParams(\snapshots));
 	snapshots.setCurrentIndex(params.snapshot);
 
 	[presets, snapshots];
