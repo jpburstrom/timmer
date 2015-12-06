@@ -7,7 +7,7 @@ Proto({
     ~actions = List();
     ~indexes = nil;
     ~longPressWaitTime = 0.5;
-	~doublePressWaitTime = 1;
+	~doublePressWaitTime = 0.3;
 	~rangePressKey = nil;
 	~ignoreKeyUps = false;
 	~isDeviceSendingKeyUp = true;
@@ -67,7 +67,7 @@ Proto({
 						~doublePressWaitTime.wait;
 						doublePress = false;
 					};
-					if (doublePress and: { ~onDoublePress.(key).notNil }) {
+					if (doublePress and: { ~onDoublePress.notNil }) {
 						doublePress = false;
 						output = ~onDoublePress.(key);
 					} {
