@@ -91,6 +91,11 @@
 		}
 	};
 
+	~onDoublePress = { |k|
+		~reloadPreset.(k);
+		nil; //to not set anything
+	};
+
 	~clearPresets = { |from, to|
 		(from..to).do { |x|
 			~deletePreset.(x);
@@ -116,6 +121,7 @@
 		};
 		~storePreset = { arg x; "attempting to store".postln; storage.storeToGroup(key, x+offset);  };
 		~deletePreset = { arg x; storage.removeFromGroup(key, x+offset);  };
+		~reloadPreset = { arg x; storage.loadToGroup(key, x+offset); };
 
 		~updateFromStorage.value(storage, key, true);
 
@@ -127,7 +133,11 @@
 
 	~deletePreset = {
 		"connect to storage to delete".warn;
-	}
+	};
+
+	~reloadPreset = {
+		"connect to storage to load".warn;
+	};
 
 
 
