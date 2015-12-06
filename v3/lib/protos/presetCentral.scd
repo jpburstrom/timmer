@@ -33,7 +33,7 @@ Proto({
 			//Constantly update from target params to target preset
 			target.do { |cv, i|
 				//Do a first update from presets
-				cv.value = ~presets[~targetIndex][i];
+				~presets[~targetIndex][i] !? (cv.value = _) ;
 				//then hook up to sync from cv
 				c.add(cv.action_({
 					~presets[~targetIndex][i] = cv.value;
@@ -43,7 +43,7 @@ Proto({
 
 		current.do { |cv, i|
 			//Do a first update from presets
-			cv.value = ~presets[~currentIndex][i];
+			~presets[~currentIndex][i] !? (cv.value = _);
 
 			//then hook up to sync from cv
 
