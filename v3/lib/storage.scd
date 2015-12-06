@@ -28,8 +28,7 @@ Req.load(['params'], { |params, cleanup|
         ~removeFromGroup = { |grp, k|
 			~toStore[grp].remove(k);
 			~things[grp][k] = params.randomize(grp);
-			[grp, k].debug("removing preset");
-            currentEnvironment.changed(\activeKeys, grp);
+		    currentEnvironment.changed(\activeKeys, grp);
     		~save.value;
         };
 
@@ -95,11 +94,9 @@ Req.load(['params'], { |params, cleanup|
             var z;
 			var x = ~things.deepCopy;
             [\presets, \snapshots].do { |grp|
-                x[grp].keysValuesChange { |k,v|
-                    if (~toStore[grp].includes(k)) {
-                        v;
-                    } {
-                        nil;
+				~things[grp].keysValuesDo { |k,v|
+				    if (~toStore[grp].includes(k).not) {
+						x[grp][k] = nil;
                     };
                 }
             };
