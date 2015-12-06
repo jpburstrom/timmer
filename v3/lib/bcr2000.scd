@@ -8,7 +8,8 @@ Req.load([\params], { |params, cleanup|
 	topRow,
 	pageSwitchButtons,
 	bottomEnc,
-	lastRowCVs;
+	lastRowCVs,
+    reloadPath = "../init.scd".resolveRelative;
 
 	bcr = MKtl(\bcr, "*bcr2000");
 	//bcr.gui;
@@ -163,12 +164,11 @@ Req.load([\params], { |params, cleanup|
 
 	8.do { |x| bcr.elementAt(\bt, \2, x).valueAction = 0 };
 
-
-	//Reload everything button
+    //Reload everything button
 	bcr.elementAt(\pr, \2, \2).action = { |elem|
 		if (elem.value == 1) {
 			elem.value = 0;
-			"TODO: reload".postln;
+            reloadPath.load;
 		}
 	};
 
