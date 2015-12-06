@@ -1,6 +1,6 @@
 Req.load(#[params, storage], { |params, storage, cleanup|
 	var makeui;
-    var gui = ();
+    var proto, gui = ();
     var knobCounts = IdentityDictionary();
     var rw = IdentityDictionary();
     gui.windows = IdentityDictionary();
@@ -68,7 +68,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
         };
     };
 
-	Proto({
+	proto = Proto({
 		~eq = { |parent|
 			var ui = makeui.grid(\eq24, 2, 12, parent, Rect(1600, 0, 500, 400));
 			var labels = params.eqFreqs.cpsname;
@@ -161,8 +161,11 @@ Req.load(#[params, storage], { |params, storage, cleanup|
 
 		}
 
-	}).makeWindow;
+	});
 
+	proto.makeWindow;
 	cleanup.addFunc { gui.windows.do(_.close) };
+
+	proto;
 
 });
