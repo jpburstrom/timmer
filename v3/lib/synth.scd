@@ -1,7 +1,7 @@
 Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
     var clist = List();
     //Double bass input
-    var dbin = 1;
+    var dbin = 0;
     //Double bass output
     var dbout = 2;
 
