@@ -1,4 +1,4 @@
-Req.load([\params], { |params, cleanup|
+Req.load([\params, \synth], { |params, synth, cleanup|
 
 	var
 	vals, //tmp
@@ -163,6 +163,14 @@ Req.load([\params], { |params, cleanup|
 
 	8.do { |x| bcr.elementAt(\bt, \2, x).valueAction = 0 };
 
+	//Tuning fork
+	bcr.elementAt(\pr, \2, \1).action = { |elem|
+		//Crashes without fork. Why?
+		fork {
+			synth.tuningFork(elem.value);
+		}
+	};
+
     //Reload everything button
 	bcr.elementAt(\pr, \2, \2).action = { |elem|
 		if (elem.value == 1) {
@@ -170,7 +178,6 @@ Req.load([\params], { |params, cleanup|
             reloadPath.load;
 		}
 	};
-
     bcr
 
 });

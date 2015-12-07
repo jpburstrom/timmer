@@ -36,7 +36,7 @@ Req.load([\params, \storage], { |params, storage, cleanup|
 	views = ();
 
     lpIn = MKtl('launchpad', "*launchpad-mini", true);
-    if (lpIn.device.notNil) {
+	if (lpIn.device.notNil) {
 
         lpOut = LaunchpadOut(lpIn).reset;
 

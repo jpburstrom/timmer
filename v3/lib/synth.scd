@@ -48,7 +48,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
         ~testtone = { SinOsc.ar(180) * 0.1 };
 
         ~bass = {
-            SoundIn.ar(dbin);
+			DelayC.ar(SoundIn.ar(dbin), 0.016, 0.016);
         };
 
         //~bass.parentGroup = proxyobj.input;
@@ -60,7 +60,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
 
         ~ampCooked = {
             var snd = \in.kr(0);
-            //6 is the magic number
+            //3 is the magic number
             (snd * 3).min(1);
 
         };
@@ -170,7 +170,11 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
             };
 
             //Steep highshelf to cut high frequencies
-            snd = BHiShelf.ar(snd, 300, 1, -32);
+            snd = BHiShelf.ar(snd, 200, 1, -36);
+
+			// 4.do { snd = LPF.ar(snd, freqs.last) };
+
+			snd
 
         };
 
@@ -184,7 +188,7 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
             depth = calcModMap.(~modTLFODepth, \depth.kr(0));
             speed = \speed.kr(0, 0.1);
             lfo = LinXFade2.ar(SinOsc.ar(speed), LFDNoise3.ar(speed), K2A.ar(\mix.kr(0)));
-            lfo = ((1 - depth) + (depth * lfo * 128)).clip(-1,1); //offset
+            lfo = ((1 - depth) + (depth * lfo * 12)).clip(0,1); //offset
             //Extra input for ~freezer
             \in.ar * lfo;
         };
@@ -254,17 +258,22 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
             XFade2.ar(src, verb, calcModMap.(~modReverbMix, \mix.kr(0)).linlin(0,1,-1,1));
         };
 
-        ~reverb.set('animDepth', 1.0, 'animRate', 0.3981071705535, 'combScale', 1.3639149005216, 'predelay', 0.0, 'hfDamping', 0.76666666666667, 'revTime', 6.6408278506348, 'inFilter', 0.55);
+        ~reverb.set('animDepth', 1.0, 'animRate', 0.3981071705535, 'combScale', 1.3639149005216, 'predelay', 0.0, 'hfDamping', 0.96666666666667, 'revTime', 6.6408278506348, 'inFilter', 0.95);
         ~reverb.addSpec(\mix, \amp.asSpec);
 
 
 
         //OUTPUT
         ~output = {
-            var snd = \in.ar * 12.dbamp;
+			var snd = \in.ar * 15.dbamp;
             snd = Compander.ar(snd, snd, 0.1, 1, 0.33);
             snd
         };
+
+		~tuningfork = {
+			SinOsc.ar(\freq.kr(440)) * \amp.kr(0.1);
+		};
+
 
         //-------ROUTING---------------
 
@@ -377,6 +386,15 @@ Req.load(#[params, proxyspace], { |params, proxyobj, cleanup|
             px[\freezer].spawn([\dur, dur, \ratio, ratio]);
             dur; //output duration of synth
         };
+
+		~tuningFork = { |onoff|
+			if (onoff > 0) {
+				px[\tuningfork].set(\freq, "D2".namecps, \amp, 0.1);
+				px[\tuningfork].play(dbout);
+			} {
+				px[\tuningfork].stop;
+			}
+		};
 
 
     });
