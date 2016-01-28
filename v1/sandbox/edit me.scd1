@@ -1,1 +1,0 @@
-Pdef( 'nothing' , Pbind('instrument', 'timmer.grainPerc', 'bufnum', Pfuncn({ "open Function" }, inf), 'note', -12, 'dur', Plprand(0.01, 2), 'legato', 1, 'attack', 0, 'db', 0, 'startPos', Pwhite(), 'pan', 0, 'curve', -2, 'out', 0) );
