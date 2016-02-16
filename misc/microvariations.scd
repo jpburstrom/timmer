@@ -50,19 +50,21 @@ Pdef(\varTestTest, Pbind(
 	\instrument, \varTest,
     \legato, 1,
 	\counter, Pseries(0, 1, ~onsets.size - 1), //count through all segments and stop
-	\varFactor, Pseg([0, 0, 1, 1], 120) ++ Pn(1), //general variation amount
+    //variation form: _/¨\
+    \varFactor, Pseg2([0, 0, 1, 1, 0], Pseq((~onsets.size * [1,2,1,2].normalizeSum).floor)).trace ++ Pn(1), //general variation amount
 	\isRandom, Pfunc { |ev| ev.varFactor.coin }, //flip a coin depending on varFactor
 
 	//If isRandom, select one of a few chosen segments. Otherwise use value of segment counter
 	\segment, (Pif(Pkey(\isRandom), Pxrand([5, 40, 41, 233, 234], inf), Pkey(\counter)) ++ (~onsets.size - 1)),
 	\attackSegment, Pkey(\counter), //But the attack is always using the segment counter
 
-	\bufRate, Pwhite(-0.03.midiratio, 0.03.midiratio), //maybe unnecessary pitch deviation
+	//\bufRate, Pwhite(-0.03.midiratio, 0.03.midiratio), //maybe unnecessary pitch deviation
+    \bufRate, 1,
     \ctranspose, 7,
     \octave, 4,
     \scale, Scale.majorPentatonic,
     \degree, Pwhite(0,5),
-    \klank, p { loop { 16.rrand(24).do { 0.yield }; 1.yield } },
+    \klank, p { |ev| loop { 16.rrand(24).do { ev = 0.yield }; ev.postln; (ev.varFactor > 0.35).asInt.yield } },
     \dummy, Pfunc({ |ev|
 		//Lookup onset and duration times
         ev.startPos = ~onsets[ev.segment];
@@ -74,3 +76,4 @@ Pdef(\varTestTest, Pbind(
 
 )
 Pdef(\varTestTest).stop
+[0, 0, 1, 1, 0].asStream.next
