@@ -17,8 +17,14 @@ p = Proto({
     ~tickLabel = \onset;
 
 
+
     //Iterator
-    ~nextPos = 0;
+    ~iteratorPattern = PatternProxy(Pseries());
+    //Stream it
+    ~iteratorStream = ~iteratorPattern.asStream;
+    //Set nextPos to temporarily override iterator
+    ~nextPos = nil;
+    //Keep track of previous segment
     ~prevPos = -1;
     //~nextEvent, ~prevEvent;
 
@@ -32,6 +38,10 @@ p = Proto({
     //Dictionary of key => pattern to modify ~nextEvent with
     ~modPtn = ();
 
+    //Set iterator pattern
+    ~setIterator = { |ptn|
+        ~iteratorPattern.source_(ptn);
+    };
 
     //Load data from song label
     //song is folder in dataBasePath,
@@ -91,10 +101,7 @@ p = Proto({
             ~prepareScore.value;
         }.inEnvir);
 
-        //Simple iterator
-        ~actions[~tickLabel].onStart = {
-            ~nextPos = ~prevPos + 1;
-        }.inEnvir;
+
 
     };
 
@@ -132,23 +139,27 @@ p = Proto({
         };
 
 
-
+        ~iteratorStream = ~iteratorPattern.asStream;
 
         currentEnvironment;
     };
 
     ~next = { |ev|
-        var jump=false;
+        var jump=false, nextPos;
+        //If ~nextPos is set, use that instead of iterating
+        nextPos = ~nextPos ?? { ~iteratorStream.next };
+        ~nextPos = nil; //reset ~nextPos for next time
+
         ~prevEvent = ~nextEvent;
-        ~nextEvent = ~data[\score][~nextPos];
+        ~nextEvent = ~data[\score][nextPos];
+
         if (~nextEvent.notNil) {
             //for some reason proto_ doesn't work...
             ~nextEvent.putAll(ev, ~protoEvent);
-            //If not linear increment, restart player
-            if ((~nextPos - ~prevPos) != 1) {
+            if ((nextPos - ~prevPos) != 1) {
                 jump = true;
             };
-            ~prevPos = ~nextPos;
+            ~prevPos = nextPos;
 
             ~actionLabels.do { |key|
                 var prevIndex, nextIndex = ~nextEvent[key];
@@ -193,7 +204,8 @@ p = Proto({
 
     ~reset = {
         "reset".debug;
-        ~nextPos = 0;
+        ~nextPos = nil;
+        ~iteratorStream.reset;
         ~prevPos = -1;
         ~nextEvent = nil;
         ~prevEvent = nil;
@@ -257,7 +269,7 @@ p = Proto({
 
         if (what == \position) {
             var segment = ~data[~tickLabel].flop[0].select({ |x| x < args[0] }).size - 1;
-            ~nextPos = segment;
+            ~setNextPos.value(segment);
             if (~streamPlayer.isPlaying.not) {
                 ~play.value;
             };
@@ -265,4 +277,38 @@ p = Proto({
 
         }
     };
+
+    //Set next position
+    //Tries to be close enough when using random patterns as iteratorPattern
+    ~setNextPos = { |target|
+        var val, closest, lastClosest, i=0,
+        //Max tries to find the right value in stream
+        maxTry=1e+6;
+        ~iteratorStream.reset;
+        val = closest = ~iteratorStream.value;
+        while {
+            (val == target or: {
+                lastClosest.notNil and: {
+                    abs(val - target) <= abs(lastClosest - target)
+                }
+            }).not
+        } {
+            i = i + 1;
+            if ( abs (val - target) < abs (closest - target)) {
+                closest = val
+            };
+            val = ~iteratorStream.next;
+            if ( val.isNil or: { i > maxTry } ) {
+                ~iteratorStream.reset;
+                i = 0;
+                lastClosest = closest;
+                // lastClosest.debug("lastClosest");
+                // "iteration".debug;
+            };
+        };
+
+        ~nextPos = val;
+
+    }
+
 });
