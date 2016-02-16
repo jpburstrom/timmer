@@ -62,7 +62,10 @@ Proto({
 
     ~update = { |obj, what ... args|
         if (what == \segment) {
-            { ~setSelection.(*args) }.inEnvir.defer;
+            {
+                ~setSelection.(*args);
+                ~log
+            }.inEnvir.defer;
         } {
             if (what == \load) {
                 ~openFile.value(args[0]);
