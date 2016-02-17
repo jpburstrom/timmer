@@ -36,7 +36,6 @@ SynthDef(\varTest, { |bufnum, startPos, attackStartPos, sustain(0), bufRate(1), 
 )
 
 (
-
 Ndef(\klank, {
     var freqs = [1, 1.0019054878049, 1.7936737804878, 1.8009908536585, 2.5201981707317, 2.5224085365854, 2.9907012195122, 2.9940548780488, 3.7855182926829, 3.8061737804878, 4.5689024390244, 4.5754573170732, 5.0296493902439, 5.0455030487805, 6.0759908536585, 5.9094512195122, 6.4124237804878, 6.4430640243902, 7.0826219512195, 7.0923780487805, 7.3188262195122, 7.5551829268293] * 2;
     var amps = freqs.size.collect((_+1).reciprocal);
@@ -49,7 +48,7 @@ Ndef(\klank).gui
 Pdef(\varTestTest, Pbind(
 	\instrument, \varTest,
     \legato, 1,
-	\counter, Pseries(0, 1, ~onsets.size - 1), //count through all segments and stop
+	\counter, Pseries(0, 1, ~onsets.size), //count through all segments and stop
     //variation form: _/¨\
     \varFactor, Pseg2([0, 0, 1, 1, 0], Pseq((~onsets.size * [1,2,1,2].normalizeSum).floor)).trace ++ Pn(1), //general variation amount
 	\isRandom, Pfunc { |ev| ev.varFactor.coin }, //flip a coin depending on varFactor
@@ -72,7 +71,7 @@ Pdef(\varTestTest, Pbind(
 		ev.attackStartPos = ~onsets[ev.attackSegment];
 		//GC(\varFactor).value = ev.varFactor;
     });
-)).play;
+).ffwd2(700)).play;
 
 )
 Pdef(\varTestTest).stop
