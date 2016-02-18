@@ -28,11 +28,6 @@ Pdef(\featureOrder2, Pbind(
 
 )
 
-m = f.similarityMatrix
-m.plot(2)
-SCMIRStructuralSummary
-k.find(~featureClump[0]).nearestToNode[0].label
-
 (
 //Playback.
 //Play linearly, but occasionally swap one segment with another in the same cluster

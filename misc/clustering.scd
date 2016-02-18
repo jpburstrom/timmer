@@ -11,7 +11,8 @@ var c, data, dur;
 
 f = SCMIRAudioFile(~path, ~features);
 f.extractFeatures();
-f.gatherFeaturesBySegments(~onsets);
+//Make segments with 5 frames from every onset
+f.gatherFeaturesBySegments(~onsets.collect { arg x; [x, x + (44.1/1024*5)] });
 
 //--Cluster it--
 c = 30;
@@ -39,7 +40,7 @@ Pbindef(\asd,
 		~clusters[k.assignments[ev.counter]].reject(_==ev.counter).choose ?? ev.counter;
 	}, Pkey(\counter)),
 	\dur, Pfunc { |ev| ev.startPos = ~onsets[ev.index]; ~onsets[ev.index + 1] !? (_ - ev.startPos) ?? 10; },
-	\instrument, \varTest,
+	\instrument, \bufSegment,
 	\legato, 1
 ).play;
 )
