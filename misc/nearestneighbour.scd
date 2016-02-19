@@ -17,20 +17,10 @@ f.gatherFeaturesBySegments(~onsets.collect { arg x; [x, x + (44.1/1024*5)] });
 k = KDTree(~featureClump, lastIsLabel:true);
 
 
-Pdef(\featureOrder2, Pbind(
-	\bufnum, ~buf,
-	\index, Pseq(~featureClump.order({ |x,y| x.median > y.median })),
-	\dur, Pfunc { |ev| ev.startPos = ~onsets[ev.index]; ~onsets[ev.index + 1] !? (_ - ev.startPos) ?? 10; },
-	\attackStartPos, Pkey(\startPos),
-	\instrument, \varTest,
-	\legato, 1
-).trace).play
-
 )
-
 (
 //Playback.
-//Play linearly, but occasionally swap one segment with another in the same cluster
+//Play linearly, but occasionally swap one segment with its neighbour
 Pbindef(\knn1,
 	\flip, Pfunc { var flip = 0.9.coin; flip },
 	\counter, Pseries(0, 1, ~onsets.size),
@@ -45,6 +35,7 @@ Pbindef(\knn1,
 )
 
 (
+//Silly test
 Pdef(\featureOrder2, Pbind(
 	\bufnum, ~buf,
 	\index, Pseq(~featureClump.order({ |x,y| x.median < y.median })),
@@ -55,3 +46,20 @@ Pdef(\featureOrder2, Pbind(
 ).trace).play
 )
 Pbindef(\featureOrder2).stop
+
+(
+//Play linearly, but occasionally swap one segment with another within certain radius
+//A radius of
+//This
+Pdef(\knnRadius, Pbind(
+	\counter, Pseries(0, 1, ~onsets.size),
+	\radius, Pseg([0, 0.4, 0], 10, \cub, inf),
+	\index, Pfunc({ |ev|
+		k.radiusSearch(~featureClump[ev.counter], ev.radius).choose.label
+	}).trace,
+	\attackSegment, Pkey(\index),
+	\dur, Pfunc { |ev| ev.startPos = ~onsets[ev.index]; ~onsets[ev.index + 1] !? (_ - ev.startPos) ?? 10; },
+	\instrument, \bufSegment,
+	\legato, 1
+)).play;
+)
