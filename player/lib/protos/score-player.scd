@@ -36,12 +36,34 @@ p = Proto({
     ~protoEvent = (instrument:\bufSegment);
 
     //Dictionary of key => pattern to modify ~nextEvent with
-    ~modPtn = ();
+	~modPtn = EventPatternProxy(Pbind());
+
+
 
     //Set iterator pattern
     ~setIterator = { |ptn|
         ~iteratorPattern.source_(ptn);
     };
+
+	~setPtn = { |ptn|
+		~modPtn.source_(ptn);
+	};
+
+	//TODO: Find good, useful features
+	~features = [Loudness, [MFCC, 10]];
+
+	~extractFeatures = {
+
+		f = SCMIRAudioFile(~songPath, ~features);
+		f.extractFeatures();
+
+		//Make segments with 5 frames from every onset
+		if (~data.onset.notNil) {
+			f.gatherFeaturesBySegments(~data.onset.collect { arg x; [x[0], x[0] + (44.1/1024*5)] });
+			~data.featureClump = f.featuredata.clump(f.numfeatures).collect { |x, i| x ++ i };
+			~data.kdTree = KDTree(~data.featureClump, lastIsLabel:true);
+		};
+	};
 
     //Load data from song label
     //song is folder in dataBasePath,
@@ -203,17 +225,22 @@ p = Proto({
     };
 
     ~reset = {
-        "reset".debug;
+		var buf, waitTime = ~prevEvent.dur;
+		"reset".debug;
         ~nextPos = nil;
         ~iteratorStream.reset;
         ~prevPos = -1;
-        ~nextEvent = nil;
+		~nextEvent = nil;
         ~prevEvent = nil;
         ~preGroup.free;
         ~group.free;
         ~postGroup.free;
-        ~bufnum.free;
-        //~bufnum.postln;
+		buf = ~protoEvent[\bufnum];
+		fork {
+			waitTime.wait;
+			buf.free;
+		};
+			//~bufnum.postln;
         ~readyForPlay = false;
     };
 
@@ -224,15 +251,17 @@ p = Proto({
             ~preGroup = Group();
             ~group = Group.after(~preGroup);
             ~postGroup = Group.after(~group);
-            ~bufnum = Buffer.read(s, ~songPath);
+			~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
             s.sync;
             ~readyForPlay = true;
+			~onReady.value;
             ~streamPlayer = ~asPattern.value.play;
-        }.fork
+        }.inEnvir.fork
     };
 
     ~stop = {
         ~streamPlayer.stop;
+		//TODO reset after finished playing
         ~streamPlayer.reset;
     };
 
@@ -256,10 +285,7 @@ p = Proto({
             ~spawner = sp;
             //reset function
             sp.seq(Event.silent(0, (addToCleanup: reset)));
-            loop {
-                sp.seq(Pchain(Pbind(*~modPtn.asKeyValuePairs), Plazy({~next.value(sp.event)})));
-                Penvir
-            };
+			sp.seq(Pchain(~modPtn, Prout(e { |ev| loop { ev = ~next.value(ev).yield }})));
 
 
         }.inEnvir)
