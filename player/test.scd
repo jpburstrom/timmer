@@ -4,7 +4,7 @@ q.player.actionLabels = #[onset, region];
 q.player.loadData("01");
 q.player.extractFeatures;
 q.fxbus = Bus.audio(s, 2);
-
+q.playerui.connect(q.player)
 )
 (
 q.player.setIterator(p { |ev|
