@@ -40,3 +40,28 @@ SynthDef(\bufSegmentAttack, { |bufnum, startPos, attackStartPos, sustain=0, bufR
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     OffsetOut.ar(\outbus.kr(0), snd);
 }).add;
+
+
+//Buffer segment with decaying + filtered comb filter
+SynthDef(\bufSegmentComb, { |out(0), bufnum(0), startPos(0), sustain(1)|
+	var fadetime = \fadetime.kr(defaultFadeTime);
+	var atk, snd;
+	startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+	snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+	snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]));
+
+	//Add comb filter and filter it
+	//Linear interpolation is nice
+	atk = CombC.ar(snd, 0.2, \freq.kr(440).reciprocal,  \combDecay.kr(4) - (LFNoise2.ar(\combDecayDevSpd.kr(2)).range(0, \combDecay.kr) * \combDecayDev.kr(0)));
+	atk = RLPFD.ar(atk, \ffreq.kr(1000), \fres.kr(0.6), \fdist.kr(0.3));
+	atk = atk * EnvGen.ar(Env.linen(\combAttack.kr(2), 0, \combDecay.kr - \combAttack.kr, [4, 0, -4]), doneAction:2);
+
+	atk = atk * 0.1;
+
+	snd = XFade2.ar(snd, atk, \mix.kr(0));
+
+
+	OffsetOut.ar(out, snd);
+
+
+}).add;
