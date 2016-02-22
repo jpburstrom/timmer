@@ -15,6 +15,7 @@ SynthDef(\timmerTest, { |index, startPos, sustain, bufnum|
 	startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
 
 	snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+	// snd = Impulse.ar(0).dup;
 
 	// snd2 = DelayC.ar(snd, latency, latency);
 
@@ -49,15 +50,16 @@ SynthDef(\timmerTest, { |index, startPos, sustain, bufnum|
 
 	//-----Other fun stuff-----
 
-	//FreqShift of release part, do we have latency here?
+	latency = 0; //for non-fft fx
+
+	//FreqShift of release part
 	randFreq = ExpRand(10, 100); 4.do { snd2 = HPF.ar(snd2, randFreq) }; snd2 = FreqShift.ar(snd, randFreq * -1);
 
 	//What happens if attack is freqShifted as well?
 	//snd = snd2;
 
-
 	//----IFFT, but keep attack------
-	snd = LinSelectX.ar(EnvGen.ar(Env([0, 0, 1], [0.08, fadetime])), [DelayC.ar(snd, 0.2, latency), snd2]);
+	snd = LinSelectX.ar(EnvGen.ar(Env([0, 0, 0, 1], [latency, 0.08, fadetime])), [DelayC.ar(snd, 0.2, latency), snd2]);
 
 
 
@@ -80,4 +82,4 @@ Pdef(\tTest, Pbind(
 )).play;
 )
 
-20
+Bus().plot(1)
