@@ -54,7 +54,7 @@ SynthDef(\bufSegmentComb, { |out(0), bufnum(0), startPos(0), sustain(1)|
 	//Linear interpolation is nice
 	atk = CombC.ar(snd, 0.2, \freq.kr(440).reciprocal,  \combDecay.kr(4) - (LFNoise2.ar(\combDecayDevSpd.kr(2)).range(0, \combDecay.kr) * \combDecayDev.kr(0)));
 	atk = RLPFD.ar(atk, \ffreq.kr(1000), \fres.kr(0.6), \fdist.kr(0.3));
-	atk = atk * EnvGen.ar(Env.linen(\combAttack.kr(2), 0, \combDecay.kr - \combAttack.kr, [4, 0, -4]), doneAction:2);
+	atk = atk * EnvGen.ar(Env.linen(\combAttack.kr(2), 0.1, \combDecay.kr - \combAttack.kr, [4, 0, -4]), doneAction:2);
 
 	atk = atk * 0.1;
 

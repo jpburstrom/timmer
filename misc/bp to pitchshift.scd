@@ -1,4 +1,9 @@
 ~buf = Buffer.read(s, "../player/songs/01-Preparerad flageolett 2 ___-44100.wav".resolveRelative);
+
+~buf = Buffer.read(s, "/Users/johannes/projects/timmer/kod/player/songs/07-Drone maskin 1 ___-44100.wav");
+~buf = Buffer.read(s, "/Users/johannes/projects/timmer/kod/player/songs/10-Bivax 2 ___-44100.wav");
+
+
 ~midside ={ arg input, scale = -3;   [input[0] + input[1], input[0] - input[1]] * scale.dbamp };
 (
 Ndef(\combTest, {
@@ -29,7 +34,7 @@ Ndef(\combTest, {
 
 	//This is good -- frequency shift side part
 	//match frequency with audio (in this case (01) a lot of D)
-	snd[1] = FreqShiftAA.ar(snd[1], -290, mul:3);
+	snd[1] = FreqShiftAA.ar(snd[1], -170, mul:3);
 
 
 
@@ -44,3 +49,4 @@ Ndef(\combTest, {
 }).play
 )
 
+"f2".namecps

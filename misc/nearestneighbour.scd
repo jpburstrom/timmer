@@ -1,14 +1,13 @@
 (
 var c, data, dur;
 
-~buf = Buffer.read(s, "../../render/01-Preparerad flageolett 2 ___-44100.wav".resolveRelative);
+~buf = Buffer.read(s, "../player/songs/01-Preparerad flageolett 2 ___-44100.wav".resolveRelative);
 ~onsets = TabFileReader.read("../player/data/01/onset.txt".resolveRelative).flop[0].collect(_.asFloat);
 ~durations = ~onsets.differentiate[1..] ++ 30;
-~path = "/Users/johannes/projects/timmer/render/01-Preparerad flageolett 2 ___-44100.wav";
 
 //TODO: Find good, useful features
 ~features = [Loudness, [MFCC, 10]];
-f = SCMIRAudioFile(~path, ~features);
+f = SCMIRAudioFile(~buf.path, ~features);
 f.extractFeatures();
 
 //Make segments with 5 frames from every onset
