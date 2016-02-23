@@ -22,11 +22,20 @@ Ndef(\combTest, {
 
 	bp = bp.sum;
 
-
-	//randomly change volume of side channel
-	snd[1] = (snd[1] * 3);
+	//idea: randomly change volume of side channel (change 3
+	snd[1] = (snd[1] * LFNoise2.kr(0.1).exprange(1,2));
 
 	snd[1] = snd[1] + bp;
+
+	//This is good -- frequency shift side part
+	//match frequency with audio (in this case (01) a lot of D)
+	{
+		var index = 1;
+		4.do { snd[index] = HPF.ar(snd[index], 290) };
+		snd[index] = FreqShift.ar(snd[index], -290) * 3;
+	}.value;
+
+
 
 
 	//Remove mid
