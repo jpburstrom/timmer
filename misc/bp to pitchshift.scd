@@ -29,11 +29,8 @@ Ndef(\combTest, {
 
 	//This is good -- frequency shift side part
 	//match frequency with audio (in this case (01) a lot of D)
-	{
-		var index = 1;
-		4.do { snd[index] = HPF.ar(snd[index], 290) };
-		snd[index] = FreqShift.ar(snd[index], -290) * 3;
-	}.value;
+	snd[1] = FreqShiftAA.ar(snd[1], -290, mul:3);
+
 
 
 

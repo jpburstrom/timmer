@@ -1,0 +1,48 @@
+TITLE:: FreqShiftAA
+summary:: A frequency shifter which tries to avoid aliasing when using negative shifts
+categories:: UGens>Filters>Nonlinear, UGens>Filters>Pitch
+related:: Classes/FreqShift
+
+DESCRIPTION::
+FreqShiftAA implements single sideband amplitude modulation, also known as frequency shifting, but not to be confused with pitch shifting. Unlike link::Classes/FreqShift::, the signal is high-pass filtered before shifting, if code::freq:: is negative, to avoid aliasing.
+
+Frequency shifting moves all the components of a signal by a fixed amount but does not preserve the original harmonic relationships.
+
+classmethods::
+
+method::ar
+
+argument::in
+The input signal.
+
+argument::freq
+Amount of shift in cycles per second.
+
+argument::phase
+Phase of the frequency shift (0..2pi).
+
+argument::mul
+
+argument::add
+
+
+EXAMPLES::
+
+code::
+
+FreqScope();
+x = { FreqShiftAA.ar(Saw.ar, MouseX.kr(-20000, 0)) * 0.1 }.play;
+x.free
+
+
+//Compare these two:
+
+//FreqShiftAA
+x = { FreqShiftAA.ar(SinOsc.ar, MouseX.kr(-880, 440)) * 0.1 }.scope;
+x.free
+
+//FreqShift
+x = { FreqShift.ar(SinOsc.ar, MouseX.kr(-880, 440)) * 0.1 }.scope;
+x.free;
+
+::
