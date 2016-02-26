@@ -65,3 +65,9 @@ SynthDef(\bufSegmentComb, { |out(0), bufnum(0), startPos(0), sustain(1)|
 
 
 }).add;
+
+SynthDef(\tick, {
+    Line.kr(0, 1, 0.1, doneAction:2);
+    Out.ar(\outbus.kr(0), Impulse.ar(0));
+}).add;
+
