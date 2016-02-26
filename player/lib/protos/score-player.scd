@@ -137,7 +137,6 @@ p = Proto({
         otherKeys.remove(~tickLabel);
         ~data.lookup = otherKeys.collectAs(_->List(), Event);
         ~data.score = coll.collect { |times, i|
-            //FIXME: just create an event
             cur[~tickLabel] = i;
             cur.copy.make({ ~startPos =  times[0]; ~dur = times[1]; ~legato = 1;});
         };
@@ -145,6 +144,7 @@ p = Proto({
         otherKeys.do { |k|
             var other = ~data[k];
 
+            //Quantize other keys to ~tickLabel
             other.do { |x, j|
                 var inTime = x[0];
                 var outTime = x[0] + x[1];
@@ -173,7 +173,7 @@ p = Proto({
         ~nextPos = nil; //reset ~nextPos for next time
 
         ~prevEvent = ~nextEvent;
-        ~nextEvent = ~data[\score][nextPos];
+        ~nextEvent = nextPos !? { ~data[\score][nextPos] };
 
         if (~nextEvent.notNil) {
             //for some reason proto_ doesn't work...
@@ -225,7 +225,8 @@ p = Proto({
     };
 
     ~reset = {
-		var buf, waitTime = ~prevEvent.dur;
+		var buf, waitTime=0;
+        ~currentEvent !? { waitTime = ~currentEvent.dur };
 		"reset".debug;
         ~nextPos = nil;
         ~iteratorStream.reset;
@@ -285,10 +286,11 @@ p = Proto({
             ~spawner = sp;
             //reset function
             sp.seq(Event.silent(0, (addToCleanup: reset)));
+            sp.par(~parPtn);
 			sp.seq(Pchain(~modPtn, Prout(e { |ev| loop { ev = ~next.value(ev).yield }})));
 
 
-        }.inEnvir)
+        }.inEnvir).collect({ |ev| ~currentEvent = ev });
     };
 
     ~update = { |obj, what ... args|
