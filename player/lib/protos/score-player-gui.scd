@@ -15,7 +15,7 @@ Proto({
         ~sfView.setEditableSelectionSize(0, false);
         ~sfView.currentSelection_(0);
         ~sfView.setSelectionColor(0, Color.white);
-        ~sfView.setSelectionColor(1, Color.green);
+        ~sfView.setSelectionColor(63, Color.green);
         ~window.front;
 
         ~sfView.mouseUpAction_({ |obj, x, y, mod, btn|
@@ -29,7 +29,26 @@ Proto({
                 //Space
                 $ , {
                     ~controller.playPause;
+                },
+                $-, {
+                    ~sfView.zoom(0.75);
+                },
+                $+, {
+                    ~sfView.zoom(1.5);
+                },
+                $s, {
+                    ~sfView.zoomSelection(0);
+                },
+                $a, {
+                    ~sfView.zoomAllOut;
+                    ~resetSelection.value;
+                },
+                $f, {
+                    ~follow = true;
                 }
+
+
+
             );
         }.inEnvir);
     };
@@ -49,21 +68,36 @@ Proto({
         SoundFile.use(path, { |sf|
             ~sfView.readFileWithTask(sf, showProgress:true);
             ~sampleRate = sf.sampleRate;
+            if (~controller.data[~controller.tickLabel].size <= 62) {
+                var colors = [Color.white, Color.fromHexString("eeeeee")];
+                ~controller.data[~controller.tickLabel].do { |pair, i|
+                    ~sfView.setSelection(i + 1, (pair * ~sampleRate).round);
+                    ~sfView.setSelectionColor(i + 1, colors[i%2]);
+                };
+            }
         }.inEnvir)
     };
-
     ~setPosition = { |sec|
         ~sfView.timeCursorPosition = sec * ~sampleRate;
     };
 
     ~setSelection = { |in, out|
-        ~sfView.setSelection(1, [in, out] * ~sampleRate);
+        ~currentSelection = [in, out];
+        ~sfView.setSelection(63, [in, out] * ~sampleRate);
+        ~sfView.setSelection(0, [in - 0.2, out + 0.4] * ~sampleRate);
+    };
+
+    ~resetSelection = {
+        ~setSelection.value(*~currentSelection);
     };
 
     ~update = { |obj, what ... args|
         if (what == \segment) {
             {
                 ~setSelection.(*args);
+                if (~follow.notNil) {
+                    ~sfView.zoomSelection(0);
+                };
                 ~log
             }.inEnvir.defer;
         } {
