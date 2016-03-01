@@ -16,14 +16,10 @@ Ndef(\fqShiftTest, {
     snd = DelayN.ar(snd, 0.1, 512 / SampleRate.ir);
 
     //Random freq shift per onset
-    snd = LinXFade2.ar(snd, -1 * FreqShiftAA.ar(snd, randFreq), EnvGen.ar(Env([-1, -1, 1], [0.02, 0.05]), trig).lag(0.02));
+    // snd = LinXFade2.ar(snd, -1 * FreqShiftAA.ar(snd, randFreq), EnvGen.ar(Env([-1, -1, 1], [0.02, 0.05]), trig).lag(0.02));
 
 }).play
 )
 
-Ndef(\fqShiftTest).end
-"G1".namecps
-
-TRand
-CoinGate
-
+x.free
+x = { Impulse.ar(0.55) }.play
