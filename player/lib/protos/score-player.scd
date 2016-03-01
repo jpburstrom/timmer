@@ -233,10 +233,10 @@ p = Proto({
         ~prevPos = -1;
 		~nextEvent = nil;
         ~prevEvent = nil;
-        ~preGroup.free;
-        ~group.free;
-        ~postGroup.free;
-		buf = ~protoEvent[\bufnum];
+
+        ~t.do(_.free);
+
+        buf = ~protoEvent[\bufnum];
 		fork {
 			waitTime.wait;
 			buf.free;
@@ -248,14 +248,15 @@ p = Proto({
     ~play = {
         "play".debug;
         {
+            ~t = (); //A holder of temporary items
             ~prepareScore.value;
-            ~preGroup = Group();
-            ~group = Group.after(~preGroup);
-            ~postGroup = Group.after(~group);
+            ~t.preGroup = Group();
+            ~t.mainGroup = Group.after(~t.preGroup);
+            ~t.postGroup = Group.after(~t.mainGroup);
 			~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
             s.sync;
             ~readyForPlay = true;
-			~onReady.value;
+            ~onReady.value;
             ~streamPlayer = ~asPattern.value.play;
         }.inEnvir.fork
     };
