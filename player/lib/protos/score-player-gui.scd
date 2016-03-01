@@ -31,10 +31,10 @@ Proto({
                     ~controller.playPause;
                 },
                 $-, {
-                    ~sfView.zoom(0.75);
+                    ~sfView.zoom(1.5);
                 },
                 $+, {
-                    ~sfView.zoom(1.5);
+                    ~sfView.zoom(0.75);
                 },
                 $s, {
                     ~sfView.zoomSelection(0);
