@@ -10,9 +10,10 @@ q.player2.setPtn(Pbind(\instrument, \tick, \tempo, Pfunc { |ev| ~data.beat[ev.be
 // q.player.parPtn = Pbind(\adjustDur, Pfunc { |ev| ev.dur = ev.dur * 0.5}) <> q.player2.asPattern
 )
 (
-q.playerui = "protos/score-player-gui".import;
+q.playerui = "lib/protos/score-player-gui".import;
 q.playerui.connect(q.player)
 )
+q.playerui.free
 (
 //Randomizing works a lot of the times, but not when
 q.player.setIterator(Prout({
@@ -33,11 +34,16 @@ q.player.setIterator(Prout({
 q.player.setPtn(Pbind(\fadetime, 0.01, \startPos, Pkey(\startPos) - 0.15))
 )
 
-q.player.setIterator(Pseries())
 
+q.player.setIterator(Pif(Pfunc { 0.9.coin }, Pseries(), Pseries()))
+
+Pdefn(\asd, Pif(Pseries(0, 0.01).coin, Pdefn(\asd), Pseries()))
+
+Pdefn(\asd).iter.nextN(100000).maxItem
+y = Pbind(\degree, Pdefn(\asd), \dur, 0.1).play
+y.stop
 q.player.trace = false;
 q.player.play
-q.player.stop
 q.playerui.sfView.selection(0)
 q.player2.stop
 

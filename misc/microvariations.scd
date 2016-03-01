@@ -71,7 +71,7 @@ Pdef(\varTestTest, Pbind(
 		ev.attackStartPos = ~onsets[ev.attackSegment];
 		//GC(\varFactor).value = ev.varFactor;
     });
-).ffwd2(700)).play;
+)).play;
 
 )
 Pdef(\varTestTest).stop
