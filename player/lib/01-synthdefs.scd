@@ -8,12 +8,12 @@ SynthDef(\bufSegment, { |out(0), bufnum(0), startPos(0), sustain(1)|
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-    OffsetOut.ar(out, snd);
+    OffsetOut.ar(out, snd * \amp.kr(1));
 }).add;
 
 
 //Segment player with separate attack and sustain startPos's
-SynthDef(\bufSegmentAttack, { |bufnum, startPos, attackStartPos, sustain=0, bufRate=1, varFactor=0|
+SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, bufRate=1, varFactor=0|
     var snd, attack, release;
 	var fadetime = \fadetime.kr(defaultFadeTime);
 	var attackDur = \attackDur.kr(0.06); //Duration of attack part
@@ -23,24 +23,22 @@ SynthDef(\bufSegmentAttack, { |bufnum, startPos, attackStartPos, sustain=0, bufR
 	attackStartPos = ((attackStartPos - fadetime) * BufSampleRate.kr(bufnum)).max(0); //Convert seconds to samples
 
 	//Randomize attack pitch
-	attack = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * bufRate * LFNoise2.kr(Rand(1,5)).range((-10 * varFactor).midiratio, (1 * varFactor).midiratio), startPos: attackStartPos);
+	attack = PlayBuf.ar(2, bufnum,
+        BufRateScale.kr(bufnum) * bufRate
+        * LFNoise2.kr(Rand(1,5)).range((-10 * varFactor).midiratio, (1 * varFactor).midiratio), startPos: attackStartPos);
+
 
 	//release part is left blank
     snd = release = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * bufRate, startPos: startPos);
-
-	//Different filtering possibilities
-	//attack = LPF.ar(attack, ExpRand(10000, 20000));
-	//attack = attack + LPF.ar(DelayC.ar(attack, 0.1, Rand(0, 0.1), -1), 1000);
-	// release = release * ExpRand(0.707, 1);
+    attack = snd;
 
     //mix attack and release
 	snd = LinSelectX.ar(1, [snd, LinSelectX.ar(Line.ar(0, 1, attackDur), [attack, release])]);
-    OffsetOut.ar(32, \klank.kr * EnvGen.ar(Env.perc(0.002, 0.03)) * attack);
+    OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr * EnvGen.ar(Env.perc(0.002, 0.03)) * attack);
 	//output + envelope
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-    OffsetOut.ar(\outbus.kr(0), snd);
+    OffsetOut.ar(\out.kr(0), snd * \amp.kr(1));
 }).add;
-
 
 //Buffer segment with decaying + filtered comb filter
 SynthDef(\bufSegmentComb, { |out(0), bufnum(0), startPos(0), sustain(1)|
@@ -61,13 +59,15 @@ SynthDef(\bufSegmentComb, { |out(0), bufnum(0), startPos(0), sustain(1)|
 	snd = XFade2.ar(snd, atk, \mix.kr(0));
 
 
-	OffsetOut.ar(out, snd);
+	OffsetOut.ar(out, snd * \amp.kr(1));
 
 
 }).add;
 
+
+
 SynthDef(\tick, {
     Line.kr(0, 1, 0.1, doneAction:2);
-    Out.ar(\outbus.kr(0), Impulse.ar(0));
+    Out.ar(\out.kr(0), Impulse.ar(0).dup);
 }).add;
 
