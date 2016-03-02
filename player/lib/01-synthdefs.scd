@@ -52,7 +52,7 @@ SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, 
     OffsetOut.ar(\attackSendBus.kr(16), \attackSendAmp.kr * EnvGen.ar(Env.perc(0.002, 0.03)) * attack);
 	//output + envelope
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-    OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr * snd);
+    OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr(0, 0.1) * snd);
 	OffsetOut.ar(\out.kr(0), snd * \amp.kr(1));
 }).add;
 
