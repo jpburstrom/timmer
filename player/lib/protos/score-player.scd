@@ -259,7 +259,7 @@ p = Proto({
         ~readyForPlay = false;
     };
 
-    ~play = { |startEvent|
+    ~play = { |startEvent=0|
         if (~streamPlayer.isPlaying.not) {
             var startPos = ~data[~tickLabel][startEvent][0];
             {
