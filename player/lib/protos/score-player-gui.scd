@@ -10,7 +10,7 @@ Proto({
         ~buttonContainer = HLayout();
         ~clockLabel = StaticText().string_("00:00").stringColor_(Color.white);
         ~buttonContainer.add(~clockLabel);
-        ~window = Window("TIMMER", Rect(0, Window.availableBounds.height, Window.availableBounds.width, 500)).layout_(VLayout(~buttonContainer, ~sfView));
+        ~window = Window("TIMMER", Rect(0, Window.availableBounds.height, Window.availableBounds.width - 450, 500)).layout_(VLayout(~buttonContainer, ~sfView));
         ~window.background = Color.black;
         ~sfView.background = Color.white;
         ~sfView.gridOn = false;
@@ -21,7 +21,13 @@ Proto({
         ~sfView.currentSelection_(0);
         ~sfView.setSelectionColor(0, Color.white);
         ~sfView.setSelectionColor(63, Color.green);
+        ~window.onClose = {
+            ~removeController.();
+            ~window = nil;
+        }.inEnvir;
         ~window.front;
+
+        ~envirGuiIgnoreKeys = #[bufnum, dummy, hasGate, id, msgFunc, server];
 
         ~sfView.mouseUpAction_({ |obj, x, y, mod, btn|
             if (btn == 0) {
@@ -50,7 +56,13 @@ Proto({
                 },
                 $f, {
                     ~follow = ~follow.not;
+                },
+
+                $d, {
+                    ~openEnvirGui.value;
                 }
+
+
 
 
             );
@@ -66,7 +78,7 @@ Proto({
     };
 
     ~openFile =  { |path|
-        if (~sfView.isNil) {
+        if (~window.isNil) {
             ~makeWindow.value;
         };
         SoundFile.use(path, { |sf|
@@ -105,8 +117,14 @@ Proto({
                     if (~follow) {
                         ~sfView.zoomSelection(0);
                     };
-                    ~log
-                }.inEnvir.defer
+                    ~envirGui !? {
+                        ~controller.currentEvent.keysValuesDo { |k,v|
+                            if (~envirGuiIgnoreKeys.includes(k).not) {
+                                ~envirGui.envir[k] = v;
+                            }
+                        }
+                    }
+                }.inEnvir.defer;
             },
             \load,  {
                 ~openFile.value(args[0]);
@@ -156,8 +174,28 @@ Proto({
         );
     };
 
+    ~openEnvirGui = {
+        var ev = ();
+        ~controller.currentEvent !? { |x|
+            x.keysValuesDo { |k,v|
+                if (~envirGuiIgnoreKeys.includes(k).not) {
+                    ev[k] = v;
+                }
+            };
+        };
+        ~envirGui = EnvirGui(ev, 30, nil, Rect(Window.availableBounds.width-450, Window.availableBounds.height, 450, 300));
+        ~controller.actionLabels.do { |x|
+            ~envirGui.putSpec(x, [0, ~controller.data[x].size, \lin, 1] )
+        };
+    };
+
     ~free = {
-        ~window !? { ~window.close };
+        ~clockRoutine.stop;
+        ~envirGui !? { ~envirGui.close } ;
+        ~window !? {
+            ~window.onClose = nil;
+            ~window.close;
+        };
         ~sfView = nil;
 
     };

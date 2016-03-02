@@ -1,5 +1,20 @@
 var defaultFadeTime = 0.002;
 
+Spec.add(\bufRate, \rate);
+Spec.add(\dur, [0.001, 60, \exp]);
+Spec.add(\delta, \dur);
+Spec.add(\sustain, \dur);
+Spec.add(\fqshift, [-20000, 20000]);
+Spec.add(\startPos, [0, 1200]); //20 minutes
+Spec.add(\attackStartPos, \startPos);
+Spec.add(\legato, [0.001, 10, \exp]);
+Spec.add(\out, \audiobus);
+Spec.add(\sendAmp, \amp);
+
+//--pattern-specific specs--//
+Spec.add(\quantAmt, \unipolar);
+Spec.add(\varFactor, \unipolar);
+
 //Simple segment player
 //startPos in seconds
 SynthDef(\bufSegment, { |out(0), bufnum(0), startPos(0), sustain(1)|
