@@ -112,27 +112,37 @@ Proto({
                 ~openFile.value(args[0]);
             },
             \state, {
-                ~setClock.(args[0]);
+                ~setClock.(*args);
                 //Stop/start clock
             }
         );
     };
 
     ~clockRoutine = Task({
-        var seconds = 0;
+        var seconds = ~clockStartPos ?? 0;
         var string;
+        //Set clock to seconds.floor and wait the remainder
+        var initWait = (1 - (seconds % 1));
+        var setString = {
+            ~clockLabel.string_(
+                "%:%".format(seconds.div(60).asStringToBase(10, 2),
+                    (seconds % 60).asStringToBase(10, 2));
+            );
+        };
+        seconds = seconds.floor.asInt;
+        setString.value;
+        initWait.wait;
         loop {
-            string = "%:%".format(seconds.div(60).asStringToBase(10, 2),
-                (seconds % 60).asStringToBase(10, 2));
             seconds = seconds + 1;
-            ~clockLabel.string_(string);
+            setString.value;
             1.wait;
         }
-    }, AppClock);
+    }.inEnvir, AppClock);
 
-    ~setClock = { |state|
+    ~setClock = { |state, secs|
         switch(state,
             \playing, {
+                ~clockStartPos = secs;
                 ~clockRoutine.play;
             },
             \stopped, {

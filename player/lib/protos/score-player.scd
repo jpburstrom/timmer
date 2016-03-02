@@ -9,6 +9,8 @@ p = Proto({
     ~dataPath = nil;
     ~data = ();
 
+    ~readyForPlay = false;
+
     //dictionary of per-label functions
     ~actions = ();
     //an ordered list of marker labels
@@ -245,21 +247,23 @@ p = Proto({
         ~readyForPlay = false;
     };
 
-    ~play = {
-        "play".debug;
-        {
-            ~t = (); //A holder of temporary items
-            ~prepareScore.value;
-            ~t.preGroup = Group();
-            ~t.mainGroup = Group.after(~t.preGroup);
-            ~t.postGroup = Group.after(~t.mainGroup);
-			~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
-            s.sync;
-            ~readyForPlay = true;
-            ~onReady.value;
-            ~streamPlayer = ~asPattern.value.play;
-            currentEnvironment.changed(\state, \playing);
-        }.inEnvir.fork
+    ~play = { |startEvent|
+        if (~streamPlayer.isPlaying.not) {
+            var startPos = ~data[~tickLabel][startEvent][0];
+            {
+                ~t = (); //A holder of temporary items
+                ~prepareScore.value;
+                ~t.preGroup = Group();
+                ~t.mainGroup = Group.after(~t.preGroup);
+                ~t.postGroup = Group.after(~t.mainGroup);
+                ~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
+                s.sync;
+                ~readyForPlay = true;
+                ~onReady.value;
+                ~streamPlayer = ~asPattern.value.ffwd2(startEvent).play;
+                currentEnvironment.changed(\state, \playing, startPos);
+            }.inEnvir.fork;
+        }
     };
 
     ~stop = {
@@ -302,11 +306,11 @@ p = Proto({
 
         if (what == \position) {
             var segment = ~data[~tickLabel].flop[0].select({ |x| x < args[0] }).size - 1;
-            ~setNextPos.value(segment);
-            if (~streamPlayer.isPlaying.not) {
-                ~play.value;
-            };
 
+            if (~streamPlayer.isPlaying) {
+                ~stop.value;
+            };
+            ~play.value(segment);
 
         }
     };
