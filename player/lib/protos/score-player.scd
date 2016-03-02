@@ -74,13 +74,18 @@ p = Proto({
         ~dataPath = dataBasePath +/+ song;
         ~songPath = (songBasePath +/+ song ++ "-*.wav").pathMatch[0];
         SoundFile.use(~songPath, { |sf|
+
+            var isNumeric = { |x|
+                "^(?=.)([+-]?([0-9]*)(\\.([0-9]+))?)$".matchRegexp(x);
+            };
+
             ~soundFile = sf;
             ~actionLabels.do { |k|
                 var path = ~dataPath +/+ k ++ ".txt";
                 if (File.exists(path)) {
                     var tmp, durations, data = TabFileReader.read(path);
                     //If we only have one time value per row, we calculate durations
-                    if (data[0].size == 1) {
+                    if (data[0].size == 1 or: { data[0][1].notNil and: { isNumeric.(data[0][1]).not } }) {
                         var times = data.flop[0].collect(_.asFloat);
                         tmp = times ++ sf.duration;
                         durations = tmp.differentiate[1..];
@@ -98,8 +103,7 @@ p = Proto({
                                 line.swap(2,1);
                             };
                             line.collect({ |x|
-                                //Check if numeric
-                                if ("^(?=.)([+-]?([0-9]*)(\\.([0-9]+))?)$".matchRegexp(x)) {
+                                if (isNumeric.(x)) {
                                     x.asFloat;
                                 } {
                                     x
