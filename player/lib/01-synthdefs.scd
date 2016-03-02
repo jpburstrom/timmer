@@ -49,10 +49,11 @@ SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, 
 
     //mix attack and release
 	snd = LinSelectX.ar(1, [snd, LinSelectX.ar(Line.ar(0, 1, attackDur), [attack, release])]);
-    OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr * EnvGen.ar(Env.perc(0.002, 0.03)) * attack);
+    OffsetOut.ar(\attackSendBus.kr(16), \attackSendAmp.kr * EnvGen.ar(Env.perc(0.002, 0.03)) * attack);
 	//output + envelope
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-    OffsetOut.ar(\out.kr(0), snd * \amp.kr(1));
+    OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr * snd);
+	OffsetOut.ar(\out.kr(0), snd * \amp.kr(1));
 }).add;
 
 //Buffer segment with decaying + filtered comb filter
