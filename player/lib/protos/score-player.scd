@@ -258,6 +258,7 @@ p = Proto({
             ~readyForPlay = true;
             ~onReady.value;
             ~streamPlayer = ~asPattern.value.play;
+            currentEnvironment.changed(\state, \playing);
         }.inEnvir.fork
     };
 
@@ -265,6 +266,7 @@ p = Proto({
         ~streamPlayer.stop;
 		//TODO reset after finished playing
         ~streamPlayer.reset;
+        currentEnvironment.changed(\state, \stopped);
     };
 
     ~playPause = {
@@ -274,9 +276,11 @@ p = Proto({
         } {
             if (~streamPlayer.isPlaying) {
                 ~streamPlayer.pause;
+                currentEnvironment.changed(\state, \paused);
 
             } {
                 ~streamPlayer.play;
+                currentEnvironment.changed(\state, \playing);
             }
         }
     };

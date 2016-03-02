@@ -2,11 +2,16 @@ Proto({
 
     ~controller = nil;
 
+    ~follow = false;
+
     ~makeWindow = {
 
         ~sfView = SoundFileView();
         ~buttonContainer = HLayout();
+        ~clockLabel = StaticText().string_("00:00").stringColor_(Color.white);
+        ~buttonContainer.add(~clockLabel);
         ~window = Window("TIMMER", Rect(0, Window.availableBounds.height, Window.availableBounds.width, 500)).layout_(VLayout(~buttonContainer, ~sfView));
+        ~window.background = Color.black;
         ~sfView.background = Color.white;
         ~sfView.gridOn = false;
         ~sfView.timeCursorOn = true;
@@ -44,9 +49,8 @@ Proto({
                     ~resetSelection.value;
                 },
                 $f, {
-                    ~follow = true;
+                    ~follow = ~follow.not;
                 }
-
 
 
             );
@@ -92,19 +96,54 @@ Proto({
     };
 
     ~update = { |obj, what ... args|
-        if (what == \segment) {
+
+        switch(what,
+            \segment,
             {
-                ~setSelection.(*args);
-                if (~follow.notNil) {
-                    ~sfView.zoomSelection(0);
-                };
-                ~log
-            }.inEnvir.defer;
-        } {
-            if (what == \load) {
+                {
+                    ~setSelection.(*args);
+                    if (~follow) {
+                        ~sfView.zoomSelection(0);
+                    };
+                    ~log
+                }.inEnvir.defer
+            },
+            \load,  {
                 ~openFile.value(args[0]);
+            },
+            \state, {
+                ~setClock.(args[0]);
+                //Stop/start clock
             }
+        );
+    };
+
+    ~clockRoutine = Task({
+        var seconds = 0;
+        var string;
+        loop {
+            string = "%:%".format(seconds.div(60).asStringToBase(10, 2),
+                (seconds % 60).asStringToBase(10, 2));
+            seconds = seconds + 1;
+            ~clockLabel.string_(string);
+            1.wait;
         }
+    }, AppClock);
+
+    ~setClock = { |state|
+        switch(state,
+            \playing, {
+                ~clockRoutine.play;
+            },
+            \stopped, {
+                ~clockRoutine.stop;
+                ~clockRoutine.reset;
+                ~clockLabel.string_("00:00");
+            },
+            \paused, {
+                ~clockRoutine.pause;
+            }
+        );
     };
 
     ~free = {
