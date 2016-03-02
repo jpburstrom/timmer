@@ -260,22 +260,24 @@ p = Proto({
     };
 
     ~play = { |startEvent=0|
-        if (~streamPlayer.isPlaying.not) {
-            var startPos = ~data[~tickLabel][startEvent][0];
-            {
-                ~t = (); //A holder of temporary items
-                ~prepareScore.value;
-                ~t.preGroup = Group();
-                ~t.mainGroup = Group.after(~t.preGroup);
-                ~t.postGroup = Group.after(~t.mainGroup);
-                ~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
-                s.sync;
-                ~readyForPlay = true;
-                ~onReady.value;
-                ~streamPlayer = ~asPattern.value.ffwd2(startEvent).play;
-                currentEnvironment.changed(\state, \playing, startPos);
-            }.inEnvir.fork;
-        }
+        s.waitForBoot {
+            if (~streamPlayer.isPlaying.not) {
+                var startPos = ~data[~tickLabel][startEvent][0];
+                {
+                    ~t = (); //A holder of temporary items
+                    ~prepareScore.value;
+                    ~t.preGroup = Group();
+                    ~t.mainGroup = Group.after(~t.preGroup);
+                    ~t.postGroup = Group.after(~t.mainGroup);
+                    ~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
+                    s.sync;
+                    ~readyForPlay = true;
+                    ~onReady.value;
+                    ~streamPlayer = ~asPattern.value.ffwd2(startEvent).play;
+                    currentEnvironment.changed(\state, \playing, startPos);
+                }.inEnvir.fork;
+            }
+        };
     };
 
     ~stop = {
