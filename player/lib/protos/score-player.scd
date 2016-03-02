@@ -56,8 +56,16 @@ p = Proto({
 
 	~extractFeatures = {
 
+        var f, file;
+
 		f = SCMIRAudioFile(~songPath, ~features);
-		f.extractFeatures();
+        file = (~dataPath +/+ "features.scmirZ");
+        if (File.exists(file).not) {
+            f.extractFeatures();
+            f.save(file);
+        } {
+            f.load(file);
+        };
 
 		//Make segments with 5 frames from every onset
 		if (~data.onset.notNil) {
