@@ -8,6 +8,14 @@ q.player.extractFeatures;
 q.playerui.connect(q.player);
 )
 
+//TODO:
+//Check radius
+//Check fqshift (multiple of phrase drone freq?)
+//quantAmt lag (interpolate)
+//Room/rev
+//~6.30: Work with shorter durations
+
+
 
 (
 q.player.onReady = {
@@ -32,7 +40,6 @@ q.player.onReady = {
 
 
 };
-
 
 q.player.setIterator(p {
     var x = i = 0; //temporary index & counter
@@ -79,6 +86,9 @@ q.player.setIterator(p {
             if (~varFactor == 0 and: { prevVarFactor > 0 } ) {
                 randomSegment.reset;
             };
+
+            prevVarFactor = ~varFactor;
+            // prevVarFactor.postln;
 
             //Toss a coin. Are we random this time?
             ~isRandom = ~varFactor.coin;
@@ -136,16 +146,16 @@ q.player.setPtn(Pbind(
     },
 
     //---Randomly shift frequency---
-    \fqshift, Pwrand([0, Pwhite(-60, -200, 1)], [0.27, 0.83], inf),
+    \fqshift, Pwrand([0, Pwhite(0, -40, 1)], [0.27, 0.83], inf),
     //Set synth
-    \dummy, Pfunc { |ev| s.bind { ~t.freqShift.set(\freq, ev.fqshift); 0  } }
+    \dummy, Pfunc { |ev|
+        //FIXME: this causes late messages when fast-forwarding
+        //And is a hack anyway
+        s.bind { ~t.freqShift.set(\freq, ev.fqshift); };
+        0
+    }
 
 ));
 )
-q.player.play(800);
-q.player.t
+q.player.play(0);
 q.player.stop;
-q.player.streamPlayer.isPlaying
-q.player.data.lookup
-q.player.data.score[1]
-q.player.actions.phrase.onStart = { |x| (instrument:\tick).play }
