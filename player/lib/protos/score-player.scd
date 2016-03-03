@@ -322,9 +322,10 @@ p = Proto({
             var segment = ~data[~tickLabel].flop[0].select({ |x| x < args[0] }).size - 1;
 
             if (~streamPlayer.isPlaying) {
-                ~stop.value;
-            };
-            ~play.value(segment);
+			     ~stop.value;
+				~reset.value;
+        	};
+			currentEnvironment[\play].value(segment);
 
         }
     };
