@@ -42,7 +42,6 @@ q.player.onReady = {
 };
 
 q.player.setIterator(p {
-    var x = i = 0; //temporary index & counter
     var size = ~data.onset.size;
     var varStream = Fdef(\twoPeaksPattern).value(size).asStream;
     //Random segment: 5 segments that are selected at start
@@ -51,14 +50,7 @@ q.player.setIterator(p {
         (i >= phrase) and: { (i - phrase) <= length };
 
     }.inEnvir;
-    var allowedSegments = {
-        var x = Array.series(size);
-        x.removeAllSuchThat { |item|
-            isPhraseStart.(item);
-        };
-        x = x.drop(-1);
-        x
-    }.value;
+	var allowedSegments = ~data.onset.selectIndices( { |x| x[1] > 0.6 and: { x[1] < 1.0 } });
     var randomSegment = Plazy({Pxrand(allowedSegments.scramble[..5], inf)}).asStream;
     var prevVarFactor = 0;
     var getRadius = { |index, varFactor|
@@ -72,6 +64,22 @@ q.player.setIterator(p {
         index
     }.inEnvir;
     var currentPhrase;
+
+	//`counter` is a stream that advances up to `repeatStart + 20.rrand(40)`, then goes back to `repeatStart`
+	//`endRepeats` times, after which it continues infinitely
+	var counter = value({
+		var repeats = 3;
+		var repeatStart = 711;
+		var ptn = Pseq([
+			Pseries(0,1,repeatStart),
+			Pn(Plazy{Pseries(repeatStart, 1, 20.rrand(40))}, repeats - 1),
+			Pseries(repeatStart)
+		]);
+		ptn.asStream;
+	});
+
+	var x, i = counter.value; //temporary index & counter
+
 
     //TODO: radius control
     loop {
@@ -104,11 +112,11 @@ q.player.setIterator(p {
                     //FIXME: check radius
                     x = getRadius.value(x, ~varFactor);
                 }
-            }
-
+            };
+			~origIndex = i;
         };
-        x.yield;
-        i = i + 1;
+	    x.yield;
+        i = counter.value;
     }
 });
 )
@@ -133,16 +141,53 @@ q.player.setPtn(Pbind(
     \out, 0,
     \amp, 1 - Pkey(\sendAmp),
     //Go back and forth between orig dur and swing
-    \quantAmt, Pif(Pkey(\isPhraseStart),
-        Pwrand([0,1], [0.9, 0.1], inf).stutter(Plprand(5, 13)),
-        0
-    ),//Pseg([0, 1, 0], 20, \lin, inf),
-    \dur, Pfunc { |ev|
+    \quantAmt, p({ |ev|
+		var lookup = ~data.lookup.phrase;
+		//Set the base probability to median phrase length
+		//so that probBase / 0.9 makes a quantize curve happen every phrase
+		//0.9 is a magic number
+		var prob, probBase = 0.9 * lookup.differentiate[1..].median.reciprocal;
+		var qcount=0;
+		loop {
+			//Check that we're not in the beginning of a phrase
+			//if not, flip a coin
+
+			//make a sawtooth probability curve,
+			//starting at zero, going up to 0.9 * probBase,
+			//and wrapping back to zero roughly 60 onsets before ending
+			prob = probBase * (ev.origIndex / 740).wrap(0,1) * 0.9;
+			ev.qprob = prob; //For tracingd
+
+			//Check for ev.phrase not nil because for some reason it choked on that one time
+			if (ev.isPhraseStart.not and: {  prob.coin } and: { ev.phrase.notNil } ) {
+				//Calculate number of onsets to next phrase start
+				var len = ~data.lookup.phrase[ev.phrase + 1];
+				var curve = 2.rrand(8);
+				var minlength = 4;
+				//We don't want to start a quantize curve if we're to close to next phrase
+				if (len.notNil and: { len >= minlength }) {
+					len = len - ev.onset;
+					//Embed envelope in stream
+					//Handle odd lengths gracefully
+					qcount = qcount + 1;
+					q.playerui.log(qcount, "quantized");
+					Pseg2([0,1,0], Pseq([len + 1, len].div(2)), Pseq([curve.neg, curve])).embedInStream(ev);
+				};
+
+			};
+
+			//0 is the default
+			ev = 0.yield;
+
+
+		}
+	}),
+	\dur, Pfunc { |ev|
         if (ev.isRandom) {
             ev.dur = ev.dur - 0.05.rand;
         };
-        //Set swingtime
-        (ev.dur * (1 - ev.quantAmt)) + (ev.quantAmt * [0.2, 0.3][ev.onset % 2])
+		//Set quantization
+        (ev.dur * (1 - ev.quantAmt)) + (ev.quantAmt * 0.3) //0.3 is less than minimum onset length
     },
 
     //---Randomly shift frequency---
@@ -159,3 +204,14 @@ q.player.setPtn(Pbind(
 )
 q.player.play(0);
 q.player.stop;
+q.playerui.log("hello")
+q.player.data.lookup.phrase.differentiate[1..].median.reciprocal
+.div(3).reciprocal
+q.playerui.log(3, "quantized");
+
+
+
+Pbind(\dur, Pxrand(q.player.data.onset.flop[1].select( { |x| x > 0.6 and: { x < 1.0 } }).scramble.keep(5), inf)).play;
+
+q.player.data.onset.flop[1].select( { |x| x > 0.6 and: { x < 1.0 } }).scramble.keep(5)
+
