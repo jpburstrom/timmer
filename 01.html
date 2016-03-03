@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>01.scd</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="01.html">
+                01.scd
+              </a>
+            
+              
+              <a class="source" href="02.html">
+                02.scd
+              </a>
+            
+              
+              <a class="source" href="test.html">
+                test.scd
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>01.scd</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(
+s.latency = 0.5;
+"lib/init".import;
+q.player.actionLabels = #[onset, phrase];
+q.player.loadData("01");
+q.player.extractFeatures;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Connect UI to player</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.playerui.connect(q.player);
+)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>TODO:
+Parallel freqshifted track, with similar but different onsets
+Check radius</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>quantAmt lag (interpolate)
+Room/rev
+~6.30: Work with shorter durations</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+
+
+(
+q.player.onReady = {
+
+    ~t.klankBus = Bus.audio(s, <span class="hljs-number">2</span>);
+    ~t.freqShiftBus = Bus.audio(s, <span class="hljs-number">2</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Always-running klank synth</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    ~t.klank = {
+
+        <span class="hljs-keyword">var</span> freqs = [<span class="hljs-number">1</span>, <span class="hljs-number">1.0019054878049</span>, <span class="hljs-number">1.7936737804878</span>, <span class="hljs-number">1.8009908536585</span>, <span class="hljs-number">2.5201981707317</span>, <span class="hljs-number">2.5224085365854</span>, <span class="hljs-number">2.9907012195122</span>, <span class="hljs-number">2.9940548780488</span>, <span class="hljs-number">3.7855182926829</span>, <span class="hljs-number">3.8061737804878</span>, <span class="hljs-number">4.5689024390244</span>, <span class="hljs-number">4.5754573170732</span>, <span class="hljs-number">5.0296493902439</span>, <span class="hljs-number">5.0455030487805</span>, <span class="hljs-number">6.0759908536585</span>, <span class="hljs-number">5.9094512195122</span>, <span class="hljs-number">6.4124237804878</span>, <span class="hljs-number">6.4430640243902</span>, <span class="hljs-number">7.0826219512195</span>, <span class="hljs-number">7.0923780487805</span>, <span class="hljs-number">7.3188262195122</span>, <span class="hljs-number">7.5551829268293</span>] * <span class="hljs-number">2</span>;
+        <span class="hljs-keyword">var</span> amps = freqs.size.collect((_+<span class="hljs-number">1</span>).reciprocal);
+        <span class="hljs-keyword">var</span> times = freqs.size.collect { Rand(<span class="hljs-number">1</span>, <span class="hljs-number">9.5</span>) };
+        <span class="hljs-keyword">var</span> snd = DynKlank.ar(<span class="hljs-string">`[freqs, amps, times], In.ar(~t.klankBus, 2) * 0.01, \freq.kr(150) * LFNoise2.kr(4).range(0.99, 1.01));
+        snd
+
+    }.play(target: ~t.postGroup);
+
+    ~t.freqShift = {
+		DelayC.ar(HPF.ar(FreqShiftAA.ar(In.ar(~t.freqShiftBus, 2), \freq.kr(-100, 0.05)), 60), 0.5, \delay.kr(0.1));
+    }.play(target: ~t.postGroup);
+
+
+};
+
+q.player.setIterator(p {
+    var size = ~data.onset.size;
+    var varStream = Fdef(\twoPeaksPattern).value(size).asStream;
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Random segment: 5 segments that are selected at start</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> isPhraseStart = { |i, length=<span class="hljs-number">2</span>|
+        <span class="hljs-keyword">var</span> phrase = ~data.lookup.phrase.minItem((i - _).wrap(<span class="hljs-number">0</span>, inf));
+        (i &gt;= phrase) and: { (i - phrase) &lt;= length };
+
+    }.inEnvir;
+	<span class="hljs-keyword">var</span> allowedSegments = ~data.onset.selectIndices( { |x| x[<span class="hljs-number">1</span>] &lt; <span class="hljs-number">0.4</span> or: { x[<span class="hljs-number">1</span>] &gt; <span class="hljs-number">1.0</span> and: { x[<span class="hljs-number">1</span>] &lt; <span class="hljs-number">2</span> }} });
+    <span class="hljs-keyword">var</span> randomSegment = Plazy({Pxrand(allowedSegments.scramble[.<span class="hljs-number">.5</span>], inf)}).asStream;
+    <span class="hljs-keyword">var</span> prevVarFactor = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">var</span> getRadius = { |index, varFactor|</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Convert varFactor to usable radius</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> items, clump;
+        varFactor = varFactor.rand;
+        <span class="hljs-keyword">if</span> ((clump = ~data.featureClump[index]).notNil) {
+            items = ~data.kdTree.radiusSearch(clump, (varFactor * <span class="hljs-number">0.15</span>) + <span class="hljs-number">0.05</span>);
+            index = items.choose.label;
+        };
+        index
+    }.inEnvir;
+    <span class="hljs-keyword">var</span> currentPhrase;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p><code>counter</code> is a stream that advances up to <code>repeatStart + 20.rrand(40)</code>, then goes back to <code>repeatStart</code>
+<code>endRepeats</code> times, after which it continues infinitely</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	<span class="hljs-keyword">var</span> counter = value({
+		<span class="hljs-keyword">var</span> repeats = <span class="hljs-number">3</span>;
+		<span class="hljs-keyword">var</span> repeatStart = <span class="hljs-number">711</span>;
+		<span class="hljs-keyword">var</span> ptn = Pseq([
+			Pseries(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>,repeatStart),
+			Pn(Plazy{Pseries(repeatStart, <span class="hljs-number">1</span>, <span class="hljs-number">20.</span>rrand(<span class="hljs-number">40</span>))}, repeats - <span class="hljs-number">1</span>),
+			Pseries(repeatStart)
+		]);
+		ptn.asStream;
+	});
+
+	<span class="hljs-keyword">var</span> x, i = counter.value; <span class="hljs-comment">//temporary index &amp; counter</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>TODO: radius control</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    loop {
+        x = i; <span class="hljs-comment">//set temporary index</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>We need to calculate which phrase we’re on</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+        ~protoEvent.use {
+            ~varFactor = varStream.next;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>If we’re going down to zero from a higher varFactor,
+choose 5 other random segments</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (~varFactor == <span class="hljs-number">0</span> and: { prevVarFactor &gt; <span class="hljs-number">0</span> } ) {
+                randomSegment.reset;
+            };
+
+            prevVarFactor = ~varFactor;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>prevVarFactor.postln;</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Toss a coin. Are we random this time?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            ~isRandom = ~varFactor.coin;
+
+        ~isPhraseStart = isPhraseStart.value(i);
+
+            <span class="hljs-keyword">if</span> (~isPhraseStart.not) { <span class="hljs-comment">//Leave first 3 notes of phrase unchanged</span>
+
+
+                <span class="hljs-keyword">if</span> (~isRandom) {
+                    x = randomSegment.next;
+                } {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>FIXME: check radius</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                    x = getRadius.value(x, ~varFactor);
+                }
+            };
+			~origIndex = i;
+        };
+	    x.yield;
+        i = counter.value;
+    }
+});
+)
+
+
+(
+q.player.setPtn(Pbind(
+    \instrument, \bufSegmentAttackSend,
+    \bufRate, <span class="hljs-number">1</span>,
+    \attackSendAmp, p { |ev| loop { <span class="hljs-number">16.</span>rrand(<span class="hljs-number">24</span>).do { ev = <span class="hljs-number">0.</span><span class="hljs-keyword">yield</span> }; (ev.varFactor &gt; <span class="hljs-number">0.35</span>).asInt.yield } },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>\attackSendAmp, 0,</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    \attackSendBus, Pfunc { ~t.klankBus },
+    \attackStartPos, Pkey(\startPos),</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Go back and forth between orig dur and swing</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    \quantAmt, p({ |ev|
+		<span class="hljs-keyword">var</span> lookup = ~data.lookup.phrase;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Set the base probability to median phrase length
+so that probBase / 0.9 makes a quantize curve happen every phrase
+0.9 is a magic number</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		<span class="hljs-keyword">var</span> prob, probBase = <span class="hljs-number">0.9</span> * lookup.differentiate[<span class="hljs-number">1.</span>.].median.reciprocal;
+		<span class="hljs-keyword">var</span> qcount=<span class="hljs-number">0</span>;
+		loop {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Check that we’re not in the beginning of a phrase
+if not, flip a coin</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>make a sawtooth probability curve,
+starting at zero, going up to 0.9 * probBase,
+and wrapping back to zero roughly 60 onsets before ending</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			prob = probBase * (ev.origIndex / <span class="hljs-number">740</span>).wrap(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>) * <span class="hljs-number">0.9</span>;
+			ev.qprob = prob; <span class="hljs-comment">//For tracingd</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Check for ev.phrase not nil because for some reason it choked on that one time</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			<span class="hljs-keyword">if</span> (ev.isPhraseStart.not and: {  prob.coin } and: { ev.phrase.notNil } ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Calculate number of onsets to next phrase start</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				<span class="hljs-keyword">var</span> len = ~data.lookup.phrase[ev.phrase + <span class="hljs-number">1</span>];
+				<span class="hljs-keyword">var</span> curve = <span class="hljs-number">2.</span>rrand(<span class="hljs-number">8</span>);
+				<span class="hljs-keyword">var</span> minlength = <span class="hljs-number">4</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>We don’t want to start a quantize curve if we’re to close to next phrase</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				<span class="hljs-keyword">if</span> (len.notNil and: { len &gt;= minlength }) {
+					len = len - ev.onset;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Embed envelope in stream
+Handle odd lengths gracefully</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>					qcount = qcount + <span class="hljs-number">1</span>;
+					q.playerui.log(qcount, <span class="hljs-string">"quantized"</span>);
+					Pseg2([<span class="hljs-number">0</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>], Pseq([len + <span class="hljs-number">1</span>, len].div(<span class="hljs-number">2</span>)), Pseq([curve.neg, curve])).embedInStream(ev);
+				};
+
+			};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>0 is the default</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			ev = <span class="hljs-number">0.</span><span class="hljs-keyword">yield</span>;
+
+
+		}
+	}),
+	\dur, Pfunc { |ev|
+        <span class="hljs-keyword">if</span> (ev.isRandom) {
+            ev.dur = ev.dur - <span class="hljs-number">0.05</span>.rand;
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Set quantization</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        (ev.dur * (<span class="hljs-number">1</span> - ev.quantAmt)) + (ev.quantAmt * <span class="hljs-number">0.3</span>) <span class="hljs-comment">//0.3 is less than minimum onset length</span>
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Random frequency shift
+Where 75hz = D1</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	\fqshift, Pxrand((<span class="hljs-number">2.</span><span class="hljs-number">.8</span>) * <span class="hljs-number">-75</span>, inf),
+
+	\sendAmp, p { |ev|
+        <span class="hljs-keyword">var</span> out = <span class="hljs-number">0</span>;
+		<span class="hljs-keyword">var</span> prev = <span class="hljs-number">0</span>;
+		loop {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Shorter notes have greater probability of being frequency shifted</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>			<span class="hljs-keyword">if</span> (ev.isPhraseStart.not and: { q.playerui.log(((<span class="hljs-number">1</span> - ev.dur).max(<span class="hljs-number">0</span>) * <span class="hljs-number">2</span>)).coin } ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Ok, we’re setting freqshift params from here, which probably would be regarded
+as a big hack.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				s.bind { ~t.freqShift.set(\freq, ev.fqshift).set(\delay, prev); };
+				ev = <span class="hljs-number">1.</span><span class="hljs-keyword">yield</span>;
+				<span class="hljs-number">3.</span><span class="hljs-keyword">do</span> { ev = <span class="hljs-number">0.</span><span class="hljs-keyword">yield</span> }
+			} {
+				ev = <span class="hljs-number">0.</span><span class="hljs-keyword">yield</span>;
+			};
+
+			prev = ev.dur;
+
+    	};
+	},
+	\sendAmp, <span class="hljs-number">0</span>,
+    \sendBus, Pfunc { ~t.freqShiftBus },
+    \out, <span class="hljs-number">0</span>,
+    \amp, <span class="hljs-number">1</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>Set synth</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+));
+)
+q.player.play(<span class="hljs-number">0</span>);
+q.player.stop;
+q.playerui.log(<span class="hljs-string">"hello"</span>)
+q.player.data.lookup.phrase.differentiate[<span class="hljs-number">1.</span>.].median.reciprocal
+.div(<span class="hljs-number">3</span>).reciprocal
+q.playerui.log(<span class="hljs-number">3</span>, <span class="hljs-string">"quantized"</span>);</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

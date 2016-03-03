@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>02.scd</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="01.html">
+                01.scd
+              </a>
+            
+              
+              <a class="source" href="02.html">
+                02.scd
+              </a>
+            
+              
+              <a class="source" href="test.html">
+                test.scd
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>02.scd</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(
+"lib/init".import;
+q.player.actionLabels = #[phrase, beat];
+q.player.tickLabel = \phrase;
+q.player.loadData("02");
+q.player2 = q.player.clone;
+q.player2.tickLabel = \beat;
+q.player2.prepareScore;
+q.player2.setPtn(Pbind(\instrument, \tick, \tempo, Pfunc { |ev| ~data.beat[ev.beat][2].postln }, \dur, 1, \type, Pwrand([\note, \rest], [1, 0], inf)));</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>q.player.parPtn = Pbind(\adjustDur, Pfunc { |ev| ev.dur = ev.dur * 0.5}) &lt;&gt; q.player2.asPattern</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>)
+(
+q.playerui = <span class="hljs-string">"lib/protos/score-player-gui"</span>.import;
+q.playerui.connect(q.player)
+)
+q.playerui.free
+(</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Randomizing works a lot of the times, but not when</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.setIterator(Prout({
+    <span class="hljs-keyword">var</span> count = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">var</span> size = ~data.phrase.size;
+    <span class="hljs-keyword">var</span> prob = <span class="hljs-number">1</span>; <span class="hljs-comment">//Random jump probability</span>
+    <span class="hljs-keyword">var</span> nojump = [<span class="hljs-number">0</span>, size<span class="hljs-number">-1</span>]; <span class="hljs-comment">//Indexes to always play</span>
+    <span class="hljs-keyword">while</span> { count &lt; size } {
+        <span class="hljs-keyword">var</span> i = count;
+        <span class="hljs-keyword">if</span> (prob.coin and: { nojump.includes(i).not } ) {
+            <span class="hljs-string">"jump"</span>.postln;
+            i = size.rand;
+        };
+        i.postln.yield;
+        count = count + <span class="hljs-number">1</span>;
+    }
+}));
+q.player.setPtn(Pbind(\fadetime, <span class="hljs-number">0.01</span>, \startPos, Pkey(\startPos) - <span class="hljs-number">0.15</span>))
+)
+
+
+q.player.setIterator(Pif(Pfunc { <span class="hljs-number">0.9</span>.coin }, Pseries(), Pseries()))
+
+Pdefn(\asd, Pif(Pseries(<span class="hljs-number">0</span>, <span class="hljs-number">0.01</span>).coin, Pdefn(\asd), Pseries()))
+
+Pdefn(\asd).iter.nextN(<span class="hljs-number">100000</span>).maxItem
+y = Pbind(\degree, Pdefn(\asd), \dur, <span class="hljs-number">0.1</span>).play
+y.stop
+q.player.trace = <span class="hljs-literal">false</span>;
+q.player.play
+q.playerui.sfView.selection(<span class="hljs-number">0</span>)
+q.player2.stop
+
+q.playerui.sfView.setSelectionColor(<span class="hljs-number">2</span>, Color.fromHexString(<span class="hljs-string">"eeeeee"</span>))
+q.playerui.sfView.setSelection(<span class="hljs-number">2</span>, [<span class="hljs-number">4800000</span>, <span class="hljs-number">441000</span>])
+
+
+q.player.play; q.player2.play
+
+x = { Ringz.ar(In.ar(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>), <span class="hljs-number">504</span>, <span class="hljs-number">2</span>) * <span class="hljs-number">0.002</span> }.play(addAction:\addToTail)
+x.free
+Formlet
+
+x = { SinOsc.ar(<span class="hljs-number">63</span>) * <span class="hljs-number">0.1</span> }.play</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

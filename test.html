@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Some tests</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="01.html">
+                01.scd
+              </a>
+            
+              
+              <a class="source" href="02.html">
+                02.scd
+              </a>
+            
+              
+              <a class="source" href="test.html">
+                test.scd
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h1 id="some-tests">Some tests</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <pre><code>test.scd
+Part <span class="hljs-keyword">of</span> Timmer
+Johannes Burström <span class="hljs-number">2016</span>
+</code></pre>
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <h2 id="initialize">Initialize</h2>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Init, creates q.player and q.playerui</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-string">"lib/init"</span>.import;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>ActionLabels are marker lists from Sonic Visualiser</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.actionLabels = #[onset, region];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>The tick label is the main marker list, used by the player iterator</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.tickLabel.debug(<span class="hljs-string">"Tick label"</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Load data from data/01/*</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.loadData(<span class="hljs-string">"01"</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Extract features
+Make segments with 5 frames from every onset
+and create a KDTree at q.player.kdTree</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.extractFeatures;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Open and connect a UI to our player</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.playerui.connect(q.player)
+)
+(</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <h2 id="patterns">Patterns</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>This sets a pattern used to modify the base player pattern.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.setPtn(Pbind(
+	\amt, Pseg([<span class="hljs-number">0.5</span>, <span class="hljs-number">0</span>], <span class="hljs-number">25</span>, \sin), <span class="hljs-comment">//Pif(Pwhite(hi:0.6).coin, Pwhite(0, 0.35), Pseg([0,0.4,0], 20, \sin, inf)),</span>
+	\dur, Fdef(\changePatternEndTime).(\amt),
+    \out, Pif(Pkey(\dur) &lt; <span class="hljs-number">0.35</span>, Pfunc { ~t.fxbus } , <span class="hljs-number">0</span>)
+));</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Give a pattern to setIterator, which is used to select which tick is to be played</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.setIterator(p { |ev|
+	<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>;
+	<span class="hljs-keyword">var</span> radius = <span class="hljs-number">0.1</span>;
+	loop {
+		i = i + <span class="hljs-number">1</span>;
+		ev = ~data.kdTree.radiusSearch(~data.featureClump[i], radius).choose.label.yield
+	}
+});
+)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <h2 id="callbacks">Callbacks</h2>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>onReady is called when player buffer is loaded, and before playing
+It’s called within a routine, so we can use s.sync, .wait or similar</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.onReady = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Create a bus to use for post fx
+use ~t to make it available to patterns
+and to automatically free it after pattern is done playing</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    ~t.fxbus = Bus.audio(s, <span class="hljs-number">2</span>);
+
+    { <span class="hljs-keyword">var</span> snd = In.ar(~t.fxbus, <span class="hljs-number">2</span>); FreqShift.ar(snd, <span class="hljs-number">-100</span>) }.play(target: ~t.postGroup);
+
+};
+)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>All labels have actions onStart and onStop, with index as args</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.actions.region.onStart = { |...args| args.postln };
+q.player.actions.region.onStop = { |...args| (<span class="hljs-string">"stop"</span> ++ args).postln };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>If a region is changing (directly from one to another),
+we call onChange.value(prevIndex, nextIndex).
+If a region change is not linear, we call onJump.value(prevIndex, nextIndex)</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Like this:</p>
+<ul>
+<li>1, break, 2 =&gt; <code>onStart(1); onStop(1); onStart(2); onStop(2)</code>;</li>
+<li>1, 2 =&gt; like above + <code>onChange(1, 2)</code>;</li>
+<li>1, 3 =&gt; like above (change 2 to 3) + <code>onJump(1, 3)</code>;</li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Play / Stop</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>q.player.play
+q.player.stop</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <h4 id="ui-shortcuts">UI shortcuts</h4>
+<ul>
+<li><code>Space</code>   play/pause</li>
+<li><code>-</code>       zoom in</li>
+<li><code>+</code>       zoom out</li>
+<li><code>s</code>       zoom to current segment</li>
+<li><code>a</code>       zoom to 100%</li>
+<li><code>f</code>       zoom &amp; follow current segment/</li>
+</ul>
+
+            </div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
