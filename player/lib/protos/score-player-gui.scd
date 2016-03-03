@@ -12,6 +12,9 @@ Proto({
         ~buttonContainer.add(~clockLabel);
         ~window = Window("TIMMER", Rect(0, Window.availableBounds.height, Window.availableBounds.width - 450, 500)).layout_(VLayout(~buttonContainer, ~sfView));
 		~statusBox = StatusBox(~window);
+        if (StatusBox.default == ~statusBox) {
+            StatusBox.clearDefault;
+        };
         ~window.background = Color.black;
         ~sfView.background = Color.white;
         ~sfView.gridOn = false;
