@@ -11,6 +11,7 @@ Proto({
         ~clockLabel = StaticText().string_("00:00").stringColor_(Color.white);
         ~buttonContainer.add(~clockLabel);
         ~window = Window("TIMMER", Rect(0, Window.availableBounds.height, Window.availableBounds.width - 450, 500)).layout_(VLayout(~buttonContainer, ~sfView));
+		~statusBox = StatusBox(~window);
         ~window.background = Color.black;
         ~sfView.background = Color.white;
         ~sfView.gridOn = false;
@@ -205,6 +206,17 @@ Proto({
             ~controller.removeDependant(currentEnvironment);
             currentEnvironment.removeDependant(~controller);
         }
-    }
+    };
+
+	~log = { |msg, pre|
+
+		var tick = ~controller.currentEvent !? (_[~controller.tickLabel]) ? 0;
+		if (pre.notNil) {
+			msg = "%: %".format(pre, msg);
+		};
+		{
+			~statusBox.postln("%\t%\t%".format(~clockLabel.string, tick, msg));
+		}.inEnvir.defer;
+	}
 });
 
