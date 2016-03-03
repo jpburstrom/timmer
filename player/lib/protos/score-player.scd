@@ -51,10 +51,17 @@ p = Proto({
 		~modPtn.source_(ptn);
 	};
 
+
+    //TODO: move this to separate file?
 	//TODO: Find good, useful features
 	~features = [Loudness, [MFCC, 10]];
+    //Length (in frames) of feature segments
+    ~featureSegmentLength = 5;
+    //Size of k-nearest neighbour array (== k in k-nearest?)
+    ~knnSize = 6;
 
-	~extractFeatures = {
+    //Extract features, generate KDTree and
+    ~extractFeatures = {
 
         var f, file;
 
@@ -67,13 +74,62 @@ p = Proto({
             f.load(file);
         };
 
-		//Make segments with 5 frames from every onset
-		if (~data.onset.notNil) {
-			f.gatherFeaturesBySegments(~data.onset.collect { arg x; [x[0], x[0] + (44.1/1024*5)] });
+		//Make segments with n frames from every tick
+        if (~data[~tickLabel].notNil) {
+            f.gatherFeaturesBySegments(~data[~tickLabel].collect { arg x; [x[0], x[0] + (44.1/1024*5)] });
 			~data.featureClump = f.featuredata.clump(f.numfeatures).collect { |x, i| x ++ i };
+
+            //For now, we keep this. For later: create a tree only when we need to.
 			~data.kdTree = KDTree(~data.featureClump, lastIsLabel:true);
+
+            file =  (~dataPath +/+ "%-knn-%.archive".format(~tickLabel, ~knnSize));
+            if (File.exists(file).not) {
+                //Poor man's brute-force nearest neighbour search
+                //If this doesn't work maybe `NearestN` ugen could be something
+                //We're forking this process to avoid beachballs (don't know if it works)
+                {
+                    var step = 0.03;
+                    var size = q.player.data.featureClump.size;
+                    var time = Main.elapsedTime;
+                    var neighbours = q.player.data.featureClump.collect({ |point, index|
+                        var radius = 0.16;
+                        var points = [];
+                        //Go on until we have ~knnSize points.
+                        //Default is 6, which means we have 5 points plus current.
+                        while { points.size < (~knnSize) } {
+                            points = q.player.data.kdTree.radiusSearch(point, radius);
+                            radius = radius + step;
+                        };
+                        points = points.collect { |x| [(x.location - point).sum{|x| x * x}, x.label] };
+                        //We include the current point in the array
+                        points = points.sort({ |x,y| x[0] < y[0] })[0..5].flop[1];
+                        if  ((index % 50) == 0) {
+                            "generating neighbours... % of %".format(index, size).postln;
+                            (Main.elapsedTime - time + 0.05).wait;
+                            time = Main.elapsedTime;
+                        };
+                        points;
+
+                    });
+                    "Done generating neighbours".postln;
+                    neighbours.writeArchive(file);
+
+                    ~data.knn = neighbours;
+
+                }.inEnvir.fork;
+            } {
+
+                ~data.knn = Object.readArchive(file);
+
+            };
 		};
 	};
+
+    //Get a neighbour index from the `~data.knn` array,
+    //where 0 is the same index.
+    ~getknn = { |index, distance=0|
+        ~data.knn[index][distance.clip(0, ~knnSize - 1)]
+    };
 
     //Load data from song label
     //song is folder in dataBasePath,
