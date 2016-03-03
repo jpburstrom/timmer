@@ -1,3 +1,12 @@
+//# Some tests ###
+
+//```
+//test.scd
+//Part of Timmer
+//Johannes Burström 2016
+//```
+
+//## Initialize ###
 (
 //Init, creates q.player and q.playerui
 "lib/init".import;
@@ -21,7 +30,8 @@ q.player.extractFeatures;
 q.playerui.connect(q.player)
 )
 (
-//-----Patterns----------
+
+//## Patterns #######
 
 //This sets a pattern used to modify the base player pattern.
 q.player.setPtn(Pbind(
@@ -40,7 +50,7 @@ q.player.setIterator(p { |ev|
 });
 )
 
-//------Callbacks------------
+//## Callbacks ####
 (
 //onReady is called when player buffer is loaded, and before playing
 //It's called within a routine, so we can use s.sync, .wait or similar
@@ -62,12 +72,10 @@ q.player.actions.region.onStop = { |...args| ("stop" ++ args).postln };
 //we call onChange.value(prevIndex, nextIndex).
 //If a region change is not linear, we call onJump.value(prevIndex, nextIndex)
 
-//like this:
-//1, break, 2 => onStart(1); onStop(1); onStart(2); onStop(2);
-//1, 2 => like above + onChange(1, 2);
-//1, 3 => like above (change 2 to 3) + onJump(1, 3);
-
-
+//Like this:
+//* 1, break, 2 => `onStart(1); onStop(1); onStart(2); onStop(2)`;
+//* 1, 2 => like above + `onChange(1, 2)`;
+//* 1, 3 => like above (change 2 to 3) + `onJump(1, 3)`;
 
 )
 
@@ -75,12 +83,11 @@ q.player.actions.region.onStop = { |...args| ("stop" ++ args).postln };
 q.player.play
 q.player.stop
 
-/*
-UI shortcuts:
-Space   play/pause
--       zoom in
-+       zoom out
-s       zoom to current segment
-a       zoom to 100%
-f       zoom & follow current segment
-*/
+
+//#### UI shortcuts
+//* `Space`   play/pause
+//* `-`       zoom in
+//* `+`       zoom out
+//* `s`       zoom to current segment
+//* `a`       zoom to 100%
+//* `f`       zoom & follow current segment/

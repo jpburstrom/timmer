@@ -9,8 +9,9 @@ q.playerui.connect(q.player);
 )
 
 //TODO:
+//Parallel freqshifted track, with similar but different onsets
 //Check radius
-//Check fqshift (multiple of phrase drone freq?)
+
 //quantAmt lag (interpolate)
 //Room/rev
 //~6.30: Work with shorter durations
@@ -35,7 +36,7 @@ q.player.onReady = {
     }.play(target: ~t.postGroup);
 
     ~t.freqShift = {
-        HPF.ar(FreqShiftAA.ar(In.ar(~t.freqShiftBus, 2), \freq.kr(-100, 0.05)), 60);
+		DelayC.ar(HPF.ar(FreqShiftAA.ar(In.ar(~t.freqShiftBus, 2), \freq.kr(-100, 0.05)), 60), 0.5, \delay.kr(0.1));
     }.play(target: ~t.postGroup);
 
 
@@ -50,7 +51,7 @@ q.player.setIterator(p {
         (i >= phrase) and: { (i - phrase) <= length };
 
     }.inEnvir;
-	var allowedSegments = ~data.onset.selectIndices( { |x| x[1] > 0.6 and: { x[1] < 1.0 } });
+	var allowedSegments = ~data.onset.selectIndices( { |x| x[1] < 0.4 or: { x[1] > 1.0 and: { x[1] < 2 }} });
     var randomSegment = Plazy({Pxrand(allowedSegments.scramble[..5], inf)}).asStream;
     var prevVarFactor = 0;
     var getRadius = { |index, varFactor|
@@ -129,17 +130,7 @@ q.player.setPtn(Pbind(
     \attackSendAmp, p { |ev| loop { 16.rrand(24).do { ev = 0.yield }; (ev.varFactor > 0.35).asInt.yield } },
     // \attackSendAmp, 0,
     \attackSendBus, Pfunc { ~t.klankBus },
-    \sendAmp, Pfunc { |ev|
-        var out = 0;
-        if (ev.isPhraseStart.not and: { 0.1.coin } ) {
-            out = 1;
-        };
-        out
-    },
-    \sendBus, Pfunc { ~t.freqShiftBus },
     \attackStartPos, Pkey(\startPos),
-    \out, 0,
-    \amp, 1 - Pkey(\sendAmp),
     //Go back and forth between orig dur and swing
     \quantAmt, p({ |ev|
 		var lookup = ~data.lookup.phrase;
@@ -190,15 +181,35 @@ q.player.setPtn(Pbind(
         (ev.dur * (1 - ev.quantAmt)) + (ev.quantAmt * 0.3) //0.3 is less than minimum onset length
     },
 
-    //---Randomly shift frequency---
-    \fqshift, Pwrand([0, Pwhite(0, -40, 1)], [0.27, 0.83], inf),
+    //Random frequency shift
+	//Where 75hz = D1
+	\fqshift, Pxrand((2..8) * -75, inf),
+
+	\sendAmp, p { |ev|
+        var out = 0;
+		var prev = 0;
+		loop {
+
+			//Shorter notes have greater probability of being frequency shifted
+			if (ev.isPhraseStart.not and: { q.playerui.log(((1 - ev.dur).max(0) * 2)).coin } ) {
+				//Ok, we're setting freqshift params from here, which probably would be regarded
+				//as a big hack.
+				s.bind { ~t.freqShift.set(\freq, ev.fqshift).set(\delay, prev); };
+				ev = 1.yield;
+				3.do { ev = 0.yield }
+			} {
+				ev = 0.yield;
+			};
+
+			prev = ev.dur;
+
+    	};
+	},
+	\sendAmp, 0,
+    \sendBus, Pfunc { ~t.freqShiftBus },
+    \out, 0,
+    \amp, 1,
     //Set synth
-    \dummy, Pfunc { |ev|
-        //FIXME: this causes late messages when fast-forwarding
-        //And is a hack anyway
-        s.bind { ~t.freqShift.set(\freq, ev.fqshift); };
-        0
-    }
 
 ));
 )
@@ -209,9 +220,4 @@ q.player.data.lookup.phrase.differentiate[1..].median.reciprocal
 .div(3).reciprocal
 q.playerui.log(3, "quantized");
 
-
-
-Pbind(\dur, Pxrand(q.player.data.onset.flop[1].select( { |x| x > 0.6 and: { x < 1.0 } }).scramble.keep(5), inf)).play;
-
-q.player.data.onset.flop[1].select( { |x| x > 0.6 and: { x < 1.0 } }).scramble.keep(5)
 
