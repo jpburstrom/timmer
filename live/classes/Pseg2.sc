@@ -26,14 +26,14 @@ Pseg2 : Pstep {
 				if (startVal.isArray) {
 					env = [startVal,val, dur, curve].flop.collect { | args |
 						Env([args[0], args[1]], [args[2]], args[3]) };
-					while { i <= env.duration } {
+					while { i < env.duration } {
 
 						inval = yield(env.collect{ | e | e.at(i)});
                         i = i + 1;
 					}
 				} {
                     env = Env([startVal, val], [dur], curve);
-					while { i <= env.duration } {
+					while { i < env.duration } {
 						inval = yield(env.at(i));
                         i = i + 1;
 					};
