@@ -209,7 +209,7 @@ Proto({
     };
 
 	~log = { |msg, pre|
-
+		var val = msg;
 		var tick = ~controller.currentEvent !? (_[~controller.tickLabel]) ? 0;
 		if (pre.notNil) {
 			msg = "%: %".format(pre, msg);
@@ -217,6 +217,9 @@ Proto({
 		{
 			~statusBox.postln("%\t%\t%".format(~clockLabel.string, tick, msg));
 		}.inEnvir.defer;
+
+		//Return value for chaining
+		val
 	}
 });
 
