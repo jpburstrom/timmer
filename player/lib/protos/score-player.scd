@@ -82,8 +82,7 @@ p = Proto({
             //For now, we keep this. For later: create a tree only when we need to.
 			~data.kdTree = KDTree(~data.featureClump, lastIsLabel:true);
 
-            file =  (~dataPath +/+ "%-knn-%.archive".format(~tickLabel, ~knnSize));
-            if (File.exists(file).not) {
+            ~data.knn = ~readDataFile.value("%-knn-%.archive".format(~tickLabel, ~knnSize), { |path|
                 //Poor man's brute-force nearest neighbour search
                 //If this doesn't work maybe `NearestN` ugen could be something
                 //We're forking this process to avoid beachballs (don't know if it works)
@@ -112,23 +111,32 @@ p = Proto({
 
                     });
                     "Done generating neighbours".postln;
-                    neighbours.writeArchive(file);
+                    neighbours.writeArchive(path);
 
                     ~data.knn = neighbours;
 
                 }.inEnvir.fork;
-            } {
 
-                ~data.knn = Object.readArchive(file);
-
-            };
-		};
-	};
+                //Returning nil, since we need to set ~data.knn after running fork
+                nil
+            });
+        };
+    };
 
     //Get a neighbour index from the `~data.knn` array,
     //where 0 is the same index.
     ~getknn = { |index, distance=0|
         ~data.knn[index][distance.clip(0, ~knnSize - 1)]
+    };
+
+    //Read data file from filename (relative to ~datapath).
+    //If file doesn't exist, run func with full path as argument.
+    //Return object/result of func
+    ~readDataFile = { |relpath, func|
+        relpath = ~dataPath +/+ relpath;
+        if (File.exists(relpath), {
+            Object.readArchive(relpath);
+        }, { func.value(relpath) });
     };
 
     //Load data from song label
