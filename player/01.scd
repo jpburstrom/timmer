@@ -3,9 +3,9 @@ s.latency = 0.5;
 "lib/init".import;
 q.player.actionLabels = #[onset, phrase];
 q.player.loadData("01");
-q.player.extractFeatures;
 //Connect UI to player
 q.playerui.connect(q.player);
+q.player.extractFeatures;
 )
 
 //TODO:
@@ -15,9 +15,6 @@ q.playerui.connect(q.player);
 //quantAmt lag (interpolate)
 //Room/rev
 //~6.30: Work with shorter durations
-
-
-
 (
 q.player.onReady = {
 
@@ -36,7 +33,7 @@ q.player.onReady = {
     }.play(target: ~t.postGroup);
 
     ~t.freqShift = {
-		DelayC.ar(HPF.ar(FreqShiftAA.ar(In.ar(~t.freqShiftBus, 2), \freq.kr(-100, 0.05)), 60), 0.5, \delay.kr(0.1));
+		FreqShiftAA.ar(In.ar(~t.freqShiftBus, 2), \freq.kr(-100, 0.05));
     }.play(target: ~t.postGroup);
 
 
@@ -51,19 +48,16 @@ q.player.setIterator(p {
         (i >= phrase) and: { (i - phrase) <= length };
 
     }.inEnvir;
-	var allowedSegments = ~data.onset.selectIndices( { |x| x[1] < 0.4 or: { x[1] > 1.0 and: { x[1] < 2 }} });
+    var getknn = { |index, varFactor|
+        //We offset varFactor with 0.9999 and multiply with number of knn items
+        //so that even a very small varFactor will switch to closest neighbour
+        varFactor = ((~knnSize * varFactor) + 0.9999).floor;
+        index = ~getknn.value(index, varFactor);
+    }.inEnvir;
+
+    var allowedSegments = ~data.onset.selectIndices( { |x| x[1] < 0.4 or: { x[1] > 1.0 and: { x[1] < 2 }} });
     var randomSegment = Plazy({Pxrand(allowedSegments.scramble[..5], inf)}).asStream;
     var prevVarFactor = 0;
-    var getRadius = { |index, varFactor|
-        //Convert varFactor to usable radius
-        var items, clump;
-        varFactor = varFactor.rand;
-        if ((clump = ~data.featureClump[index]).notNil) {
-            items = ~data.kdTree.radiusSearch(clump, (varFactor * 0.15) + 0.05);
-            index = items.choose.label;
-        };
-        index
-    }.inEnvir;
     var currentPhrase;
 
 	//`counter` is a stream that advances up to `repeatStart + 20.rrand(40)`, then goes back to `repeatStart`
@@ -110,18 +104,21 @@ q.player.setIterator(p {
                 if (~isRandom) {
                     x = randomSegment.next;
                 } {
-                    //FIXME: check radius
-                    x = getRadius.value(x, ~varFactor);
+                    //Get neighbour. A random number from 0 to ~varFactor is selecting the
+                    //n closest neighbour (where ~varFactor is a float from 0-1).
+                    //FIXME: too much random
+                    x = getknn.value(x, ~varFactor.cubed.rand);
+                    // x = i;
                 }
             };
 			~origIndex = i;
+            //Return an array with two
         };
 	    x.yield;
         i = counter.value;
     }
 });
 )
-
 
 (
 q.player.setPtn(Pbind(
@@ -183,7 +180,7 @@ q.player.setPtn(Pbind(
 
     //Random frequency shift
 	//Where 75hz = D1
-	\fqshift, Pxrand((2..8) * -75, inf),
+	\fqshift, Pxrand((5..8) * -75, inf),
 
 	\sendAmp, p { |ev|
         var out = 0;
@@ -205,11 +202,20 @@ q.player.setPtn(Pbind(
 
     	};
 	},
-	\sendAmp, 0,
+    \sendAmp, Ptuple([0, Pbrown(-36, 0, 0.2).dbamp], inf),
     \sendBus, Pfunc { ~t.freqShiftBus },
     \out, 0,
-    \amp, 1,
-    //Set synth
+    \amp, [1, 0],
+    \startPos, Pfunc { |ev|
+
+        x = ~getknn.value(ev.onset, 1.rrand(5));
+        x = ~data.onset[x];
+        ev.sustain = [ev.dur, x[1]];
+        //return startPos
+        [ev.startPos, x[0] - 0.02];
+    },
+    \lag, [0.035, 0.0],
+    \fadetime, [0.002, 0.01]
 
 ));
 )
@@ -221,3 +227,8 @@ q.player.data.lookup.phrase.differentiate[1..].median.reciprocal
 q.playerui.log(3, "quantized");
 
 
+(
+q.player.reset;
+//0.10868133000076
+{800.do{ q.player.next(()) }}.bench;
+)
