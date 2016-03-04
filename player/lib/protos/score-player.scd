@@ -329,7 +329,9 @@ p = Proto({
                     s.sync;
                     ~readyForPlay = true;
                     ~onReady.value;
-                    ~streamPlayer = ~asPattern.value.ffwd2(startEvent).play;
+					// + 1 because of empty event in the beginning
+					//Maybe better to calculate duration of startEvent and use ffwd instead?
+                    ~streamPlayer = ~asPattern.value.ffwd2(startEvent + 1).play;
                     currentEnvironment.changed(\state, \playing, startPos);
                 }.inEnvir.fork;
             }
@@ -381,6 +383,8 @@ p = Proto({
 			     ~stop.value;
 				~reset.value;
         	};
+			//This is flaky, only really works for linear patterns
+			//It would be good to have a fastForwardUntilWeReach function
 			currentEnvironment[\play].value(segment);
 
         }
