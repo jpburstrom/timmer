@@ -348,6 +348,7 @@ p = Proto({
 
     ~stop = {
         ~streamPlayer.stop;
+        ~currentEvent.free; //Free currently playing synth
 		//TODO reset after finished playing
         ~streamPlayer.reset;
         currentEnvironment.changed(\state, \stopped);
