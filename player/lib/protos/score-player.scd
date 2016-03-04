@@ -376,10 +376,13 @@ p = Proto({
             //reset function
             sp.seq(Event.silent(0, (addToCleanup: reset)));
             sp.par(~parPtn);
-			sp.seq(Pchain(~modPtn, Prout(e { |ev| loop { ev = ~next.value(ev).yield }})));
+			sp.seq(Pchain(
+                ~modPtn,
+                Prout(e { |ev| loop { ev = ~next.value(ev).yield }})
+            ).collect({ |ev| ~currentEvent = ev }));
 
 
-        }.inEnvir).collect({ |ev| ~currentEvent = ev });
+        }.inEnvir);
     };
 
     ~update = { |obj, what ... args|
