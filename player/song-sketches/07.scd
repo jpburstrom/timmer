@@ -1,6 +1,6 @@
 ~buf = Buffer.read(s,"/Users/johannes/projects/timmer/kod/player/songs/07-Drone maskin 1 ___-44100.wav" );
 
-
+s.boot
 ~midside ={ arg input, scale = -3;   [input[0] + input[1], input[0] - input[1]] * scale.dbamp };
 (
 x = Ndef(\FreqshiftThing_10, {
@@ -17,7 +17,7 @@ x = Ndef(\FreqshiftThing_10, {
 	~midside.value(snd).reverse;
 
 	// DC.ar
-}).play.record("/tmp/06-1.wav", "wav", "int24", 2)
+}).play
 )
 
 x.record

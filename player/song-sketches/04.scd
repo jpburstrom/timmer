@@ -1,4 +1,4 @@
-~buf4 = Buffer.read(s, "/Volumes/HD2/projects/timmer-2015/render/04-Qin 2 __-44100.wav");
+~buf4 = Buffer.read(s, "../songs/04-Qin 2 __-44100.wav".resolveRelative);
 
 (
 Ndef(\fqShiftTest, {
@@ -16,7 +16,7 @@ Ndef(\fqShiftTest, {
     snd = DelayN.ar(snd, 0.1, 512 / SampleRate.ir);
 
     //Random freq shift per onset
-    // snd = LinXFade2.ar(snd, -1 * FreqShiftAA.ar(snd, randFreq), EnvGen.ar(Env([-1, -1, 1], [0.02, 0.05]), trig).lag(0.02));
+    snd = LinXFade2.ar(snd, -1 * FreqShiftAA.ar(snd, randFreq), EnvGen.ar(Env([-1, -1, 1], [0.02, 0.05]), trig).lag(0.02));
 
 }).play
 )
