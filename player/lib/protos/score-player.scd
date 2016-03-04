@@ -82,7 +82,7 @@ p = Proto({
             //For now, we keep this. For later: create a tree only when we need to.
 			~data.kdTree = KDTree(~data.featureClump, lastIsLabel:true);
 
-            ~data.knn = ~readDataFile.value("%-knn-%.archive".format(~tickLabel, ~knnSize), { |path|
+            ~data.knn = ~readDataFile.("%-knn-%".format(~tickLabel, ~knnSize), { |writeFunc|
                 //Poor man's brute-force nearest neighbour search
                 //If this doesn't work maybe `NearestN` ugen could be something
                 //We're forking this process to avoid beachballs (don't know if it works)
@@ -111,7 +111,7 @@ p = Proto({
 
                     });
                     "Done generating neighbours".postln;
-                    neighbours.writeArchive(path);
+                    writeFunc.(neighbours);
 
                     ~data.knn = neighbours;
 
@@ -132,11 +132,34 @@ p = Proto({
     //Read data file from filename (relative to ~datapath).
     //If file doesn't exist, run func with full path as argument.
     //Return object/result of func
-    ~readDataFile = { |relpath, func|
-        relpath = ~dataPath +/+ relpath;
-        if (File.exists(relpath), {
+    ~readDataFile = { |relpath, missingFunc|
+        var writeFunc;
+        relpath = ~dataPath +/+ relpath ++ ".archive";
+        writeFunc = { |obj| obj.writeArchive(relpath) };
+        if (File.exists(relpath)) {
             Object.readArchive(relpath);
-        }, { func.value(relpath) });
+        } {
+            //Ok, this is too smart: pass a write function to the callback
+            missingFunc.(writeFunc);
+        };
+    };
+
+    //Write data file
+    //Pass an object to write, a relative path, and a function to call when file exists.
+    //The function is passed a writeFunc as only argument, which can be used to write the file
+    //from the callback
+    ~writeDataFile = { |obj, relpath, existsFunc|
+        var writeFunc;
+        relpath = ~dataPath +/+ relpath ++ ".archive";
+        writeFunc = { obj.writeArchive(relpath) };
+        if (File.exists(relpath)) {
+            //Since file exists, we maybe want to confirm or something before
+            //writing, so we pass a writeFunc to the callback
+            existsFunc.value(writeFunc);
+        } {
+            //If file doesn't exist, just go ahead and write
+            writeFunc.();
+        }
     };
 
     //Load data from song label
