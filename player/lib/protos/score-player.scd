@@ -384,6 +384,10 @@ p = Proto({
         } {
             if (~streamPlayer.isPlaying) {
                 ~streamPlayer.pause;
+                ~currentEvent.free;
+                //Set ~nextPos to current position. Seems more logical to restart
+                //on current segment.
+                ~nextPos = ~prevPos;
                 currentEnvironment.changed(\state, \paused);
 
             } {
