@@ -35,7 +35,7 @@ p = Proto({
     ~streamPlayer = nil;
 
     //Event things
-    ~protoEvent = (instrument:\bufSegment, db: 0);
+    ~protoEvent = (instrument:\bufSegment, db: 0, group: { ~t.mainGroup.nodeID }.inEnvir );
 
     //Dictionary of key => pattern to modify ~nextEvent with
 	~modPtn = EventPatternProxy(Pbind());
@@ -327,7 +327,7 @@ p = Proto({
 
     ~reset = {
 		var buf, waitTime=0;
-        ~currentEvent !? { waitTime = ~currentEvent.dur };
+        // ~currentEvent !? { waitTime = ~currentEvent.dur };
 		"reset".debug;
         ~nextPos = nil;
         ~iteratorStream.reset;
@@ -338,10 +338,13 @@ p = Proto({
         ~t.do(_.free);
 
         buf = ~protoEvent[\bufnum];
+        buf.free;
+        /*
 		fork {
 			waitTime.wait;
 			buf.free;
 		};
+        */
 			//~bufnum.postln;
         ~readyForPlay = false;
     };
@@ -362,7 +365,7 @@ p = Proto({
                     ~onReady.value;
 					// + 1 because of empty event in the beginning
 					//Maybe better to calculate duration of startEvent and use ffwd instead?
-                    ~streamPlayer = ~asPattern.value.ffwd2(startEvent + 1).play;
+                    ~streamPlayer = ~asPattern.value.ffwd2(startEvent).play;
                     currentEnvironment.changed(\state, \playing, startPos);
                 }.inEnvir.fork;
             }
@@ -371,9 +374,9 @@ p = Proto({
 
     ~stop = {
         ~streamPlayer.stop;
-        ~currentEvent.free; //Free currently playing synth
-		//TODO reset after finished playing
-        ~streamPlayer.reset;
+      //TODO reset after finished playing
+        // ~streamPlayer.reset;
+        // ~currentEvent.free; //Free currently playing synth
         currentEnvironment.changed(\state, \stopped);
     };
 
@@ -402,14 +405,14 @@ p = Proto({
         Pspawner({ arg sp;
             ~spawner = sp;
             //reset function
-            sp.seq(Event.silent(0, (addToCleanup: reset)));
+            sp.par(Event.silent(inf, (addToCleanup: reset)));
             sp.par(~parPtn);
-			sp.seq(Pchain(
+            sp.seq(Pchain(
                 ~modPtn,
                 Prout(e { |ev| loop { ev = ~next.value(ev).yield }})
             ).collect({ |ev| ~currentEvent = ev }));
-
-
+            //TODO: maybe add wait before suspending?
+            sp.suspendAll; //Hack, otherwise stream will never reset when ending by itself
         }.inEnvir);
     };
 
