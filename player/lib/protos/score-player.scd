@@ -35,7 +35,7 @@ p = Proto({
     ~streamPlayer = nil;
 
     //Event things
-    ~protoEvent = (instrument:\bufSegment);
+    ~protoEvent = (instrument:\bufSegment, db: 0);
 
     //Dictionary of key => pattern to modify ~nextEvent with
 	~modPtn = EventPatternProxy(Pbind());
