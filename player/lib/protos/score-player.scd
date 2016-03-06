@@ -11,6 +11,7 @@ p = Proto({
 
     ~readyForPlay = false;
 
+
     //dictionary of per-label functions
     ~actions = ();
     //an ordered list of marker labels
@@ -335,7 +336,15 @@ p = Proto({
 		~nextEvent = nil;
         ~prevEvent = nil;
 
-        ~t.do(_.free);
+
+        ~t.do({ |thing|
+            //Free everything that's not a node, or doesn't have a parent group in ~t
+            if (thing.respondsTo(\group).not or: {~t.includes(thing.group).not }) {
+                thing.free
+            }
+        });
+
+        ~t = nil;
 
         buf = ~protoEvent[\bufnum];
         buf.free;
@@ -347,6 +356,7 @@ p = Proto({
         */
 			//~bufnum.postln;
         ~readyForPlay = false;
+
     };
 
     ~play = { |startEvent=0|
@@ -354,6 +364,9 @@ p = Proto({
             if (~streamPlayer.isPlaying.not) {
                 var startPos = ~data[~tickLabel][startEvent][0];
                 {
+                    if (~readyForPlay) {
+                        ~reset.value;
+                    };
                     ~t = (); //A holder of temporary items
                     ~prepareScore.value;
                     ~t.preGroup = Group();
@@ -362,6 +375,7 @@ p = Proto({
                     ~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
                     s.sync;
                     ~readyForPlay = true;
+
                     ~onReady.value;
 					// + 1 because of empty event in the beginning
 					//Maybe better to calculate duration of startEvent and use ffwd instead?
@@ -420,14 +434,15 @@ p = Proto({
 
         if (what == \position) {
             var segment = ~data[~tickLabel].flop[0].select({ |x| x < args[0] }).size - 1;
-
             if (~streamPlayer.isPlaying) {
-			     ~stop.value;
-				~reset.value;
-        	};
-			//This is flaky, only really works for linear patterns
-			//It would be good to have a fastForwardUntilWeReach function
-			currentEnvironment[\play].value(segment);
+                 ~stop.value;
+                fork {
+                    0.3.wait;
+                    ~play.value(segment);
+                };
+	    	} {
+                ~play.value(segment);
+            }
 
         }
     };
