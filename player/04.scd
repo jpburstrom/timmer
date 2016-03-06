@@ -25,7 +25,6 @@ q.markov.train;
 q.player.play
 q.player.currentEvent
 q.player.stop;
-
 (
 //## Patterns #######
 
