@@ -36,7 +36,7 @@ Fdef(\stereo2ms, { arg input, scale = -3;
 
 Fdef(\ms2stereo, {arg mid, side, scale = -3;
     [mid - side, mid + side] * scale.dbamp;
-})
+});
 
 Fdef(\checkBad, { arg in1, id=0;
 	Select.ar(CheckBadValues.ar(in1, id, 0), [in1, DC.ar(0), DC.ar(0), in1]);
