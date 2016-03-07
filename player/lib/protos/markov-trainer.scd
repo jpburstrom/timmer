@@ -39,6 +39,8 @@ Proto({
 		var cond = Condition();
         var dirty = false;
 
+		var tmpfile = PathName.tmp +/+ "mktrain%.archive".format(Date.getDate.stamp);
+
         var writeFile = {
             ~player.writeDataFile(~chain, ~getFilename.(), { |writeFunc|
                 //After auditioning, maybe do it again?
@@ -63,6 +65,8 @@ Proto({
 
         {
 
+			"Writing temporary backup data to %".format(tmpfile).inform;
+
             //If we've chosen not to continue, or if all ~chain slots are filled,
             //stop the operation.
             while { continue and: { ~chain.collectAs({ |x| x[0].size },
@@ -85,6 +89,7 @@ Proto({
 							~chain[from][0].add(to);
 							~chain[from][1].add(val);
 							~player.stop;
+							~chain.writeArchive(tmpfile);
                             dirty = true;
 							cond.unhang;
 						}.inEnvir);
@@ -120,9 +125,11 @@ Proto({
         }.inEnvir.fork(AppClock)
 
 	};
+	Windo
 
 	~displaySlider = { |from, to, cb|
-        var w = Window("% -> %".format(from, to), Rect(0, 0, 200, 400)).layout_(HLayout());
+
+		var w = Window("% -> %".format(from, to), Rect(0, 0, 200, 400).center_( Window.availableBounds.center )).layout_(HLayout());
         var sl = Slider(w).action_({ |sl|
             w.close;
             cb.value(sl.value);
@@ -149,4 +156,3 @@ Proto({
 ~markovMaker.train
 ~markovMaker.markovSet
 */
-MarkovSet
