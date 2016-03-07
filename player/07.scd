@@ -28,11 +28,13 @@ q.playerui.connect(q.player)
 //This sets a pattern used to modify the base player pattern.
 q.player.setPtn(Pbind());
 
+q.player.setIterator(Pn(q.player.data.phrase.size - 1, 1))
+
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(
     Plazy({
         var part = ~data.lookup.part;
-        var repeatFirst = 6; //3.rrand(6);
+        var repeatFirst = inf; //3.rrand(6);
         Pseq([
             0,
             Pxrand(Array.series(part[1]-1, 1), repeatFirst),
