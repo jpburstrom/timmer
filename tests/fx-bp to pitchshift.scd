@@ -2,7 +2,7 @@
 
 ~buf = Buffer.read(s, "/Users/johannes/projects/timmer/kod/player/songs/07-Drone maskin 1 ___-44100.wav");
 ~buf = Buffer.read(s, "/Users/johannes/projects/timmer/kod/player/songs/10-Bivax 2 ___-44100.wav");
-
+NdefMixer(s)
 
 ~midside ={ arg input, scale = -3;   [input[0] + input[1], input[0] - input[1]] * scale.dbamp };
 (
@@ -28,9 +28,9 @@ Ndef(\combTest, {
 	bp = bp.sum;
 
 	//idea: randomly change volume of side channel (change 3
-	snd[1] = (snd[1] * LFNoise2.kr(0.1).exprange(1,2));
+	// snd[1] = (snd[1] * LFNoise2.kr(0.1).exprange(1,2));
 
-	snd[1] = snd[1] + bp;
+	// snd[1] = snd[1] + bp;
 
 	//This is good -- frequency shift side part
 	//match frequency with audio (in this case (01) a lot of D)
@@ -41,12 +41,11 @@ Ndef(\combTest, {
 
 
 	//Remove mid
-	// snd[0] = DC.ar;
+	//snd[0] = DC.ar;
 
 	~midside.value(snd).reverse;
 
 	// DC.ar
 }).play
 )
-
-"f2".namecps
+LinSelectX
