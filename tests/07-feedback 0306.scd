@@ -18,13 +18,13 @@ Ndef(\fbtest, {
 Ndef(\fbtest2, {
     var snd, amp, in1, in2;
 	// var mid, side;
-    var freq = \freq.kr(99) * [1,3,4.8,5.5,6];
+    var freq = \freq.kr(99) * [0.5,1,3,4.8,5,7].scramble;
     // var freq = \freq.kr(99) * [0.5, 1, 3];
 
     //Allpass durs
     var comblen = 8.collect(_.nthPrime.reciprocal);
     //Reciprocal of freq
-	var delay1 = freq.reciprocal - ControlDur.ir;
+    var delay1 = (freq.reciprocal - ControlDur.ir).max(0);
 
 
 
