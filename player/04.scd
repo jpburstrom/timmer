@@ -14,15 +14,10 @@ q.markov.connect(q.player);
 q.markov.initChain;
 )
 
-(
-//## Train our markov chain ##
-//TODO: more training
-q.markov.train;
+q.markov.chain.collectAs({ |x| var index = x[0].indexOf(32); index !? { x[1][index] }  }, Array).reject(_.isNil)
+nil ?? 2
 
-)
-2
-
-q.player.play
+q.player.playSegment(32)
 q.player.currentEvent
 q.player.stop;
 (
@@ -30,7 +25,20 @@ q.player.stop;
 
 //This sets a pattern used to modify the base player pattern.
 q.player.setPtn(Pbind(
-	\amp, 1
+	\hello, Pfunc { |ev|
+		if (ev.part == 2) {
+			var rep;
+			//Make phrase more distant for every repeat
+			if ((rep = ~t.repeats[ev.phrase]) > 1) {
+				rep.debug("Distance");
+				ev.instrument = \bufSegmentMS;
+				ev.midAmp = ((rep - 1) * -6).dbamp;
+				ev.sideAmp = ((rep - 1) * 1.5).dbamp;
+
+			}
+		};
+		0;
+	}
 ));
 
 //Give a pattern to setIterator, which is used to select which tick is to be played
@@ -47,16 +55,18 @@ q.player.setIterator(
 			Pseries(part[1], 1, part[2]-part[1]),
 			//TODO: How long will this go on? How should we transition?
             Pfin((part[3] - part[2]) + 1, p {
-                var x=part[2];
-                loop {
-                    x.yield;
+				var x=part[2].rrand(part[3]-1);
+				~t.repeats = (part[2]..part[3]).collectAs(_->0, Event);
+				loop {
+					~t.repeats[x] = ~t.repeats[x] + 1;
+				    x.yield;
                     x = mk.next(x);
                 }
             }),
 			//Part 3 is random, and plays at least n-1 phrases
 			Pseq((part[3] .. ~data.phrase.size - 2).scramble),
-            //FIXME: last phrase is looping. why?
-			Pif(Pfunc{ 0.5.coin }, q.player.data.phrase.size - 1, nil)
+            //If last phrase is not the next-to-last in the song, go on with the very last phrase
+			Pif(Pfuncn({ ~currentEvent.phrase != 46 }), q.player.data.phrase.size - 1, nil)
 
 
 		]);

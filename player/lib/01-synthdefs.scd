@@ -10,6 +10,8 @@ Spec.add(\attackStartPos, \startPos);
 Spec.add(\legato, [0.001, 10, \exp]);
 Spec.add(\out, \audiobus);
 Spec.add(\sendAmp, \amp);
+Spec.add(\midAmp, \amp);
+Spec.add(\sideAmp, \amp);
 
 //--pattern-specific specs--//
 Spec.add(\quantAmt, \unipolar);
@@ -26,6 +28,17 @@ SynthDef(\bufSegment, { |out(0), bufnum(0), startPos(0), sustain(1)|
     OffsetOut.ar(out, snd * \amp.kr(1));
 }).add;
 
+//A bufSegment with mid/side volume control
+SynthDef(\bufSegmentMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+	var fadetime = \fadetime.kr(defaultFadeTime);
+    var snd, mid, side;
+    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+    snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
+	#mid, side = Fdef(\stereo2ms).value(snd);
+	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
+    OffsetOut.ar(out, snd * \amp.kr(1));
+}).add;
 
 //Segment player with separate attack and sustain startPos's
 SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, bufRate=1, varFactor=0|
