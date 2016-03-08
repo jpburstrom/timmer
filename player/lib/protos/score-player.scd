@@ -447,6 +447,12 @@ p = Proto({
         }
     };
 
+	//Play single segment (for debugging)
+	~playSegment = { |seg = 0|
+		~nextPos = seg;
+		~next.(()).make({ ~group = nil }).play;
+	};
+
     //Set next position
     //Tries to be close enough when using random patterns as iteratorPattern
     ~setNextPos = { |target|
