@@ -63,9 +63,11 @@ Proto({
             ~initChain.value;
         };
 
+
         {
 
 			"Writing temporary backup data to %".format(tmpfile).inform;
+			"% items left".format((order.size - q.markov.chain.collect { |x| x[0].size }.sum)).inform;
 
             //If we've chosen not to continue, or if all ~chain slots are filled,
             //stop the operation.
@@ -75,25 +77,31 @@ Proto({
                 order = order.scramble; //Randomize order for fun
 				toChoose = order.rotate(order.size - 1);
 
-                order.scramble.do { |from, index|
+                order.do { |from, index|
 					var to;
 					index = index % toChoose.size;
 					if (~chain[from][0].size < (order.size - 1)) {
-						while { ~chain[from][0].includes(toChoose[index]) or: { from == toChoose[index] } } {
+						var test = 0;
+						while { (~chain[from][0].includes(toChoose[index]) or: { from == toChoose[index] }) and: { test <= toChoose.size } } {
+							test = test + 1;
 							index = (index + 1) % toChoose.size;
 						};
-						to = toChoose.remove(toChoose[index]);
-						~player.setIterator(Pseq([from, to]));
-						~player.play;
-						~displaySlider.(from, to, { |val|
-							~chain[from][0].add(to);
-							~chain[from][1].add(val);
-							~player.stop;
-							~chain.writeArchive(tmpfile);
-                            dirty = true;
-							cond.unhang;
-						}.inEnvir);
-						cond.hang;
+						if (test <= toChoose.size) {
+							to = toChoose.remove(toChoose[index]);
+							~player.setIterator(Pseq([from, to]));
+							~player.play;
+							~displaySlider.(from, to, { |val|
+								~chain[from][0].add(to);
+								~chain[from][1].add(val);
+								~player.stop;
+								~chain.writeArchive(tmpfile);
+								dirty = true;
+								cond.unhang;
+							}.inEnvir);
+							cond.hang;
+						} {
+							"Couldn't find a new connection. Continuing...".inform;
+						}
 					} {
 						"all done".inform;
 					};
@@ -125,7 +133,6 @@ Proto({
         }.inEnvir.fork(AppClock)
 
 	};
-	Windo
 
 	~displaySlider = { |from, to, cb|
 
