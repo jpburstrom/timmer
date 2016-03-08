@@ -67,7 +67,7 @@ Proto({
         {
 
 			"Writing temporary backup data to %".format(tmpfile).inform;
-			"% items left".format((order.size - q.markov.chain.collect { |x| x[0].size }.sum)).inform;
+			"% items left".format(((order.size * (order.size - 1)) - ~chain.collect { |x| x[0].size }.sum)).inform;
 
             //If we've chosen not to continue, or if all ~chain slots are filled,
             //stop the operation.
