@@ -17,6 +17,9 @@ Spec.add(\sideAmp, \amp);
 Spec.add(\quantAmt, \unipolar);
 Spec.add(\varFactor, \unipolar);
 
+//Load all files in synthdefs/
+"synthdefs/*.scd".resolveRelative.loadPaths;
+
 //Simple segment player
 //startPos in seconds
 SynthDef(\bufSegment, { |out(0), bufnum(0), startPos(0), sustain(1)|
