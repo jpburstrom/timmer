@@ -1,6 +1,9 @@
 /*
 Reverb effect based on "Simplified plate-class reverberation topology in the style of Griesinger" from the article "Effect Design, Part 1: Reverberator and Other Filters" by Jon Dattorro. Based on a Pd implementation by Anton Hornquist. All translation errors are my own.
 */
+var opLPF = {|in, freq|
+		OnePole.ar(in, exp(-2pi * (freq * SampleDur.ir)));
+};
 var metadata = (specs: (
     in_diff1: [0, 0.99],
     in_diff2: [0, 0.99],
@@ -43,7 +46,7 @@ var make_reverb = { |snd|
     snd = DelayC.ar(snd, 1, \predelay.kr(0) * 0.001);
 
     //Bandwidth
-    snd = OpLPF.ar(snd, \bandwidth.kr(22000));
+    snd = opLPF.value(snd, \bandwidth.kr(22000));
 
     //Input diffusion
     snd = mkAllpass1.value(snd, 4.77134, \in_diff1.kr(0.75));
@@ -86,7 +89,7 @@ var make_reverb = { |snd|
     local[1] = DelayC.ar(local[1], 0.141695, 0.141695);
 
     //Damping & decay
-    local = OpLPF.ar(local, \damping.kr(20000), \decay.kr);
+    local = opLPF.value(local, \damping.kr(20000)) * \decay.kr;
 
     //Decay diffusion 2
     local[0] = mkAllpass1.(local[0], 60.4818, \decay_diff2.kr(0.5)); //31_33
