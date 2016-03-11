@@ -368,6 +368,7 @@ p = Proto({
         ~t.preGroup = Group();
         ~t.mainGroup = Group.after(~t.preGroup);
         ~t.postGroup = Group.after(~t.mainGroup);
+        ~t.sendGroup = Group.after(~t.postGroup);
         ~protoEvent[\bufnum] = Buffer.read(~protoEvent.server, ~songPath);
         //We don't need to sync if offline
         if (~isRendering.not) {
