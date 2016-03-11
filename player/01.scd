@@ -4,9 +4,14 @@ s.latency = 0.5;
 q.player.actionLabels = #[onset, phrase];
 q.player.loadData("01");
 //Connect UI to player
-q.playerui.connect(q.player);
+// q.playerui.connect(q.player);
 q.player.extractFeatures;
+
 )
+
+q.player.bounce;
+q.player.play
+q.player.stop
 
 //TODO:
 //Parallel freqshifted track, with similar but different onsets
@@ -18,8 +23,8 @@ q.player.extractFeatures;
 (
 q.player.onReady = {
 
-    ~t.klankBus = Bus.audio(s, 2);
-    ~t.freqShiftBus = Bus.audio(s, 2);
+    ~t.klankBus = Bus(\audio, 32, 2);
+    ~t.freqShiftBus = Bus(\audio, 34, 2);
 
     //Always-running klank synth
     ~t.klank = {
@@ -214,21 +219,9 @@ q.player.setPtn(Pbind(
         //return startPos
         [ev.startPos, x[0] - 0.02];
     },
-    \lag, [0.035, 0.0],
+    //lag doesn't work with bounce?
+    // \lag, [0.035, 0.0],
     \fadetime, [0.002, 0.01]
-
 ));
-)
-q.player.play(0);
-q.player.stop;
-q.playerui.log("hello")
-q.player.data.lookup.phrase.differentiate[1..].median.reciprocal
-.div(3).reciprocal
-q.playerui.log(3, "quantized");
 
-
-(
-q.player.reset;
-//0.10868133000076
-{800.do{ q.player.next(()) }}.bench;
 )
