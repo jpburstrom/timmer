@@ -1,13 +1,9 @@
 ~buf = Buffer.read(s, "/Volumes/HD2/projects/timmer-2015/render/01-Preparerad flageolett 2 ___-44100.wav", 22000)
-
-
-~buf
-
-
+~buf = Buffer.read(s, "/Volumes/HD2/projects/timmer-2015/render/02-Burk burk ___-44100.wav")
 (
+//## Infinite reverb
 
-
-{ arg feedback = 0.9;
+x = { arg feedback = 0.9;
     var snd = PlayBuf.ar(2, ~buf);
     var input = snd;
     var local;
@@ -30,5 +26,6 @@
 
 }.play
 
-)
-s.scope
+);
+
+x.free
