@@ -79,6 +79,19 @@ Proto({
         currentEnvironment.addDependant(ctrl);
         ~controller = ctrl;
         ~openFile.value(ctrl.songPath);
+        ~log = { |msg, pre|
+            var val = msg;
+            var tick = ~controller.currentEvent !? (_[~controller.tickLabel]) ? 0;
+            if (pre.notNil) {
+                msg = "%: %".format(pre, msg);
+            };
+            {
+                ~statusBox.postln("%\t%\t%".format(~clockLabel.string, tick, msg));
+            }.inEnvir.defer;
+
+            //Return value for chaining
+            val
+        }
     };
 
     ~openFile =  { |path|
@@ -112,32 +125,33 @@ Proto({
     };
 
     ~update = { |obj, what ... args|
-
-        switch(what,
-            \segment,
-            {
+        if (obj == ~controller) {
+            switch(what,
+                \segment,
                 {
-                    ~setSelection.(*args);
-                    if (~follow) {
-                        ~sfView.zoomSelection(0);
-                    };
-                    ~envirGui !? {
-                        ~controller.currentEvent.keysValuesDo { |k,v|
-                            if (~envirGuiIgnoreKeys.includes(k).not) {
-                                ~envirGui.envir[k] = v;
+                    {
+                        ~setSelection.(*args);
+                        if (~follow) {
+                            ~sfView.zoomSelection(0);
+                        };
+                        ~envirGui !? {
+                            ~controller.currentEvent.keysValuesDo { |k,v|
+                                if (~envirGuiIgnoreKeys.includes(k).not) {
+                                    ~envirGui.envir[k] = v;
+                                }
                             }
                         }
-                    }
-                }.inEnvir.defer;
-            },
-            \load,  {
-                ~openFile.value(args[0]);
-            },
-            \state, {
-                ~setClock.(*args);
-                //Stop/start clock
-            }
-        );
+                    }.inEnvir.defer;
+                },
+                \load,  {
+                    ~openFile.value(args[0]);
+                },
+                \state, {
+                    ~setClock.(*args);
+                    //Stop/start clock
+                }
+            );
+        };
     };
 
     ~clockRoutine = Task({
@@ -211,18 +225,7 @@ Proto({
         }
     };
 
-	~log = { |msg, pre|
-		var val = msg;
-		var tick = ~controller.currentEvent !? (_[~controller.tickLabel]) ? 0;
-		if (pre.notNil) {
-			msg = "%: %".format(pre, msg);
-		};
-		{
-			~statusBox.postln("%\t%\t%".format(~clockLabel.string, tick, msg));
-		}.inEnvir.defer;
+    ~log = (_.value)
 
-		//Return value for chaining
-		val
-	}
 });
 

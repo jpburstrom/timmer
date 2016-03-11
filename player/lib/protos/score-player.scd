@@ -1,5 +1,6 @@
 var songBasePath = "../../songs".resolveRelative;
 var dataBasePath = "../../data".resolveRelative;
+var synthDefsPath = "../01-synthdefs.scd".resolveRelative;
 
 p = Proto({
     var count = -1;
@@ -34,6 +35,7 @@ p = Proto({
 
     //eventstreamplayer placeholder
     ~streamPlayer = nil;
+    ~isRendering = false;
 
     //Event things
     ~protoEvent = (instrument:\bufSegment, db: 0, group: { ~t.mainGroup.nodeID }.inEnvir );
@@ -127,7 +129,7 @@ p = Proto({
     //Get a neighbour index from the `~data.knn` array,
     //where 0 is the same index.
     ~getknn = { |index, distance=0|
-        ~data.knn[index][distance.clip(0, ~knnSize - 1)]
+        ~data.knn[index] !? { |x| x[distance.clip(0, ~knnSize - 1)] }
     };
 
     //Read data file from filename (relative to ~datapath).
@@ -167,6 +169,7 @@ p = Proto({
     //song is folder in dataBasePath,
     //or first match of dash-terminated prefix of song file basename (eg 01 => 01-song-name-year-month-day-time.wav")
     ~loadData = { |song|
+        ~song = song;
         ~dataPath = dataBasePath +/+ song;
         ~songPath = (songBasePath +/+ song ++ "-*.wav").pathMatch[0];
         SoundFile.use(~songPath, { |sf|
@@ -270,6 +273,7 @@ p = Proto({
 
     ~next = { |ev|
         var jump=false, nextPos;
+        "next".debug;
         //If ~nextPos is set, use that instead of iterating
         nextPos = ~nextPos ?? { ~iteratorStream.next };
         ~nextPos = nil; //reset ~nextPos for next time
@@ -359,37 +363,51 @@ p = Proto({
 
     };
 
-    ~play = { |startEvent=0|
-        s.waitForBoot {
-            if (~streamPlayer.isPlaying.not) {
-                var startPos = ~data[~tickLabel][startEvent][0];
-                {
-                    if (~readyForPlay) {
-                        ~reset.value;
-                    };
-                    ~t = (); //A holder of temporary items
-                    ~prepareScore.value;
-                    ~t.preGroup = Group();
-                    ~t.mainGroup = Group.after(~t.preGroup);
-                    ~t.postGroup = Group.after(~t.mainGroup);
-                    ~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
-                    s.sync;
-                    ~readyForPlay = true;
-
-                    ~onReady.value;
-					// + 1 because of empty event in the beginning
-					//Maybe better to calculate duration of startEvent and use ffwd instead?
-                    ~streamPlayer = ~asPattern.value.ffwd2(startEvent).play;
-                    currentEnvironment.changed(\state, \playing, startPos);
-                }.inEnvir.fork;
-            }
+    ~prep = {
+        ~t = (); //A holder of temporary items
+        ~prepareScore.value;
+        ~t.preGroup = Group();
+        ~t.mainGroup = Group.after(~t.preGroup);
+        ~t.postGroup = Group.after(~t.mainGroup);
+        ~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
+        //We don't need to sync if offline
+        if (~isRendering.not) {
+            s.sync;
         };
+        ~readyForPlay = true;
+
+        ~onReady.value;
+        // + 1 because of empty event in the beginning
+    };
+
+    ~play = { |startEvent=0, clock|
+        clock = clock ?? { TempoClock.default };
+        if (~streamPlayer.isPlaying.not) {
+            var startPos = ~data[~tickLabel][startEvent][0];
+            var func = {
+                if (~readyForPlay) {
+                    ~reset.value;
+                };
+
+                ~prep.value;
+
+                //Maybe better to calculate duration of startEvent and use ffwd instead?
+                ~streamPlayer = ~asPattern.value.ffwd2(startEvent).play(clock);
+                currentEnvironment.changed(\state, \playing, startPos);
+            }.inEnvir;
+            if (clock == ScoreClock) {
+                func.value;
+            } {
+                "Forking".debug;
+                func.fork;
+            };
+        }
+
     };
 
     ~stop = {
         ~streamPlayer.stop;
-      //TODO reset after finished playing
-        // ~streamPlayer.reset;
+        // ~reset.value;
         // ~currentEvent.free; //Free currently playing synth
         currentEnvironment.changed(\state, \stopped);
     };
@@ -414,12 +432,59 @@ p = Proto({
         }
     };
 
-    ~asPattern = {
+    //Bounce == render
+    //By default it creates a 44100/24bit .wav file in /tmp, named with song + timestamp.
+    ~bounce = { |opt|
+        var score, path;
+        opt = opt ? ();
+
+        opt.parent_((
+            //path is nil
+            path: { |ev| PathName.tmp +/+ "%_%.%".format(~song, Date.getDate.stamp, ev.headerFormat.toLower) }.inEnvir,
+            startPos:0,
+            dur:999,
+            tail: 10,
+            sampleRate: 44100,
+            headerFormat: "WAV",
+            sampleFormat: "int24",
+            deleteScoreFile: true
+        ));
+
+        path = opt.path.value;
+
+        ~isRendering = true;
+        ScoreClock.beginScore;
+        ~loadSynthDefs.value;
+        ~play.value(0, ScoreClock);
+        score = ScoreClock.makeScore(opt.dur, opt.tail);
+        ~stop.value;
+
+        score.recordNRT(path ++ ".osc", path, nil,
+            opt.sampleRate, opt.headerFormat, opt.sampleFormat, duration:score.score.last[0],
+            action: {
+                //Cleanup
+                if (opt.deleteScoreFile) {
+                    File.delete(path ++ ".osc");
+                };
+            }
+        );
+
+
+        ~isRendering = false;
+    };
+
+    //Re-add synthdefs for rendering
+    ~loadSynthDefs = {
+        //Variable is set in top of file
+        synthDefsPath.load;
+    };
+
+    ~asPattern = { |render=false|
         var reset = ~reset.inEnvir;
         Pspawner({ arg sp;
             ~spawner = sp;
             //reset function
-            sp.par(Event.silent(inf, (addToCleanup: reset)));
+            sp.par(Event.silent(1, (addToCleanup: { reset.value })));
             sp.par(~parPtn);
             sp.seq(Pchain(
                 ~modPtn,
