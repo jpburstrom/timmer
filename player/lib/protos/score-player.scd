@@ -273,7 +273,6 @@ p = Proto({
 
     ~next = { |ev|
         var jump=false, nextPos;
-        "next".debug;
         //If ~nextPos is set, use that instead of iterating
         nextPos = ~nextPos ?? { ~iteratorStream.next };
         ~nextPos = nil; //reset ~nextPos for next time
@@ -369,7 +368,7 @@ p = Proto({
         ~t.preGroup = Group();
         ~t.mainGroup = Group.after(~t.preGroup);
         ~t.postGroup = Group.after(~t.mainGroup);
-        ~protoEvent[\bufnum] = Buffer.read(s, ~songPath);
+        ~protoEvent[\bufnum] = Buffer.read(~protoEvent.server, ~songPath);
         //We don't need to sync if offline
         if (~isRendering.not) {
             s.sync;
@@ -377,7 +376,7 @@ p = Proto({
         ~readyForPlay = true;
 
         ~onReady.value;
-        // + 1 because of empty event in the beginning
+
     };
 
     ~play = { |startEvent=0, clock|
@@ -392,13 +391,12 @@ p = Proto({
                 ~prep.value;
 
                 //Maybe better to calculate duration of startEvent and use ffwd instead?
-                ~streamPlayer = ~asPattern.value.ffwd2(startEvent).play(clock);
+                ~streamPlayer = ~asPattern.value(startEvent).play(clock);
                 currentEnvironment.changed(\state, \playing, startPos);
             }.inEnvir;
             if (clock == ScoreClock) {
                 func.value;
             } {
-                "Forking".debug;
                 func.fork;
             };
         }
@@ -479,17 +477,17 @@ p = Proto({
         synthDefsPath.load;
     };
 
-    ~asPattern = { |render=false|
+    ~asPattern = { |drop=0|
         var reset = ~reset.inEnvir;
         Pspawner({ arg sp;
             ~spawner = sp;
             //reset function
-            sp.par(Event.silent(1, (addToCleanup: { reset.value })));
+            sp.seq(Event.silent(0, (addToCleanup: { reset.value })));
             sp.par(~parPtn);
             sp.seq(Pchain(
                 ~modPtn,
                 Prout(e { |ev| loop { ev = ~next.value(ev).yield }})
-            ).collect({ |ev| ~currentEvent = ev }));
+            ).collect({ |ev| ~currentEvent = ev }).drop(drop));
             //TODO: maybe add wait before suspending?
             sp.suspendAll; //Hack, otherwise stream will never reset when ending by itself
         }.inEnvir);
