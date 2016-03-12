@@ -16,15 +16,16 @@
 ~sndbuf = Buffer.alloc(s, s.sampleRate * 10, 2);
 
 (
-x = SynthDef(\zerox_delay, { |bufnum|
-    //Sound source
-	var src = PlayBuf.ar(2, ~bass, startPos:110*44100);
-	// var src = SinOsc.ar(SinOsc.ar(1).exprange(80, 200), mul:0.1).dup;
+x = SynthDef(\zerox_delay, { arg sndbuf, timebuf, minDelay=0, maxDelay=0.1, density=10;
+	//Sound source
+	// var src = PlayBuf.ar(2, ~bass, startPos:110*44100);
+	var src = SinOsc.ar(SinOsc.ar(1).exprange(80, 200), mul:0.1).dup;
+	// var src = SinOsc.ar(100, mul:0.1).dup;
 	//Make it mono for trigger
     var monosrc = src.sum;
     //Trig on zero crossing
     var trig = (monosrc > 0) * (Delay1.ar(monosrc) <=  0);
-    var bufsize = BufFrames.ir(~timebuf);
+    var bufsize = BufFrames.ir(timebuf);
     //A phasor keeping track of time
     var rectime, playtime, time = Phasor.ar(0, 1, end:bufsize);
     //Sample and hold time on every trig
@@ -32,20 +33,21 @@ x = SynthDef(\zerox_delay, { |bufnum|
     //We need to feed back time buffer output, so we use LocalIn
     var local = LocalIn.ar(1);
     //How much of the total buffer size is used to step back into
-    var randWindow = LFNoise0.ar.range(0, \randWindow.kr(0.1) * bufsize);
+	var randWindow = LFNoise0.kr.range(minDelay, maxDelay.max(minDelay)) * bufsize;
     // var randWindow = Line.ar(0, bufsize, 120);
 
+	randWindow.poll;
 	//TODO: maybe BufWr/BufRd driven with `time` would be more accurate?
-	BufWr.ar(x, ~timebuf, time);
-	BufWr.ar(src, ~sndbuf, time);
+	BufWr.ar(x, timebuf, time);
+	BufWr.ar(src, sndbuf, time);
 
 	rectime = time;
 
     //### Playback ###
     //Get a random index into the buffer
     //Dust frequency can be adjusted to control how often a new index is generated
-    //TODO: set lower bound for LFNoise range, to adjust delay min length
-	x = Index.ar(~timebuf, Latch.ar(time - randWindow, Trig.ar(Dust.ar(10), 0.01)).wrap(0, bufsize) );
+	//TODO: set lower bound for LFNoise range, to adjust delay min length
+	x = Index.kr(timebuf, Latch.kr(time - randWindow, Trig.kr(Dust.kr(density), 0.01)).wrap(0, bufsize) );
 
     //trig on change from time buffer, if x has changed
     //This trigger should be aligned with playback
@@ -55,7 +57,7 @@ x = SynthDef(\zerox_delay, { |bufnum|
     //Subtracted with blocksize to be one block ahead of time
 	playtime = (time - Latch.ar(time - x, local));
 
-	time = BufRd.ar(1, ~timebuf, (playtime + BlockSize.ir).wrap(0, bufsize), interpolation:0);
+	time = BufRd.ar(1, timebuf, (playtime + BlockSize.ir).wrap(0, bufsize), interpolation:0);
 
     //When time changes we send a trigger back to the playbuf above
     LocalOut.ar(Changed.ar(time));
@@ -65,16 +67,20 @@ x = SynthDef(\zerox_delay, { |bufnum|
 	playtime = playtime.wrap(0, bufsize);
 
 	//Bypass if randWindow == 0
-	src = SelectX.ar(randWindow > 0), [src, BufRd.ar(2, ~sndbuf, playtime, interpolation:0)]);
+	src = LinSelectX.ar(K2A.ar((randWindow > 0).lag(0.002)).poll, [src, BufRd.ar(2, sndbuf, playtime, interpolation:0)]);
+
 
     //Random pan is fun
-	Out.ar(0, Balance2.ar(src[0], src[1], TRand.ar(-0.0, 0.0, local), 0.1));
+	Out.ar(0, Balance2.ar(src[0], src[1], 0, \amp.kr(1)));
 
-}).play(s)
+}).add
 )
 s.options.sampleRate = 44100
 s.scope
-x.set(\randWindow, 0)
-
-~timebuf.plot
-Plotter
+x.set(\minDelay, 0)
+x.set(\maxDelay, 0)
+x = Synth(\zerox_delay, [\amp, 1, \sndbuf, ~sndbuf, \timebuf, ~timebuf])
+x.free
+x = 3.collect{ |i| var amp = i % 2 * 2 - 1; Synth(\zerox_delay, [\amp, amp, \sndbuf, ~sndbuf, \timebuf, ~timebuf]) }
+x.do(_.set(\randWindow, 0.01))
+x.do(_.free)
