@@ -362,7 +362,7 @@ p = Proto({
 
     };
 
-    ~prep = {
+    ~prep = { |sync=false|
         ~t = (); //A holder of temporary items
         ~prepareScore.value;
         ~t.preGroup = Group();
@@ -371,7 +371,7 @@ p = Proto({
         ~t.sendGroup = Group.after(~t.postGroup);
         ~protoEvent[\bufnum] = Buffer.read(~protoEvent.server, ~songPath);
         //We don't need to sync if offline
-        if (~isRendering.not) {
+		if (~isRendering.not and: { sync }) {
             s.sync;
         };
         ~readyForPlay = true;
@@ -389,7 +389,7 @@ p = Proto({
                     ~reset.value;
                 };
 
-                ~prep.value;
+				~prep.value(true);
 
                 //Maybe better to calculate duration of startEvent and use ffwd instead?
                 ~streamPlayer = ~asPattern.value(startEvent).play(clock);
@@ -512,9 +512,12 @@ p = Proto({
     };
 
 	//Play single segment (for debugging)
-	~playSegment = { |seg = 0|
-		~nextPos = seg;
-		~next.(()).make({ ~group = nil }).play;
+	//needs a ~prep before!
+	~playSegment = { |seg = 0 |
+		if (~protoEvent[\bufnum].notNil) {
+			~nextPos = seg;
+			~next.(()).make({ ~group = nil }).play;
+		}
 	};
 
     //Set next position

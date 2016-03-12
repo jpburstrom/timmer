@@ -3,29 +3,126 @@
 //## Initialize ###
 (
 "lib/init".import;
-q.player.actionLabels = #[onset, region];
+q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
 q.player.loadData("08");
 //q.player.extractFeatures;
 q.playerui.connect(q.player)
+// q.markov = "/lib/protos/markov-trainer".import;
+
 )
+(
+var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
+//onReady is called when player buffer is loaded, and before playing
+//It's called within a routine, so we can use s.sync, .wait or similar
+q.player.onReady = {
+	~t.handclaps = handClapPaths.pathMatch.collect { |path|
+		Buffer.read(s, path);
+	}
+};
+q.player.data.grouping = #[
+	//Part one, onset groups
+	[ 0, 1, 2, 3, 1, 4, 5, 1, 6, 7, 1, 7, 8, 9, 7, 10, 7, 11, 12, 13, 7, 12, 14, 9, 15, 7, 12, 14, 16, 17 ]
+];
+q.player.data.iterators = ().make {
+	~p1 = Plazy { Pseq(Fdef(\scrambleAvoidSimilar).(q.player.data.grouping[0])) } ;
+	~p2 = Pseries(30, 1, 34);
+	~p3 = Plazy {
+		Pseq((64..76).scramble)
+		++ Pseq((77..80))
+		++ Pwalk((81..90), Pwrand([-2, 1, 2], [0.3, 0.4, 0.4], 30.rrand(50)))
+	};
+	// ~p4 = Pn(91,1) ++ Pxrand((92..104), 24) ++ Pn(105, 1);
+	~p4 = Pseq((91..105));
+	~p5 = Pseq((106..301));
+	//Break it down
+	~p6 = Pseq((302..371));
+};
+)
+)
+
 (
 //## Patterns #######
 
 //This sets a pattern used to modify the base player pattern.
-q.player.setPtn(Pbind());
+q.player.setPtn(Pbind(
+	\startPos, Pkey(\startPos) - 0.002,
+	\dummy, Prout({ |ev|
 
-//Give a pattern to setIterator, which is used to select which tick is to be played
-q.player.setIterator(Pseries());
-)
+		var claps = Pn(Plazy { Pseq(~t.handclaps.scramble) }).asStream;
+		var blacklist = (118..122) ++ (134..139) ++ (175..186) ++ (192..199);
 
-//## Callbacks ####
-(
-//onReady is called when player buffer is loaded, and before playing
-//It's called within a routine, so we can use s.sync, .wait or similar
-q.player.onReady = {
-};
+		while ({ev.onset < 105}) { ev = 0.yield };
+
+		while ({ev.onset < 218}) {
+			if ( blacklist.includes(ev.onset).not and: { 0.7.coin } ) {
+				(instrument:\bufSegment, bufnum: claps.next, amp:1).play;
+			};
+			ev = 0.yield
+		};
+
+		while ({ev.onset < 301}) {
+			ev = 0.yield;
+		};
+
+		~spawner.par(Pbind(
+			\instrument, \bufSegment,
+			\bufnum, Pfunc { claps.next  },
+			\amp, Pbrown(0.2, 0.5),
+			\dur, Prout({ |ev|
+
+				//Look ahead 5 onset durations and try to find a number of onsets which has the
+				//closest match to a multiple of a fixed tempo. Then divide the total duration so we end up with
+				//a number close to the desired tempo, and spit them out until next "downbeat".
+				//This way we get the feeling of a set tempo, semi-rubato, and still synced with the weird
+				//sounds from the bass
+
+				var durs = q.player.data.onset[301..368].flop[1];
+				var index = 0;
+				var tempo = 0.7.rrand(1.0);
+				var dur;
+				var end, matches, newIndex, times;
+				//Try up to 5 indexes for each position
+				while ({ index < (durs.size - 1)}) {
+					end = (index + 5).min(durs.size) - index;
+					//Find the index with the closest match
+					matches = 0!5;
+					newIndex = (1..end).minIndex { |item, i|
+						var sum = durs[index..].keep(item).sum;
+						matches[i] = sum;
+						if (sum < tempo) {
+							sum.absdif(tempo)
+						} {
+							sum % tempo
+						}
+
+					};
+					times = matches[newIndex].div(tempo).max(1);
+					dur = matches[newIndex] / times;
+					index = index + newIndex + 1;
+					ev.amp = 0.8; //set amp to high on every "downbeat"
+					times.do {
+						ev = dur.yield;
+					}
+				}
+			}))
+		);
+
+		loop {
+			0.yield;
+		}
+	})
+
+));
+
+//Give a pattern to setIterator, which is used to sel ect which tick is to be played
+q.player.setIterator(Plazy { Psym(Pseq(#[p1,p2,p3,p4,p5,p6]), ~data.iterators) });
+q.player.play
 )
+q.player.stop
+
+q.player.trace = true
+
 
 q.player.play
 q.player.stop

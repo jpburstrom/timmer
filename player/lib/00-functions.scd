@@ -49,3 +49,25 @@ Fdef(\autoscale, { arg in, lo=0, hi=1, inLo=inf, inHi= -inf, rate=\kr, reset=0;
     Select.perform(rate, min.absdif(max) > 0, [-1, out]);
 });
 
+
+//Scramble an array of group labels, so that two of the same label never come after each other
+//Return list of indexes (offset by offset)
+Fdef(\scrambleAvoidSimilar, { |labelarray, offset=0|
+	var test = true;
+	var i = 0;
+	var output = labelarray.collect({ |x,i| [i, x] }).scramble;
+	while ({i < 30 and: { test }}) {
+		test = false;
+		i = i + 1;
+		output = output.separate({ |x,y|
+			x = (x[1] == y[1]);
+			if (x) { test = true };
+			x
+		}).collect(_.rotate(1)).flatten;
+	};
+	if (i < 30) {
+		output.flop[0] + offset;
+	} {
+		nil
+	}
+});
