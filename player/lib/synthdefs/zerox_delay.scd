@@ -3,12 +3,11 @@
 //- \zerox_delay_rec_[1|2] is recording an input (1 or 2 channels) to a buffer, as well as zero crossings to another buffer
 //- \zerox_delay_[1x2|2x2] is playing back the contents of the buffer, while randomly jumping to other zero crossings inside a set time window, with a variable frequency.
 
-var zerox_play = { arg channels, inbus = 0, outbus=0, timebus=0, sndbuf, timebuf, minDelay=0, maxDelay=0.1, density=10, pan=0, amp=1;
+var zerox_play = { arg channels, inbus = 0, outbus=0, posbus=0, sndbuf, timebuf, minDelay=0, maxDelay=0.1, density=10, pan=0, amp=1;
 
 	var src = In.ar(inbus, channels);
-	var time = In.ar(timebus); //record location
-	var bufsize = BufFrames.ir(timebuf);
-	var bufdur = BufDur.ir(timebuf);
+	var time = In.ar(posbus); //record location
+	var bufsize = BufFrames.kr(timebuf);
 
 	//How much of the total buffer size is used to step back into
 	var randWindow = LFNoise0.kr.range(minDelay, maxDelay.max(minDelay)) * bufsize;
@@ -48,7 +47,7 @@ var zerox_play = { arg channels, inbus = 0, outbus=0, timebus=0, sndbuf, timebuf
 };
 
 [1,2].do { |channels|
-	SynthDef("zerox_delay_rec_%".format(channels), { arg outbus = 0, inbus = 0, sndbuf, timebuf;
+	SynthDef("zerox_delay_rec_%".format(channels), { arg inbus = 0, posbus = 0, sndbuf, timebuf;
 		//Make it mono for trigger
 		// var src = In.ar(inbus, channels);
 		// var src = SinOsc.ar *0.1 ! channels;
@@ -56,8 +55,8 @@ var zerox_play = { arg channels, inbus = 0, outbus=0, timebus=0, sndbuf, timebuf
 		var monosrc = src.asArray.sum;
 		//Trig on zero crossing
 		var trig = (monosrc > 0) * (Delay1.ar(monosrc) <=  0);
-		var bufsize = BufFrames.ir(timebuf);
-		var bufdur = BufDur.ir(timebuf);
+		var bufsize = BufFrames.kr(timebuf);
+
 		//A phasor keeping track of time
 		var time = Phasor.ar(0, 1, end:bufsize);
 		//Sample and hold time on every trig
@@ -68,7 +67,7 @@ var zerox_play = { arg channels, inbus = 0, outbus=0, timebus=0, sndbuf, timebuf
 		BufWr.ar(src, sndbuf, time);
 
 		//Output current record time
-		Out.ar(outbus, time);
+		Out.ar(posbus, time);
 
 	}).add;
 };
