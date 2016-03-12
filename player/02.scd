@@ -35,7 +35,6 @@ q.player.setIterator(Prout({
 }));
 q.player.setPtn(Pbind(\fadetime, 0.01, \startPos, Pkey(\startPos) - 0.15));
 
-q.player.actions.phrase
 
 q.player.onReady = {
 

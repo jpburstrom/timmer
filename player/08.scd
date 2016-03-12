@@ -1,4 +1,38 @@
-~buf8 = Buffer.read(s, "/Volumes/HD2/projects/timmer-2015/render/08-Burk korta 2 ___-44100.wav");
+//# Template for songs ###
+
+//## Initialize ###
+(
+"lib/init".import;
+q.player.actionLabels = #[onset, region];
+q.player.tickLabel = \onset;
+q.player.loadData("08");
+//q.player.extractFeatures;
+q.playerui.connect(q.player)
+)
+(
+//## Patterns #######
+
+//This sets a pattern used to modify the base player pattern.
+q.player.setPtn(Pbind());
+
+//Give a pattern to setIterator, which is used to select which tick is to be played
+q.player.setIterator(Pseries());
+)
+
+//## Callbacks ####
+(
+//onReady is called when player buffer is loaded, and before playing
+//It's called within a routine, so we can use s.sync, .wait or similar
+q.player.onReady = {
+};
+)
+
+q.player.play
+q.player.stop
+
+//TESTS
+
+~buf8 = Buffer.read(s, "../songs/08-Burk korta 2 ___-44100.wav".resolveRelative);
 ~grainBuf = Buffer.alloc(s, 44100, 1);
 
 (
