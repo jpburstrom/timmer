@@ -17,32 +17,50 @@ q.player.reset; q.player.asPattern(1).asStream.nextN(10, ()).do(_.postln);nil;
 (
 //## Patterns #######
 
+//## Callbacks ####
+//onReady is called when player buffer is loaded, and before playing
+//It's called within a routine, so we can use s.sync, .wait or similar
+q.player.onReady = {
+    ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -12.dbamp, \decay, 0.1], ~t.sendGroup);
+
+	~t.zerox_envbus = Bus.control;
+	~t.zerox_outbus = Bus.audio(s, 2);
+	~t.posbus = Bus.audio;
+	~t.sndbuf = Buffer.alloc(s, 10*s.sampleRate, 2);
+	~t.timebuf = Buffer.alloc(s, 10*s.sampleRate);
+	~t.zerox_rec = Synth(\zerox_delay_rec_2, [\inbus, 0, \posbus, ~t.posbus, \sndbuf, ~t.sndbuf, \timebuf, ~t.timebuf], ~t.postGroup);
+	~t.zerox_mix = { Out.ar(0, In.ar(~t.zerox_outbus, 2)) }.play(target:~t.sendGroup);
+	s.sync;
+
+};
+
 //This sets a pattern used to modify the base player pattern.
 q.player.setPtn(Pbind(
-    \dummy, Pfunc { |ev|
-        switch(ev.part,
-            1, {
-                //Scramble & granulate
-                //WIP
-                ~t.dly = {
-                    var trig = Dust.ar(100);
-                    var rand = TRand.ar(0, 10.0, trig);
-                    var dly1, dly2, fade,
-                    snd = In.ar(0,2);
+	\dummy, Pfunc { |ev|
+		var partDur = ~data.part[ev.part][1];
+		var createDelays = { |num, key, amp, pan|
+			~t[key] = num.collect { |i|
+				pan = (pan ? { i / (num - 1) }).value(i, num);
+				amp = amp ?? { -12.dbamp };
+				Synth(\zerox_delay_2x2,
+					[\inbus, 0, \outbus, ~t.zerox_outbus, \posbus, ~t.posbus, \sndbuf, ~t.sndbuf,
+						\timebuf, ~t.timebuf, \pan, pan, \amp, amp], ~t.zerox_rec, \addAfter);
+			};
 
-                    dly1 = Latch.kr(rand, PulseDivider.kr(trig, 2, 0));
-                    dly2 = Latch.kr(rand, PulseDivider.kr(trig, 2, 1));
+		};
+		switch(ev.part,
+			1, {
+				var delays = 2;
+				~t.zerox_env = { Out.kr(~t.zerox_envbus, Line.kr(0.02, 1, partDur)) }.play(target:~t.preGroup);
 
+				createDelays.value(4, \zerox_play);
+				~t[\zerox_play].do(_.map(\maxDelay, ~t.zerox_envbus));
 
-                    [rand].poll;
-                    //-1=>1
-                    fade = Stepper.ar(trig, 0, -1, 2, 2).lag(0.1);
-
-                    snd = XFade2.ar(DelayC.ar(snd, 10, dly1), DelayC.ar(snd, 10, dly2), fade);
-
-                    ReplaceOut.ar(0, snd);
-                }.play(target:~t.postGroup);
-            },
+			},
+			2, {
+				~t.zerox_play.free;
+				~t.zerox_env.free;
+			},
             3, {
                 //Temporary synth
                 ~t.synth1 = {
@@ -79,7 +97,17 @@ q.player.setPtn(Pbind(
                     Out.ar(0, Splay.ar(bp.flat) * 3);
 
                 }.play(target:~t.postGroup);
-        });
+        },
+		4, {
+				~t.synth1.free; //FIXME
+				~t.zerox_env.free; //FIXME
+				createDelays.value(24, \zerox_play, -48.dbamp);
+
+				~t.zerox_play.do(_.set(\maxDelay, 0.2));
+				~t.zerox_env = { Out.kr(~t.zerox_envbus, XLine.kr(-36.dbamp, -12.dbamp, partDur-26)) }.play(target:~t.preGroup);
+				~t.zerox_play.do(_.map(\amp, ~t.zerox_envbus));
+
+		});
 
         0
     }
@@ -88,12 +116,6 @@ q.player.setPtn(Pbind(
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(Pseries());
 
-//## Callbacks ####
-//onReady is called when player buffer is loaded, and before playing
-//It's called within a routine, so we can use s.sync, .wait or similar
-q.player.onReady = {
-    ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -12.dbamp, \decay, 0.1], ~t.sendGroup);
-};
 
 )
 

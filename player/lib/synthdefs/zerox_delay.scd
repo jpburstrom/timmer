@@ -40,9 +40,9 @@ var zerox_play = { arg channels, inbus = 0, outbus=0, posbus=0, sndbuf, timebuf,
 	//Assuming channels are 1 or 2
 	//TODO: variable panning?
 	if (channels == 1) {
-		ReplaceOut.ar(outbus, Pan2.ar(src, pan, amp));
+		Out.ar(outbus, Pan2.ar(src, pan, amp));
 	} {
-		ReplaceOut.ar(outbus, Balance2.ar(src[0], src[1], pan, amp));
+		Out.ar(outbus, Balance2.ar(src[0], src[1], pan, amp));
 	};
 };
 
