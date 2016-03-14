@@ -5,6 +5,15 @@ Proto({
 	//Format: key->[[other, other, other], [prob, prob, prob]]
     ~chain = nil; //Don't initialize yet
 
+    //Set this to true if choice would be yes/no rather than a
+    //scale from 0-1
+    ~binaryChoice = false;
+
+    //Set this to true if a connection should be the same both ways
+    //(setting 1->2 to x also sets 2->1)
+    ~bidirectional = false;
+
+
 	//Connect to a player
 	~connect = { |player|
 		~player = player;
@@ -12,8 +21,8 @@ Proto({
 
 	~setBounds = { |start=0, end|
 		~start = start;
-		~end = end ?? { ~player.data[~player.tickLabel].size - 1 };
-        [start, end]
+        ~end = end ?? { ~player.data[~player.tickLabel].size - 1 };
+        [~start, ~end]
     };
 
     ~initChain = {
@@ -82,23 +91,36 @@ Proto({
 					index = index % toChoose.size;
 					if (~chain[from][0].size < (order.size - 1)) {
 						var test = 0;
-						while { (~chain[from][0].includes(toChoose[index]) or: { from == toChoose[index] }) and: { test <= toChoose.size } } {
-							test = test + 1;
-							index = (index + 1) % toChoose.size;
-						};
-						if (test <= toChoose.size) {
-							to = toChoose.remove(toChoose[index]);
-							~player.setIterator(Pseq([from, to]));
-							~player.play;
-							~displaySlider.(from, to, { |val|
-								~chain[from][0].add(to);
-								~chain[from][1].add(val);
-								~player.stop;
-								~chain.writeArchive(tmpfile);
-								dirty = true;
-								cond.unhang;
-							}.inEnvir);
-							cond.hang;
+                        while { (~chain[from][0].includes(toChoose[index]) or: { from == toChoose[index] }) and: { test <= toChoose.size } } {
+                            test = test + 1;
+                            index = (index + 1) % toChoose.size;
+                        };
+                        if (test <= toChoose.size) {
+
+                            var callback = { |val|
+                                ~chain[from][0].add(to);
+                                ~chain[from][1].add(val);
+                                if (~bidirectional) {
+                                    ~chain[to][0].add(from);
+                                    ~chain[to][1].add(val);
+                                };
+                                ~player.stop;
+                                ~chain.writeArchive(tmpfile);
+                                dirty = true;
+                                cond.unhang;
+                            }.inEnvir;
+
+                            to = toChoose.remove(toChoose[index]);
+
+                            ~player.setIterator(Pseq([from, to]));
+                            ~player.play;
+
+                            if (~binaryChoice) {
+                                ~displayButtons.(from, to, callback);
+                            } {
+                                ~displaySlider.(from, to, callback);
+                            };
+                            cond.hang;
 						} {
 							"Couldn't find a new connection. Continuing...".inform;
 						}
@@ -144,6 +166,19 @@ Proto({
         w.front;
 	};
 
+    ~displayButtons = { |from, to, cb|
+        var w = Window("% -> %".format(from, to), Rect(0, 0, 200, 400).center_( Window.availableBounds.center )).layout_(HLayout());
+        var choices = ["No", "Yes"];
+        var btns = [1,0].do { |i|
+            Button(w).states_([[choices[i]]]).action_({
+                cb.value(i);
+                w.close;
+            });
+        };
+
+        w.front;
+    };
+
     ~markovSet = {
         var out = [];
         ~chain.keysValuesDo({ |k, v|
@@ -155,6 +190,7 @@ Proto({
     }
 
 });
+
 
 /*
 ~markovMaker.connect(q.player);
