@@ -171,7 +171,7 @@ p = Proto({
     ~loadData = { |song|
         ~song = song;
         ~dataPath = dataBasePath +/+ song;
-        ~songPath = (songBasePath +/+ song ++ "-*.wav").pathMatch[0];
+        ~songPath = (songBasePath +/+ song ++ "*.wav").pathMatch[0];
         SoundFile.use(~songPath, { |sf|
 
             var isNumeric = { |x|
