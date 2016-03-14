@@ -81,7 +81,7 @@ Proto({
         ~openFile.value(ctrl.songPath);
         ~log = { |msg, pre|
             var val = msg;
-            var tick = ~controller.currentEvent !? (_[~controller.tickLabel]) ? 0;
+            var tick = ~controller.nextEvent !? (_[~controller.tickLabel]) ? 0;
             if (pre.notNil) {
                 msg = "%: %".format(pre, msg);
             };
