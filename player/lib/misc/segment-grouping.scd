@@ -42,4 +42,6 @@ StringArray
     ~groups[g] = ~groups[g].add(i);
     ~groups.postln;
 };
-~groups
+~groups.size.collect{ |x| ~groups[x]}.postcs
+~order
+~groups.keys

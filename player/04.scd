@@ -17,7 +17,7 @@ q.markov.initChain;
 q.markov.chain.collectAs({ |x| var index = x[0].indexOf(32); index !? { x[1][index] }  }, Array).reject(_.isNil)
 nil ?? 2
 
-~buf4 = Buffer.read(s, "../songs/04-Qin 2 __-44100.wav".resolveRelative);
+~buf4 = Buffer.read(s, "songs/04-Qin 2 __-44100.wav".resolveRelative);
 
 //### HELLO TEST ###
 (
@@ -32,17 +32,17 @@ Ndef(\fqShiftTest, {
     //every onset has a probability of 0.1 to trigger a new chosen frequency
     var randFreq = Demand.kr(Impulse.kr(0) + CoinGate.kr(0.1, trig), 0, Dxrand(freqs, inf));
 
+    //Remove double-trig
+    trig = Trig.kr(trig, 0.2);
+
     //Delay to compensate for FFT latency
-    snd = DelayN.ar(snd, 0.1, 512 / SampleRate.ir);
+    snd = DelayN.ar(snd, 0.1, 1024 / SampleRate.ir);
 
     //Random freq shift per onset
     snd = LinXFade2.ar(snd, -1 * FreqShiftAA.ar(snd, randFreq), EnvGen.ar(Env([-1, -1, 1], [0.02, 0.05]), trig).lag(0.02));
 
 }).play
 )
-
-x.free
-x = { Impulse.ar(0.55) }.play
 
 //### END TEST ###
 
@@ -52,7 +52,6 @@ q.player.stop;
 (
 //## Patterns #######
 
-//This sets a pattern used to modify the base player pattern.
 q.player.setPtn(Pbind(
 	\hello, Pfunc { |ev|
 		if (ev.part == 2) {
@@ -70,7 +69,6 @@ q.player.setPtn(Pbind(
 	}
 ));
 
-//Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(
 	Plazy({
 		var part = ~data.lookup.part;
@@ -102,6 +100,30 @@ q.player.setIterator(
 	})
 )
 )
+
+//Sonny Schmidt
+~buf4 = Buffer.read(s, "songs/04-Qin 2 __-44100.wav".resolveRelative);
+(
+Ndef(\sonny, {
+    var snd = PlayBuf.ar(2, ~buf4, BufRateScale.kr(~buf4));
+    // var sonny = DelayC.ar(snd, 10, LFNoise2.ar(1).range(0, 1));
+    var fb = FbNode(2, 0);
+    var fbsig = fb.delay(amp);
+    var sonny = Fb({
+		arg feedback; // this will contain the delayed output from the Fb unit
+
+        LeakDC.ar(AllpassN.ar((feedback * 0.2) + snd, 0.05, 1/43, 1))
+
+    }, 1/41);
+    snd + sonny.softclip;
+}).play;
+)
+
+FbNode
+Quarks.gui
+1/13
+12.nthPrime
+
 
 //## Callbacks ####
 (

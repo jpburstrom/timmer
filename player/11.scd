@@ -9,7 +9,7 @@ q.player.loadData("11");
 //q.player.extractFeatures;
 q.playerui.connect(q.player);
 )
-q.player.play(1)
+q.player.play
 q.player.stop
 q.player.data.score.do(_.postln); nil
 q.player.currentEvent
@@ -29,6 +29,7 @@ q.player.onReady = {
 	~t.sndbuf = Buffer.alloc(s, 10*s.sampleRate, 2);
 	~t.timebuf = Buffer.alloc(s, 10*s.sampleRate);
 	~t.zerox_rec = Synth(\zerox_delay_rec_2, [\inbus, 0, \posbus, ~t.posbus, \sndbuf, ~t.sndbuf, \timebuf, ~t.timebuf], ~t.postGroup);
+    //We use an outbus for the zerox to be able to read several times from the same bus
 	~t.zerox_mix = { Out.ar(0, In.ar(~t.zerox_outbus, 2)) }.play(target:~t.sendGroup);
 	s.sync;
 

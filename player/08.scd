@@ -22,7 +22,10 @@ q.player.onReady = {
 };
 q.player.data.grouping = #[
 	//Part one, onset groups
-	[ 0, 1, 2, 3, 1, 4, 5, 1, 6, 7, 1, 7, 8, 9, 7, 10, 7, 11, 12, 13, 7, 12, 14, 9, 15, 7, 12, 14, 16, 17 ]
+	[ 0, 1, 2, 3, 1, 4, 5, 1,
+        6, 7, 1, 7, 8, 9, 7, 10,
+        7, 11, 12, 13, 7, 12, 14, 9,
+        15, 7, 12, 14, 16, 17 ]
 ];
 q.player.data.iterators = ().make {
 	~p1 = Plazy { Pseq(Fdef(\scrambleAvoidSimilar).(q.player.data.grouping[0])) } ;
@@ -30,7 +33,7 @@ q.player.data.iterators = ().make {
 	~p3 = Plazy {
 		Pseq((64..76).scramble)
 		++ Pseq((77..80))
-		++ Pwalk((81..90), Pwrand([-2, 1, 2], [0.3, 0.4, 0.4], 30.rrand(50)))
+        ++ Pwalk((81..90), Pwrand([-2, 1, 2], [0.3, 0.4, 0.4], 30.rrand(50)))
 	};
 	// ~p4 = Pn(91,1) ++ Pxrand((92..104), 24) ++ Pn(105, 1);
 	~p4 = Pseq((91..105));
@@ -69,43 +72,7 @@ q.player.setPtn(Pbind(
 			\instrument, \bufSegment,
 			\bufnum, Pfunc { claps.next  },
 			\amp, Pbrown(0.2, 0.5),
-			\dur, Prout({ |ev|
-
-				//Look ahead 5 onset durations and try to find a number of onsets which has the
-				//closest match to a multiple of a fixed tempo. Then divide the total duration so we end up with
-				//a number close to the desired tempo, and spit them out until next "downbeat".
-				//This way we get the feeling of a set tempo, semi-rubato, and still synced with the weird
-				//sounds from the bass
-
-				var durs = q.player.data.onset[301..368].flop[1];
-				var index = 0;
-				var tempo = 0.7.rrand(1.0);
-				var dur;
-				var end, matches, newIndex, times;
-				//Try up to 5 indexes for each position
-				while ({ index < (durs.size - 1)}) {
-					end = (index + 5).min(durs.size) - index;
-					//Find the index with the closest match
-					matches = 0!5;
-					newIndex = (1..end).minIndex { |item, i|
-						var sum = durs[index..].keep(item).sum;
-						matches[i] = sum;
-						if (sum < tempo) {
-							sum.absdif(tempo)
-						} {
-							sum % tempo
-						}
-
-					};
-					times = matches[newIndex].div(tempo).max(1);
-					dur = matches[newIndex] / times;
-					index = index + newIndex + 1;
-					ev.amp = 0.8; //set amp to high on every "downbeat"
-					times.do {
-						ev = dur.yield;
-					}
-				}
-			}))
+            \dur, Fdef(\pFuzzyBeatMatch).(q.player.data.onset[301..368].flop[1], 5);
 		);
 
 		loop {

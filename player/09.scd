@@ -45,7 +45,7 @@ q.player.use {
 
     ~setPtn.(Pbind(
         //Play through, then start over and fade
-        \amp, Pseg([1, 1, 0.001], Pseq([~data.onset.size, 15]), \exp);
+        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size, 15]), \exp);
     ));
 
     ~onReady = {

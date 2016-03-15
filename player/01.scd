@@ -4,7 +4,7 @@ s.latency = 0.5;
 q.player.actionLabels = #[onset, phrase];
 q.player.loadData("01");
 //Connect UI to player
-// q.playerui.connect(q.player);
+q.playerui.connect(q.player);
 q.player.extractFeatures;
 
 )
