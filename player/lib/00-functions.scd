@@ -91,7 +91,7 @@ Fdef(\autoscale, { arg in, lo=0, hi=1, inLo=inf, inHi= -inf, rate=\kr, reset=0;
     var min = RunningMin.perform(rate, in.min(inLo), reset);
     var max = RunningMax.perform(rate, in.max(inHi), reset);
     var out = in.linlin(min, max, lo, hi);
-    Select.perform(rate, min.absdif(max) > 0, [-1, out]);
+	Select.perform(rate, CheckBadValues.perform(rate, out, post:0) < 1, [lo, out]);
 });
 
 //## Utilities ##
