@@ -117,3 +117,43 @@ q.player.readyForPlay
 x = fork { 10.do { "hello".postln; 1.wait }}
 
 x.stop
+
+
+//## fix fix ##
+
+~buf = Buffer.read(s,"/Users/johannes/projects/timmer/kod/player/songs/07-20160316-1539.wav" )
+(
+Ndef(\fbfb, {
+	var buf = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf), startPos:44100*20);
+	var buf2 = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf) * 1, startPos:44100*300);
+	var dur = ~buf.duration;
+	var snd;
+	var bufamp = Amplitude.ar(buf.sum, 0.1, 1);
+
+	snd = (1.088 * [55, 110, 165]).collect { |fq|
+		var sn2, fb = FbNode(1, 0.05, 0);
+		var amp = Amplitude.ar(fb, 0.1, 1);
+
+		sn2 =(fb * 1) + buf.sum;
+		fb.delay(LFDNoise3.ar(amp.lag(2)).range(110, 880).reciprocal);
+
+		sn2 = LPF.ar(sn2.distort, LFNoise2.ar(0.3).exprange(500,1000));
+		sn2 = CombN.ar(sn2, 0.05, (fq * LFNoise2.ar(0.13).range(0.99,1.02)).reciprocal, 4, (1 - amp.lagud(0.1, 0.5)).clip(0, 1));
+		sn2 = LeakDC.ar(sn2)  + Impulse.ar(10, 0, LFNoise2.kr(2).exprange(0.5, 4));
+		fb.write(sn2);
+
+	};
+
+	snd = Splay.ar(snd);
+	snd = snd + FreqShift.ar(snd, Fdef(\autoscale).(bufamp * PinkNoise.ar(0.1), 410, Line.ar(420, 880, dur), inf, -inf, \ar));
+	snd = AllpassN.ar(snd, 0.1, LFNoise2.ar(0.1).range(0.04, 0.06), 5);
+
+	snd = snd;
+
+	buf = buf + CombC.ar(FreqshiftAAbuf, 8, 8, 8, 0.3);
+
+	buf + (snd * 0.01 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
+}).play
+)
+
+
