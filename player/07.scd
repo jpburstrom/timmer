@@ -121,7 +121,7 @@ x.stop
 
 //## fix fix ##
 
-~buf = Buffer.read(s,"/Users/johannes/projects/timmer/kod/player/songs/07-20160316-1539.wav" )
+~buf = Buffer.read(s,"songs/07-20160316-1539.wav".resolveRelative )
 (
 Ndef(\fbfb, {
 	var buf = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf), startPos:44100*20);
@@ -150,10 +150,54 @@ Ndef(\fbfb, {
 
 	snd = snd;
 
-	buf = buf + CombC.ar(FreqshiftAAbuf, 8, 8, 8, 0.3);
+    // buf = buf + CombC.ar(buf, 8, 8, 8, 0.3);
 
-	buf + (snd * 0.01 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
+	buf + (snd * 0.02 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
 }).play
 )
 
+Ndef(\fbfb).stop
 
+//## Scramble order of last loud part ##
+
+(
+var from = 300;//q.player.data.phrase.last;
+var to = 400;//from.sum;
+// from = from[0];
+
+Pdef(\sdf, Pbind(
+    \instrument, \bufSegment,
+    \dur, Prout({ |ev|
+
+        var positions = Fdef(\randomSegments).(from, to, 3.0, 7.0);
+        var durations = (positions ++ to).differentiate[1..];
+        var order = Array.series(positions.size).scramble;
+        order.do { |index|
+            ev.startPos = positions[index];
+            ev = durations[index].yield;
+        }
+
+    }),
+    \bufnum, ~buf,
+    \legato, Pn(1, 100),
+    \fadetime, 5
+).trace).play;
+)
+
+
+//## testing freqshift ##
+(
+var start = 30;
+Pdef(\test07, Pbind(
+    \instrument, \bufSegmentFreqshiftMS,
+    \bufnum, ~buf,
+    \startPos, Ptime() + Pwhite(-0.1, 0.1) + start,
+    \dur, 0.005,
+    \legato, 3,
+    \bufRate, 0.99,
+    \midAmp, -6.dbamp,
+    \freqshift, Pwhite(-100, -500),
+    \amp, 2,
+    \fadetime, 0.01
+)).play;
+)

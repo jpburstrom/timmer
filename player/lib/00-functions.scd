@@ -118,4 +118,24 @@ Fdef(\scrambleAvoidSimilar, { |labelarray, offset=0|
 	}
 });
 
-
+//create an array with ordered random segments from `first` to `last`,
+//with lengths between `minlen` and `maxlen`.
+Fdef(\randomSegments, { arg first, last, minlen, maxlen;
+    var midlen = ((maxlen-minlen) * 0.5) + minlen; //Todo:calc
+    var i = minlen.rrand(maxlen) + first;
+    var rem;
+    //our output
+    var x = List[first, i];
+    while ({ i <= (last - (midlen * 2))}) {
+        i = i + minlen.rrand(maxlen);
+        x.add(i);
+    };
+    rem = i = last - i;
+    if (rem > maxlen) {
+        while ({ (rem - i) < minlen}) {
+            i = minlen.rrand(maxlen);
+        };
+        x.add(x.last + i);
+    };
+    x
+});
