@@ -14,6 +14,8 @@ q.player.stop
 q.player.data.score.do(_.postln); nil
 q.player.currentEvent
 q.player.reset; q.player.asPattern(1).asStream.nextN(10, ()).do(_.postln);nil;
+
+q.player.bounce;
 (
 //## Patterns #######
 
@@ -21,7 +23,7 @@ q.player.reset; q.player.asPattern(1).asStream.nextN(10, ()).do(_.postln);nil;
 //onReady is called when player buffer is loaded, and before playing
 //It's called within a routine, so we can use s.sync, .wait or similar
 q.player.onReady = {
-    ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -12.dbamp, \decay, 0.1], ~t.sendGroup);
+	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -12.dbamp, \decay, 0.1], ~t.sendGroup);
 
 	~t.zerox_envbus = Bus.control;
 	~t.zerox_outbus = Bus.audio(s, 2);
@@ -45,7 +47,7 @@ q.player.setPtn(Pbind(
 				amp = amp ?? { -12.dbamp };
 				Synth(\zerox_delay_2x2,
 					[\inbus, 0, \outbus, ~t.zerox_outbus, \posbus, ~t.posbus, \sndbuf, ~t.sndbuf,
-						\timebuf, ~t.timebuf, \pan, pan, \amp, amp], ~t.zerox_rec, \addAfter);
+						\timebuf, ~t.timebuf, \pan, pan, \amp, amp, \attackTime, 1.rrand(3.0)], ~t.zerox_rec, \addAfter);
 			};
 
 		};
@@ -55,10 +57,18 @@ q.player.setPtn(Pbind(
 				~t.zerox_env = { Out.kr(~t.zerox_envbus, Line.kr(0.02, 1, partDur)) }.play(target:~t.preGroup);
 
 				createDelays.value(4, \zerox_play);
-				~t[\zerox_play].do(_.map(\maxDelay, ~t.zerox_envbus));
+				~t.zerox_play.do { |x|
+					x.map(\maxDelay, ~t.zerox_envbus);
+					x.set(\releaseTime, 10)
+				};
+				~t.tmpFork = fork {
+					(~data.part[1][1] - 10).wait;
+					~t.zerox_play.do(_.release);
+				}
 
 			},
 			2, {
+				~t.tmpFork.stop;
 				~t.zerox_play.free;
 				~t.zerox_env.free;
 			},
