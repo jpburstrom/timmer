@@ -6,7 +6,11 @@ q.player.loadData("02");
 q.player2 = q.player.clone;
 q.player2.tickLabel = \beat;
 q.player2.prepareScore;
-q.player2.setPtn(Pbind(\tempo, Pfunc { |ev| var t = ~data.beat[ev.beat][2]; q.player.t.delay.set(\delayTime, t * 0.5); t; }, \dur, 1, \type, \rest));
+q.player2.setPtn(Pbind(
+	\tempo, Pfunc { |ev| var t = ~data.beat[ev.beat][2]; t; },
+	\dur, 1,
+	\instrument, \plank
+));
 // q.player.parPtn = Pbind(\adjustDur, Pfunc { |ev| ev.dur = ev.dur * 0.5}) <> q.player2.asPattern
 )
 (
@@ -14,7 +18,7 @@ q.playerui = "lib/protos/score-player-gui".import;
 q.playerui.connect(q.player)
 )
 
-q.player.setIterator(Pseries());
+q.player.setIterator(Pseries())
 
 (
 //Randomizing works a lot of the times, but not when
@@ -39,25 +43,19 @@ q.player.setPtn(Pbind(\fadetime, 0.01, \startPos, Pkey(\startPos) - 0.15));
 q.player.onReady = {
 
 	"start".postln;
-	q.player2.play;
+	q.player2.play(TempoClock.new);
 
-	~t.delay = {
-		var snd = In.ar(0, 2);
-		DelayC.ar(snd, 1, \delayTime.kr(0.5, 0.05), 0.2);
-	}.play(target:~t.postGroup);
-};
-
-
+}
 )
 
 
 q.player.trace = false;
 q.player.play
 q.player.stop
-
-q.player2.play
-Quarks.gui
-
+TempoClock.tempo = 1
 q.player2.stop
-1
-q.player.data.beat
+
+fork { q.player2.prep(true) }
+q.player2.t
+q.player2.streamPlayer.stop
+q.player2.play(0, TempoClock.new)
