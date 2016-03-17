@@ -1,4 +1,4 @@
-//# Template for songs ###
+//# Song 09 ###
 
 //## Initialize ###
 (
@@ -44,8 +44,8 @@ q.player.use {
     );
 
     ~setPtn.(Pbind(
-        //Play through, then start over and fade
-        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size, 15]), \exp);
+        //Play through 4 times, then fade
+        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp);
     ));
 
     ~onReady = {
@@ -56,7 +56,7 @@ q.player.use {
         //FIXME: reverb params
 
         //This doesn't work with .bounce
-        ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
+		// ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
 
         ~t.wood = {
             var snd = In.ar(0, 2);
@@ -108,3 +108,5 @@ q.player.play;
 )
 q.player.stop
 
+
+q.player.bounce
