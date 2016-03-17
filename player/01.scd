@@ -16,30 +16,22 @@ q.player.stop
 //TODO:
 //Parallel freqshifted track, with similar but different onsets
 //Check radius
-
 //quantAmt lag (interpolate)
 //Room/rev
 //~6.30: Work with shorter durations
+
 (
 q.player.onReady = {
 
     ~t.klankBus = Bus(\audio, 32, 2);
     ~t.freqShiftBus = Bus(\audio, 34, 2);
 
-    //Always-running klank synth
-    ~t.klank = {
+	//Always-running klank synth
+	//Makes a bell-like sound
+	~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, 0], ~t.postGroup);
 
-        var freqs = [1, 1.0019054878049, 1.7936737804878, 1.8009908536585, 2.5201981707317, 2.5224085365854, 2.9907012195122, 2.9940548780488, 3.7855182926829, 3.8061737804878, 4.5689024390244, 4.5754573170732, 5.0296493902439, 5.0455030487805, 6.0759908536585, 5.9094512195122, 6.4124237804878, 6.4430640243902, 7.0826219512195, 7.0923780487805, 7.3188262195122, 7.5551829268293] * 2;
-        var amps = freqs.size.collect((_+1).reciprocal);
-        var times = freqs.size.collect { Rand(1, 9.5) };
-        var snd = DynKlank.ar(`[freqs, amps, times], In.ar(~t.klankBus, 2) * 0.01, \freq.kr(150) * LFNoise2.kr(4).range(0.99, 1.01));
-        snd
-
-    }.play(target: ~t.postGroup);
-
-    ~t.freqShift = {
-		FreqShiftAA.ar(In.ar(~t.freqShiftBus, 2), \freq.kr(-100, 0.05));
-    }.play(target: ~t.postGroup);
+	//Freqshift fx synth
+    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, 0], ~t.postGroup);
 
 
 };
