@@ -37,6 +37,8 @@ var zerox_play = { arg channels, inbus = 0, outbus=0, posbus=0, sndbuf, timebuf,
 	//Bypass if randWindow == 0
 	src = LinSelectX.ar(K2A.ar((randWindow > 0)).lag(0.002), [src, BufRd.ar(channels, sndbuf, playtime, interpolation:0)]);
 
+	src = src * EnvGen.ar(Env.asr(\attackTime.kr(0.01), 1, \releaseTime.kr(1)), \gate.kr(1), doneAction:2);
+
 	//Assuming channels are 1 or 2
 	//TODO: variable panning?
 	if (channels == 1) {
