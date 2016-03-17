@@ -1,31 +1,162 @@
 //# Song 07 ###
 
-//## Form ###
-//### A ###
-//First minute: low bass, feedback loop. Dynamic duration. Possibly crossfade phrases,
-//or put them on top of each other.
+//This is (and should be) a more sound-oriented thing
+//Even though (or just because) the original track has a strong dramaturgy i could imagine
+//splitting it up a bit.
 
-//### B ###
-//1.00. Low bass continues, first pizz after roughly 10 seconds. Here feedback might be gone.
+//The material is quite drone-y, so it's easy to jump and crossfade. This could be useful for the final
+//structure of the piece -- it could be quite far from the original (and random), and still have a logic
 
-//### C ###
-//2.45. Short bridge followed by long drone-noisy sausage. Here feedback is back.
+//I have tried to create a feedback-based synth that could mix well with the bass,
+//but haven't really succeeded.
 
-//## Initialize ###
+//The following is a few tryouts and fragments.
+
+~buf = Buffer.read(s,"songs/07-20160316-1539.wav".resolveRelative )
+
+(
+var from = 300;//q.player.data.phrase.last;
+var to = 400;//from.sum;
+// from = from[0];
+
+//## Test 1 ##
+
+//Segmentation & randomization of last part
+Pdef(\sdf, Pbind(
+    \instrument, \bufSegment,
+    \dur, Prout({ |ev|
+
+		//This splits the part (from..to) into random-sized segments (between 3 and 7)
+        var positions = Fdef(\randomSegments).(from, to, 3.0, 7.0);
+        var durations = (positions ++ to).differentiate[1..];
+        var order = Array.series(positions.size).scramble;
+        order.do { |index|
+            ev.startPos = positions[index];
+            ev = durations[index].yield;
+        }
+
+    }),
+    \bufnum, ~buf,
+    \legato, Pn(1, 100),
+    \fadetime, 5
+).trace).play;
+)
+
+//## Test 2 ##
+
+//Granulated and freqshifted
+
+(
+var start = 300;
+Pdef(\test07, Pbind(
+    \instrument, \bufSegmentFreqshiftMS,
+    \bufnum, ~buf,
+    \startPos, Ptime() + Pwhite(-0.1, 0.1) + start,
+    \dur, 0.05,
+    \legato, 3,
+    \bufRate, 0.99,
+	//removing some mid from the signal to make it less focused
+    \midAmp, -6.dbamp,
+    \freqshift, -1400,
+    \amp, 2,
+    \fadetime, 0.01
+)).play;
+)
+
+
+//## Test 3 ##
+
+//Feedback drone controlled by buffer amp
+(
+Ndef(\fbfb, {
+	var buf = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf), startPos:44100*20);
+	//parallel buffer playback
+	var buf2 = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf) * 1, startPos:44100*300);
+	var dur = ~buf.duration;
+	var snd;
+	var bufamp = Amplitude.ar(buf.sum, 0.1, 1);
+
+	//Feedback loops
+	snd = (1.088 * [55, 110, 165]).collect { |fq|
+		var sn2, fb = FbNode(1, 0.05, 0);
+		var amp = Amplitude.ar(fb, 0.1, 1);
+
+		sn2 =(fb * 1) + buf.sum;
+		fb.delay(LFDNoise3.ar(amp.lag(2)).range(110, 880).reciprocal);
+
+		sn2 = LPF.ar(sn2.distort, LFNoise2.ar(0.3).exprange(500,1000));
+		sn2 = CombN.ar(sn2, 0.05, (fq * LFNoise2.ar(0.13).range(0.99,1.02)).reciprocal, 4, (1 - amp.lagud(0.1, 0.5)).clip(0, 1));
+
+		//Add Impulse, to get some rhythm into the mix
+		sn2 = LeakDC.ar(sn2)  + Impulse.ar(10, 0, LFNoise2.kr(2).exprange(0.5, 4));
+		fb.write(sn2);
+
+	};
+
+	snd = Splay.ar(snd);
+
+	//Add freqshift
+	snd = snd + FreqShift.ar(snd, Fdef(\autoscale).(bufamp * PinkNoise.ar(0.1), 410, Line.ar(420, 880, dur), inf, -inf, \ar));
+	snd = AllpassN.ar(snd, 0.1, LFNoise2.ar(0.1).range(0.04, 0.06), 5);
+
+	snd = snd;
+
+    // buf = buf + CombC.ar(buf, 8, 8, 8, 0.3);
+
+	buf + (snd * 0.02 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
+}).play
+)
+
+Ndef(\fbfb).stop
+
+
+//## Test 4 ##
+
 (
 "lib/init".import;
 q.player.actionLabels = #[phrase, part];
 q.player.tickLabel = \phrase;
 q.player.loadData("07");
 //q.player.extractFeatures;
-q.playerui.connect(q.player)
-)
-(
+q.playerui.connect(q.player);
 
-//## Patterns #######
+q.player.onReady = {
 
-//This sets a pattern used to modify the base player pattern.
+	~t.comb = Synth(\feedback_07, [\amp, -40.dbamp], target: ~t.postGroup)
+
+};
+
+q.player.actions.part.onStart = { |ev, part|
+	q.playerui.log(part, "Part");
+	switch(part,
+		1, {
+			~t.rout = fork {
+				11.5.wait; //Wait for first pizz
+				s.bind {
+					//Continue feedback loop without support from bass
+					~t.comb.set(\inAmp, 0);
+					~t.comb.set(\minFeedback, -5);
+					~t.comb.set(\ampAutoscale, 0.9);
+
+				}
+			}
+		},
+		2, {
+			~t.rout.stop; //Stop previous routine (if still active)
+			s.bind {
+				"hello part 3".postln;
+				~t.envBus = Bus.control(s);
+				~t.env = { Out.kr(~t.envBus, EnvGen.kr(Env([0.9, 0.1], [60]))); }.play(target:~t.preGroup);
+				~t.comb.map(\ampAutoscale, ~t.envBus);
+				~t.comb.set(\partials, 102 * (1..8));
+			}
+	});
+}
+
 q.player.setPtn(Pbind(
+	//This is good -- first part should have overlapping segments
+	\fadetime, 5,
+
 	\combSetFunc, p { |ev|
 		var target = ~data.firstPartRepeat;
 		// var targetVal = -0.
@@ -69,47 +200,9 @@ q.player.setIterator(
     })
 );
 )
-q.player.setIterator(Pseries())
-//## Callbacks ####
-(
-//onReady is called when player buffer is loaded, and before playing
-//It's called within a routine, so we can use s.sync, .wait or similar
-q.player.onReady = {
-
-	~t.comb = Synth(\feedback_07, [\amp, -40.dbamp], target: ~t.postGroup)
-
-};
-
-q.player.actions.part.onStart = { |ev, part|
-	q.playerui.log(part, "Part");
-	switch(part,
-		1, {
-			~t.rout = fork {
-				11.5.wait; //Wait for first pizz
-				s.bind {
-					//Continue feedback loop without support from bass
-					~t.comb.set(\inAmp, 0);
-					~t.comb.set(\minFeedback, -5);
-					~t.comb.set(\ampAutoscale, 0.9);
-
-				}
-			}
-		},
-		2, {
-			~t.rout.stop; //Stop previous routine (if still active)
-			s.bind {
-				"hello part 3".postln;
-				~t.envBus = Bus.control(s);
-				~t.env = { Out.kr(~t.envBus, EnvGen.kr(Env([0.9, 0.1], [60]))); }.play(target:~t.preGroup);
-				~t.comb.map(\ampAutoscale, ~t.envBus);
-				~t.comb.set(\partials, 102 * (1..8));
-			}
-	});
-}
-)
 
 
-q.player.trace = true
+
 q.player.play
 q.player.stop
 q.player.readyForPlay
@@ -119,85 +212,4 @@ x = fork { 10.do { "hello".postln; 1.wait }}
 x.stop
 
 
-//## fix fix ##
 
-~buf = Buffer.read(s,"songs/07-20160316-1539.wav".resolveRelative )
-(
-Ndef(\fbfb, {
-	var buf = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf), startPos:44100*20);
-	var buf2 = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf) * 1, startPos:44100*300);
-	var dur = ~buf.duration;
-	var snd;
-	var bufamp = Amplitude.ar(buf.sum, 0.1, 1);
-
-	snd = (1.088 * [55, 110, 165]).collect { |fq|
-		var sn2, fb = FbNode(1, 0.05, 0);
-		var amp = Amplitude.ar(fb, 0.1, 1);
-
-		sn2 =(fb * 1) + buf.sum;
-		fb.delay(LFDNoise3.ar(amp.lag(2)).range(110, 880).reciprocal);
-
-		sn2 = LPF.ar(sn2.distort, LFNoise2.ar(0.3).exprange(500,1000));
-		sn2 = CombN.ar(sn2, 0.05, (fq * LFNoise2.ar(0.13).range(0.99,1.02)).reciprocal, 4, (1 - amp.lagud(0.1, 0.5)).clip(0, 1));
-		sn2 = LeakDC.ar(sn2)  + Impulse.ar(10, 0, LFNoise2.kr(2).exprange(0.5, 4));
-		fb.write(sn2);
-
-	};
-
-	snd = Splay.ar(snd);
-	snd = snd + FreqShift.ar(snd, Fdef(\autoscale).(bufamp * PinkNoise.ar(0.1), 410, Line.ar(420, 880, dur), inf, -inf, \ar));
-	snd = AllpassN.ar(snd, 0.1, LFNoise2.ar(0.1).range(0.04, 0.06), 5);
-
-	snd = snd;
-
-    // buf = buf + CombC.ar(buf, 8, 8, 8, 0.3);
-
-	buf + (snd * 0.02 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
-}).play
-)
-
-Ndef(\fbfb).stop
-
-//## Scramble order of last loud part ##
-
-(
-var from = 300;//q.player.data.phrase.last;
-var to = 400;//from.sum;
-// from = from[0];
-
-Pdef(\sdf, Pbind(
-    \instrument, \bufSegment,
-    \dur, Prout({ |ev|
-
-        var positions = Fdef(\randomSegments).(from, to, 3.0, 7.0);
-        var durations = (positions ++ to).differentiate[1..];
-        var order = Array.series(positions.size).scramble;
-        order.do { |index|
-            ev.startPos = positions[index];
-            ev = durations[index].yield;
-        }
-
-    }),
-    \bufnum, ~buf,
-    \legato, Pn(1, 100),
-    \fadetime, 5
-).trace).play;
-)
-
-
-//## testing freqshift ##
-(
-var start = 30;
-Pdef(\test07, Pbind(
-    \instrument, \bufSegmentFreqshiftMS,
-    \bufnum, ~buf,
-    \startPos, Ptime() + Pwhite(-0.1, 0.1) + start,
-    \dur, 0.005,
-    \legato, 3,
-    \bufRate, 0.99,
-    \midAmp, -6.dbamp,
-    \freqshift, Pwhite(-100, -500),
-    \amp, 2,
-    \fadetime, 0.01
-)).play;
-)

@@ -1,4 +1,10 @@
-//# Template for songs ###
+//# 04 #
+
+//Exploring different ways of randomizing phrases
+//See iterator for details
+
+//For later, needs more interesting sound. Explore parallel freqshifted track, or something similar
+
 
 //## Initialize ###
 (
@@ -8,55 +14,20 @@ q.player.tickLabel = \phrase;
 q.player.loadData("04");
 //q.player.extractFeatures;
 q.playerui.connect(q.player);
+
+//This loads a previously generated markov chain
 q.markov = "lib/protos/markov-trainer".import;
 q.markov.setBounds(q.player.data.lookup.part[2], q.player.data.lookup.part[3] - 1);
 q.markov.connect(q.player);
 q.markov.initChain;
-)
 
-q.markov.chain.collectAs({ |x| var index = x[0].indexOf(32); index !? { x[1][index] }  }, Array).reject(_.isNil)
-nil ?? 2
-
-~buf4 = Buffer.read(s, "songs/04-Qin 2 __-44100.wav".resolveRelative);
-
-//### HELLO TEST ###
-(
-Ndef(\fqShiftTest, {
-    //Frequencies as multiples of EADG
-    var freqs = ["E0", "A0", "D1", "G1"].namecps *.x [-5, -7, -11];
-    var fadetime = 0.002;
-    var sustain = 3.3;
-    var snd = PlayBuf.ar(2, ~buf4, BufRateScale.kr(~buf4), startPos:44100*11.56);
-    var chain = FFT(LocalBuf(512), snd[0]);
-    var trig = Onsets.kr(chain, 0.2);
-    //every onset has a probability of 0.1 to trigger a new chosen frequency
-    var randFreq = Demand.kr(Impulse.kr(0) + CoinGate.kr(0.1, trig), 0, Dxrand(freqs, inf));
-
-    //Remove double-trig
-    trig = Trig.kr(trig, 0.2);
-
-    //Delay to compensate for FFT latency
-    snd = DelayN.ar(snd, 0.1, 1024 / SampleRate.ir);
-
-    //Random freq shift per onset
-    snd = LinXFade2.ar(snd, -1 * FreqShiftAA.ar(snd, randFreq), EnvGen.ar(Env([-1, -1, 1], [0.02, 0.05]), trig).lag(0.02));
-
-}).play
-)
-
-//### END TEST ###
-
-q.player.playSegment(32)
-q.player.currentEvent
-q.player.stop;
-(
-//## Patterns #######
-
+//Modifying pattern
 q.player.setPtn(Pbind(
 	\hello, Pfunc { |ev|
 		if (ev.part == 2) {
 			var rep;
 			//Make phrase more distant for every repeat
+			//TODO: This effect could be better/more interesting
 			if ((rep = ~t.repeats[ev.phrase]) > 1) {
 				rep.debug("Distance");
 				ev.instrument = \bufSegmentMS;
@@ -69,6 +40,7 @@ q.player.setPtn(Pbind(
 	}
 ));
 
+//Iterator
 q.player.setIterator(
 	Plazy({
 		var part = ~data.lookup.part;
@@ -98,8 +70,37 @@ q.player.setIterator(
 
 		]);
 	})
+);
+
+q.player.play
 )
+
+
+//### HELLO TEST ###
+(
+Ndef(\fqShiftTest, {
+    //Frequencies as multiples of EADG
+    var freqs = ["E0", "A0", "D1", "G1"].namecps *.x [-5, -7, -11];
+    var fadetime = 0.002;
+    var sustain = 3.3;
+    var snd = PlayBuf.ar(2, ~buf4, BufRateScale.kr(~buf4), startPos:44100*11.56);
+    var chain = FFT(LocalBuf(512), snd[0]);
+    var trig = Onsets.kr(chain, 0.2);
+    //every onset has a probability of 0.1 to trigger a new chosen frequency
+    var randFreq = Demand.kr(Impulse.kr(0) + CoinGate.kr(0.1, trig), 0, Dxrand(freqs, inf));
+
+    //Remove double-trig
+    trig = Trig.kr(trig, 0.2);
+
+    //Delay to compensate for FFT latency
+    snd = DelayN.ar(snd, 0.1, 1024 / SampleRate.ir);
+
+    //Random freq shift per onset
+    snd = LinXFade2.ar(snd, -1 * FreqShiftAA.ar(snd, randFreq), EnvGen.ar(Env([-1, -1, 1], [0.02, 0.05]), trig).lag(0.02));
+
+}).play
 )
+
 
 //Sonny Schmidt
 ~buf4 = Buffer.read(s, "songs/04-Qin 2 __-44100.wav".resolveRelative);
@@ -118,23 +119,5 @@ Ndef(\sonny, {
     snd + sonny.softclip;
 }).play;
 )
+//### END TEST ###
 
-FbNode
-Quarks.gui
-1/13
-12.nthPrime
-
-
-//## Callbacks ####
-(
-//onReady is called when player buffer is loaded, and before playing
-//It's called within a routine, so we can use s.sync, .wait or similar
-q.player.onReady = {
-};
-)
-
-q.player.actions.part.onStart = { |ev, x| "PART %".format("ABCD"[x]).debug }
-
-
-q.player.play
-q.player.stop
