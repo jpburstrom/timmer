@@ -14,10 +14,6 @@ q.player.play
 q.player.stop
 
 //TODO:
-//Parallel freqshifted track, with similar but different onsets
-//Check radius
-//quantAmt lag (interpolate)
-//Room/rev
 //~6.30: Work with shorter durations
 
 (
@@ -31,7 +27,7 @@ q.player.onReady = {
 	~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, 0], ~t.postGroup);
 
 	//Freqshift fx synth
-    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, 0], ~t.postGroup);
+    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, 0, \amp, 4, \midAmp, -9.dbamp], ~t.postGroup);
 
 
 };
@@ -39,12 +35,17 @@ q.player.onReady = {
 q.player.setIterator(p {
     var size = ~data.onset.size;
     var varStream = Fdef(\twoPeaksPattern).value(size).asStream;
-    //Random segment: 5 segments that are selected at start
-    var isPhraseStart = { |i, length=2|
+
+	//We have a list of phrase start/durations. This compares current onset start
+	//with the phrase start, to see if the new onset marks a start of the phrase
+	var isPhraseStart = { |i, length=2|
         var phrase = ~data.lookup.phrase.minItem((i - _).wrap(0, inf));
         (i >= phrase) and: { (i - phrase) <= length };
 
     }.inEnvir;
+
+	//Get k-nearest neighbour, with a distance from 0 to 1
+	//By default we have 5 neighbours calculated
     var getknn = { |index, varFactor|
         //We offset varFactor with 0.9999 and multiply with number of knn items
         //so that even a very small varFactor will switch to closest neighbour
@@ -52,13 +53,18 @@ q.player.setIterator(p {
         index = ~getknn.value(index, varFactor);
     }.inEnvir;
 
+	//Here we decide which 5 segments should be special.
+	//Allowed segments: short or long (but not very long)
     var allowedSegments = ~data.onset.selectIndices( { |x| x[1] < 0.4 or: { x[1] > 1.0 and: { x[1] < 2 }} });
-    var randomSegment = Plazy({Pxrand(allowedSegments.scramble[..5], inf)}).asStream;
-    var prevVarFactor = 0;
-    var currentPhrase;
+    //Pick five random of allowed segments
+	var randomSegment = Plazy({Pxrand(allowedSegments.scramble[..5], inf)}).asStream;
+
+	//Cache last `varFactor`
+	var prevVarFactor = 0;
 
 	//`counter` is a stream that advances up to `repeatStart + 20.rrand(40)`, then goes back to `repeatStart`
-	//`endRepeats` times, after which it continues infinitely
+	//`repeats` times, after which it continues infinitely
+	//A bit like "Tie a yellow ribbon" -- repeat the next-to-last phrase 3 times before the end.
 	var counter = value({
 		var repeats = 3;
 		var repeatStart = 711;
@@ -88,28 +94,26 @@ q.player.setIterator(p {
             };
 
             prevVarFactor = ~varFactor;
-            // prevVarFactor.postln;
 
             //Toss a coin. Are we random this time?
             ~isRandom = ~varFactor.coin;
 
-        ~isPhraseStart = isPhraseStart.value(i);
+			//Check if we are
+			~isPhraseStart = isPhraseStart.value(i);
 
-            if (~isPhraseStart.not) { //Leave first 3 notes of phrase unchanged
-
-
-                if (~isRandom) {
+			//Bypass if we're on a phrase start
+            if (~isPhraseStart.not) {
+				if (~isRandom) {
                     x = randomSegment.next;
                 } {
                     //Get neighbour. A random number from 0 to ~varFactor is selecting the
                     //n closest neighbour (where ~varFactor is a float from 0-1).
                     //FIXME: too much random
-                    x = getknn.value(x, ~varFactor.cubed.rand);
+					x = getknn.value(x, ~varFactor.rand * ~varFactor.coin.binaryValue);
                     // x = i;
                 }
             };
 			~origIndex = i;
-            //Return an array with two
         };
 	    x.yield;
         i = counter.value;
@@ -188,7 +192,7 @@ q.player.setPtn(Pbind(
 			if (ev.isPhraseStart.not and: { q.playerui.log(((1 - ev.dur).max(0) * 2)).coin } ) {
 				//Ok, we're setting freqshift params from here, which probably would be regarded
 				//as a big hack.
-				s.bind { ~t.freqShift.set(\freq, ev.fqshift).set(\delay, prev); };
+				s.bind { ~t.freqShift.set(\freq, ev.fqshift); };
 				ev = 1.yield;
 				3.do { ev = 0.yield }
 			} {
@@ -199,7 +203,7 @@ q.player.setPtn(Pbind(
 
     	};
 	},
-    \sendAmp, Ptuple([0, Pbrown(-36, 0, 0.2).dbamp], inf),
+    \sendAmp, Ptuple([0, Pbrown(-12, 6, 0.8).dbamp], inf),
     \sendBus, Pfunc { ~t.freqShiftBus },
     \out, 0,
     \amp, [1, 0],
@@ -207,13 +211,14 @@ q.player.setPtn(Pbind(
 
         x = ~getknn.value(ev.onset, 1.rrand(5));
         x = ~data.onset[x];
-        ev.sustain = [ev.dur, x[1]];
+        ev.sustain = [ev.dur, x[1] - 0.1];
         //return startPos
-        [ev.startPos, x[0] - 0.02];
+		[ev.startPos, x[0]];
     },
     //lag doesn't work with bounce?
-    // \lag, [0.035, 0.0],
-    \fadetime, [0.002, 0.01]
+	//see fix at ../tests/scoreClock-lagfix.scd
+	// \lag, Pwhite(0.0, 0.04).clump(2) * [0, 1],
+    \fadetime, [0.002, 0.002]
 ));
 
 )
