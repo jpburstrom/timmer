@@ -9,8 +9,8 @@ q.player.loadData("08");
 //q.player.extractFeatures;
 q.playerui.connect(q.player)
 // q.markov = "/lib/protos/markov-trainer".import;
-
 )
+
 (
 var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
 //onReady is called when player buffer is loaded, and before playing
@@ -28,18 +28,21 @@ q.player.data.grouping = #[
         15, 7, 12, 14, 16, 17 ]
 ];
 q.player.data.iterators = ().make {
+	//Scramble order of first part, but don't put two in the same group after each other
 	~p1 = Plazy { Pseq(Fdef(\scrambleAvoidSimilar).(q.player.data.grouping[0])) } ;
 	~p2 = Pseries(30, 1, 34);
 	~p3 = Plazy {
 		Pseq((64..76).scramble)
 		++ Pseq((77..80))
+		//This is a bit
         ++ Pwalk((81..90), Pwrand([-2, 1, 2], [0.3, 0.4, 0.4], 30.rrand(50)))
 	};
 	// ~p4 = Pn(91,1) ++ Pxrand((92..104), 24) ++ Pn(105, 1);
 	~p4 = Pseq((91..105));
 	~p5 = Pseq((106..301));
 	//Break it down
-	~p6 = Pseq((302..371));
+	~p6 = Pseries(302);
+	// ~p7 = Pn(0);
 };
 )
 )
@@ -48,53 +51,85 @@ q.player.data.iterators = ().make {
 //## Patterns #######
 
 //This sets a pattern used to modify the base player pattern.
-q.player.setPtn(Pbind(
-	\startPos, Pkey(\startPos) - 0.002,
-	\dummy, Prout({ |ev|
+q.player.setPtn(Plazy({
+	var endSegment = 360.rrand(370);
 
-		var claps = Pn(Plazy { Pseq(~t.handclaps.scramble) }).asStream;
-		var blacklist = (118..122) ++ (134..139) ++ (175..186) ++ (192..199);
+	Pbind(
+		\startPos, Pkey(\startPos) - 0.002,
+		\dummy, Prout({ |ev|
 
-		while ({ev.onset < 105}) { ev = 0.yield };
+			var claps = Pn(Plazy { Pseq(~t.handclaps.scramble) }).asStream;
+			var blacklist = (118..122) ++ (134..139) ++ (175..186) ++ (192..199);
 
-		while ({ev.onset < 218}) {
+			var endDuration = 40.rrand(55);
+
+			while ({ev.onset < 105}) { ev = 0.yield };
+
+			while ({ev.onset < 218}) {
 			if ( blacklist.includes(ev.onset).not and: { 0.7.coin } ) {
-				(instrument:\bufSegment, bufnum: claps.next, amp:1).play;
+			(instrument:\bufSegment, bufnum: claps.next, amp:1).play;
 			};
 			ev = 0.yield
-		};
+			};
 
-		while ({ev.onset < 301}) {
+			while ({ev.onset < 301}) {
 			ev = 0.yield;
-		};
+			};
 
-		~spawner.par(Pbind(
+			~spawner.par(Pbind(
 			\instrument, \bufSegment,
 			\bufnum, Pfunc { claps.next  },
 			\amp, Pbrown(0.2, 0.5),
-            \dur, Fdef(\pFuzzyBeatMatch).(q.player.data.onset[301..368].flop[1], 5);
-		);
+			\dur, Fdef(\pFuzzyBeatMatch).(q.player.data.onset[301..368].flop[1], 5);
+			));
 
-		loop {
-			0.yield;
-		}
-	})
 
-));
+			//while playing through, yield zero
+			//Then advance to the next pattern in the Pseq
+			while ({ev.onset <= endSegment}) {
+				ev = 0.yield;
+			};
 
-//Give a pattern to setIterator, which is used to sel ect which tick is to be played
-q.player.setIterator(Plazy { Psym(Pseq(#[p1,p2,p3,p4,p5,p6]), ~data.iterators) });
+			//Parallell pattern, which continues after the main pattern has been silenced
+			//(see below)
+			~spawner.par (
+				Pfindur(endDuration + ev.dur, Pchain(
+					Pbind(
+						\instrument, \bufSegmentPlankS,
+						\startPos, Pxrand(~data.onset.flop[0], inf),
+						\amp, Pkey(\amp) * 2,
+						\test, Pfunc { "hello".postln },
+						\pan, 0.2,
+					),
+					Pdef(\t08randomizedBeginning)
+				))
+			);
+
+			//Silence this, but continue running until `t08RandomizedBeginning` stops
+			//FIXME: This doesn't really work
+			Pfindur(endDuration, Pfunc { |ev|
+				0
+			}).embedInStream(ev);
+
+		}),
+		//TEMP: Shorten last non-freqshifted note, so we don't get start of next attack
+		\dur, Pif(Pkey(\onset) == (endSegment), Pkey(\dur) - 0.05, Pkey(\dur)),
+		\instrument, Pif(Pkey(\onset) < 370, \bufSegment, \bufSegmentFreqshift),
+		\freqshift, -5000.rrand(-8000);
+	)
+
+}));
+//Give a pattern to setIterator, which is used to select which tick is to be played
+q.player.setIterator(Plazy { Psym(Pseq(#[p1, p2, p3, p4, p5, p6]), ~data.iterators) });
 q.player.play
 )
 q.player.stop
 
-q.player.trace = true
-
-
-q.player.play
-q.player.stop
-
+q.player.currentEvent
 //TESTS
+q.player.bounce
+s
+q.player.trace = false
 
 ~buf8 = Buffer.read(s, "../songs/08-Burk korta 2 ___-44100.wav".resolveRelative);
 ~grainBuf = Buffer.alloc(s, 44100, 1);
@@ -160,3 +195,12 @@ Ndef(\fqShiftTest8).set(\dronefreq, {((0..11) + 36).midicps.choose}.dup(2) * 3)
 
 Ndef(\fqShiftTest8).set(\combTrig, 0);
 Ndef(\fqShiftTest8).set(\combTrig, 1);
+
+
+
+
+
+
+
+
+
