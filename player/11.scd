@@ -1,4 +1,4 @@
-~buf = Buffer.read(s, "/Volumes/HD2/projects/timmer-2015/render/11-Bivax stråk ___-44100.wav")
+~buf = Buffer.read(s, "songs/11*".resolveRelative.pathMatch[0])
 
 //## Initialize ###
 (

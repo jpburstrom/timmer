@@ -1,4 +1,4 @@
-~buf = Buffer.read(s, "/Users/johannes/projects/timmer/kod/player/songs/10-Bivax 2 ___-44100.wav");
+~buf = Buffer.read(s, "songs/10*".resolveRelative.pathMatch[0]);
 
 
 ~midside ={ arg input, scale = -3;   [input[0] + input[1], input[0] - input[1]] * scale.dbamp };
