@@ -1,0 +1,12 @@
+~/Library/Application Support/SuperCollider/downloaded-quarks/ddwPrototype=https://github.com/jamshark70/ddwPrototype@a2c6e2f35feab504126b495973d8095533116e9d
+~/Library/Application Support/SuperCollider/downloaded-quarks/ddwPatterns=https://github.com/jamshark70/ddwPatterns@26aeaaf27abbfb779867bd9e305be786014d57bf
+~/Library/Application Support/SuperCollider/downloaded-quarks/ddwCommon=https://github.com/jamshark70/ddwCommon@aee49e98bd4a75503976aff4f5e38361ccbb46eb
+~/Library/Application Support/SuperCollider/downloaded-quarks/KDTree=https://github.com/supercollider-quarks/KDTree@0a2d3dea9ef803615ce974a8c3080b3bf5d03f42
+~/Library/Application Support/SuperCollider/downloaded-quarks/KMeans=https://github.com/supercollider-quarks/KMeans@37c33220cbf870692297a92246ef18352780b04f
+~/Library/Application Support/SuperCollider/downloaded-quarks/ZArchive=https://github.com/crucialfelix/ZArchive@tags/1.0.0
+~/Library/Application Support/SuperCollider/downloaded-quarks/ScoreClock=https://github.com/supercollider-quarks/ScoreClock@64f07e7756ec6204abd13b7650c55fe21f725ce7
+~./../live/classes=
+~/Library/Application Support/SuperCollider/downloaded-quarks/EZConv=https://github.com/davidgranstrom/EZConv.git@65f8320128515750dd5d605c59687e1566e31de4
+~/Library/Application Support/SuperCollider/downloaded-quarks/ddwStatusBox=https://github.com/jamshark70/ddwStatusBox@1196270e28634331ed45bfbc573b7102de1179e0
+~/Library/Application Support/SuperCollider/downloaded-quarks/MathLib=https://github.com/supercollider-quarks/MathLib@6680c1dd46d0fda31a98c36bd8b9a2395499eebb
+~/Library/Application Support/SuperCollider/downloaded-quarks/Feedback=https://github.com/supercollider-quarks/Feedback@7de5f5502e6a8a044fc0bda39654dc3580e740e4
