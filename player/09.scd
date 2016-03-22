@@ -53,36 +53,12 @@ q.player.use {
             [0.04, 0.01, 0.01, 0.008],
             [0.2, 0.15, 0.15, 0.3]];
 
-        //FIXME: reverb params
+		//FIXME: reverb params
+		//This doesn't work with .bounce
+		~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
 
-        //This doesn't work with .bounce
-		// ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
-
-        ~t.wood = {
-            var snd = In.ar(0, 2);
-            var x;
-            // snd = BPF.ar(snd, 88, 0.001);
-            /*
-            6.do {
-            var drone = BPF.ar(snd, 88 * 0.95.rrand(1.06), 0.09);
-            11.do { drone = AllpassN.ar(drone, 0.1, 0.001.rrand(0.005), 4) };
-            snd =  snd + drone;
-
-            };
-            */
-
-            x = FreqShiftAA.ar(snd, -800);
-            x = Klank.ar(`wood2, x * LFNoise2.ar(1).exprange(0.001, 2), 99, 0, 4) * 2;
-
-            ReplaceOut.ar(0, x + snd);
-        }.play(target:~t.postGroup);
-
-        ~t.resonator = { |freq=88|
-            var snd = In.ar(0, 2);
-            snd = snd * EnvGen.ar(Env.asr(0.5, 1, 0.5), \gate.kr(0));
-            snd = AllpassN.ar(BPF.ar(snd, freq, 0.1), 0.05, 88.reciprocal, 10) * \amp.kr(1);
-            Out.ar(0, snd * 3);
-        }.play(target:~t.postGroup);
+        ~t.wood = Synth(\wood09, target:~t.postGroup);
+		~t.resonator = Synth(\resonator09, target:~t.postGroup);
 
 
     };
@@ -103,10 +79,7 @@ q.player.use {
 };
 
 
-q.player.play;
-
-)
-q.player.stop
-
+// q.player.play;
 
 q.player.bounce
+)

@@ -54,3 +54,32 @@ SynthDef(\klankBell, { |inbus=0, outbus=0, freq=150, amp=1|
         var snd = DynKlank.ar(`[freqs, amps, times], In.ar(inbus, 2) * 0.01, freq * LFNoise2.kr(4).range(0.99, 1.01));
 	Out.ar(outbus, snd * amp)
 }).add;
+
+
+//Temporary
+SynthDef(\wood09, {
+	var snd = In.ar(0, 2);
+	var x;
+	// snd = BPF.ar(snd, 88, 0.001);
+	/*
+	6.do {
+	var drone = BPF.ar(snd, 88 * 0.95.rrand(1.06), 0.09);
+	11.do { drone = AllpassN.ar(drone, 0.1, 0.001.rrand(0.005), 4) };
+	snd =  snd + drone;
+
+	};
+	*/
+
+	x = FreqShiftAA.ar(snd, -800);
+	x = Klank.ar(`wood2, x * LFNoise2.ar(1).exprange(0.001, 2), 99, 0, 4) * 2;
+
+	ReplaceOut.ar(0, x + snd);
+}).add;
+
+//Temporary
+SynthDef(\resonator09, { |freq=88|
+	var snd = In.ar(0, 2);
+	snd = snd * EnvGen.ar(Env.asr(0.5, 1, 0.5), \gate.kr(0));
+	snd = AllpassN.ar(BPF.ar(snd, freq, 0.1), 0.05, 88.reciprocal, 10) * \amp.kr(1);
+	Out.ar(0, snd * 3);
+}).add;

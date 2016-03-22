@@ -468,6 +468,8 @@ p = Proto({
             }
         );
 
+		//For checking score when debugging
+		~bounceScore = score;
 
         ~isRendering = false;
     };
