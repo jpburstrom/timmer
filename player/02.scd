@@ -1,8 +1,18 @@
 (
+//A simple resonator. TODO: find suitable frequencies
+Ndef(\asdf, {
+	var snd = In.ar(0, 2);
+	snd = Resonz.ar(snd, 73.416*3, 0.001, 20);
+}).mold.play
+)
+
+
+(
 "lib/init".import;
 q.player.actionLabels = #[phrase, beat];
 q.player.tickLabel = \phrase;
 q.player.loadData("02");
+//FIXME: Player2 idea doesn't work
 q.player2 = q.player.clone;
 q.player2.tickLabel = \beat;
 q.player2.prepareScore;
@@ -37,6 +47,7 @@ q.player.setIterator(Prout({
         count = count + 1;
     }
 }));
+//Onsets are a bit late. Make them come a bit earlier
 q.player.setPtn(Pbind(\fadetime, 0.01, \startPos, Pkey(\startPos) - 0.15));
 
 
