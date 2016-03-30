@@ -58,7 +58,7 @@ Pdef(\test07, Pbind(
 	//removing some mid from the signal to make it less focused
     \midAmp, -6.dbamp,
     \freqshift, -1400,
-    \amp, 2,
+    \amp, 0.1,
     \fadetime, 0.01
 )).play;
 )
@@ -103,7 +103,7 @@ Ndef(\fbfb, {
 
     // buf = buf + CombC.ar(buf, 8, 8, 8, 0.3);
 
-	buf + (snd * 0.02 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
+	RLPF.ar(buf, 880, 0.1) + (snd * 0.1 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
 }).play
 )
 
