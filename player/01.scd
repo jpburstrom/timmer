@@ -29,6 +29,26 @@ q.player.onReady = {
 	//Freqshift fx synth
     ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, 0, \amp, 4, \midAmp, -9.dbamp], ~t.postGroup);
 
+	//Filterbank acting as a kind of mellow drone,
+	//with frequencies from the first 5 notes in song
+	//(Harmonics of A and D + a weird harmonic from prepared G)
+	~t.filterBank = {
+		var d1 = "D1".namecps;
+		var a1 = 55;
+		//5 first notes in song
+		var freqs = [d1 * 5, a1 * 6, 235, d1 * 3, d1 * 2];
+		var snd = In.ar(0, 2);
+		var detune = 0.2;
+		var lo = detune.neg.midiratio ;
+		var hi = detune.midiratio ;
+		//Some detuning
+		//TODO: variation of LFNoise2 rate?
+		//TODO: individual amps?
+		snd = snd + Mix(freqs.collect({ |fq| Resonz.ar(snd, fq * LFNoise2.kr(0.1).range(lo, hi), 0.002, 3)}));
+		// snd.postln;
+		ReplaceOut.ar(0, snd);
+	}.play(target:~t.klank, addAction:\addBefore);
+
 
 };
 
