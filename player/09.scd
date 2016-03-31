@@ -54,7 +54,6 @@ q.player.use {
             [0.2, 0.15, 0.15, 0.3]];
 
 		//FIXME: reverb params
-		//This doesn't work with .bounce
 		~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
 
         ~t.wood = Synth(\wood09, target:~t.postGroup);
@@ -79,7 +78,7 @@ q.player.use {
 };
 
 
-// q.player.play;
+q.player.play;
 
-q.player.bounce
+// q.player.bounce
 )
