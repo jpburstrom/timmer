@@ -21,7 +21,8 @@ SynthDef(\bufSegmentPlank, { |out=0, bufnum=0, startPos=0, sustain=1, pan=0, amp
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos).sum;
-	snd = snd * EnvGen.ar(Env.perc(0.002, 0.005, 1, -8)) * 0.8;
+	snd = snd * EnvGen.ar(Env.perc(fadetime, 0.01, 1, -8));
+	// snd = HPF.ar(snd, 200);
 
 	snd = DynKlank.ar(`wood2, snd, \freq.kr(60), 0, sustain*3) * EnvGen.ar(Env.linen(0, sustain, 0.002), doneAction:2);
 	Out.ar(0, Pan2.ar(snd.tanh, pan, amp));
@@ -35,7 +36,8 @@ SynthDef(\bufSegmentPlankS, { |out=0, bufnum=0, startPos=0, sustain=1, pan=0, am
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
-	snd = snd * EnvGen.ar(Env.perc(0.002, 0.005, 1, -8)) * 0.8;
+	snd = snd * EnvGen.ar(Env.perc(fadetime, 0.1, 1, -8)) * 0.8;
+	// snd = HPF.ar(snd, 200);
 
 	snd = DynKlank.ar(`wood2, snd, \freq.kr(60), 0, sustain*3) * EnvGen.ar(Env.linen(0, sustain, 0.002), doneAction:2);
 	snd = snd.tanh;
