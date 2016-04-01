@@ -24,13 +24,25 @@ var spawnResonatorSynth = {
 		var hi = detune.midiratio ;
 		var bp = (Resonz.ar(snd, freq * LFNoise2.kr(0.1).range(lo, hi), LFNoise2.kr(0.2).range(0.001, 0.01), 2));
 		//Detune 2
-		snd = snd + FreqShift.ar(bp, LFNoise2.ar(0.1).range(-10, 10), mul:1);
-		ReplaceOut.ar(0, snd);
-	}.play(target:~t.postGroup);
+		snd = FreqShift.ar(bp, LFNoise2.ar(0.1).range(-10, 10), mul:1);
+		Out.ar(~t.convBus, snd); //Send to convo rev
+		snd
+		// ReplaceOut.ar(0, snd);
+	}.play(~t.postGroup);
+
 };
 //onReady is called when player buffer is loaded, and before playing
 //It's called within a routine, so we can use s.sync, .wait or similar
 q.player.onReady = {
+
+	~t.ez = EZConv("data/impulses/impulse-closed-ms-48.wav".resolveRelative);
+	~t.convBus = Bus.audio(s, 2);
+	s.sync;
+
+	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 0, \irbufs, ~t.ez.irSpectrum,
+		\sideAmp, 1, \amp, 0.25
+	], ~t.sendGroup);
+
 	~t.handclaps = handClapPaths.pathMatch.collect { |path|
 		Buffer.read(s, path);
 	};
@@ -40,10 +52,10 @@ q.player.onReady = {
 		\bandwidth, 5000, \decay, 0.01, \predelay, 10, \excursion, 0.9,
 		\in_diff1, 0.36, \in_diff2, 0.40
 	], ~t.sendGroup);
-	spawnResonatorSynth.value;
+
+		spawnResonatorSynth.value;
 
 };
-
 
 
 
