@@ -1,1 +1,6 @@
-/annex/objects/SHA256E-s108--d12a6592583c9d23b391229dafcd42ea373857569a9e9fd9ef71db0197303b50.sh
+#!/bin/sh
+
+git annex init &&
+git annex upgrade &&
+git annex enableremote timmers3 &&
+git annex get **/*.wav

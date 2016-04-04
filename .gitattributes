@@ -1,0 +1,2 @@
+* annex.largefiles=(largerthan=100kb)
+* annex.largefiles=(mimetype=audio/*)
