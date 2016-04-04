@@ -104,7 +104,7 @@ SynthDef(\bufSegmentFreqshift, { |out(0), bufnum(0), startPos(0), sustain(1)|
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-    OffsetOut.ar(out, snd * \amp.kr(1));
+	OffsetOut.ar(out, Balance2.ar(snd[0], snd[1], \pan.kr(0), \amp.kr(1)));
 }).add;
 
 
