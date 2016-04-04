@@ -21,8 +21,56 @@ q.markov.setBounds(q.player.data.lookup.part[2], q.player.data.lookup.part[3] - 
 q.markov.connect(q.player);
 q.markov.initChain;
 
+q.player.onReady = {
+	//TODO: separate send bus for reverb
+	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
+		\bandwidth, 5000, \decay, 0.01, \predelay, 10, \excursion, 0.9,
+		\in_diff1, 0.46, \in_diff2, 0.40
+	], ~t.sendGroup);
+};
+
 //Modifying pattern
 q.player.setPtn(Pbind(
+	//Adjust duration so next attack doesn't cause clicks
+	\dur, Pkey(\dur) - 0.01,
+	//if not normal, anything could happen
+	\normal, Prout({ |ev|
+		var norm=true, time=0;
+		loop {
+
+			//Make sure two 'normal' segments aren't playing simultaneously.
+			if (norm or: { time == 0 }) {
+				//Save current time plus segment duration
+				norm = true; //
+				time = thisThread.seconds + ev.dur;
+			};
+
+			ev = norm.yield;
+
+			if (time < thisThread.seconds) {
+				//If a normal segment isn't playing,
+				//toss a coin to see if this segment should be normal
+				norm = 0.1.coin;
+			} {
+				//If a normal segment is playing, set normal to false
+				norm = false;
+			};
+
+		}
+	}),
+	\instrument, Pif(Pkey(\normal), \bufSegment, \bufSegmentFreqshift),
+	\freqshift, Pwhite(-200, -2000),
+	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
+	\fadetime, 0.02,
+	\bufRate, Pif(Pkey(\normal), 1, Pwrand([0.5, 1, -1], [0.1, 0.9, 0.3].normalizeSum, inf)),
+	\dur, Pif(Pfunc { |ev|
+		ev.normal or: {
+			ev.phrase >= 46 //46 and 47 are possible last phrases;
+		}
+	},
+		Pkey(\dur), Pkey(\dur) * Pwhite(0.4, 1) * Pseg(Pseq([Pwhite(0.01, 0.1, 1), Pwhite(0.5, 1, 1)], inf), Pwhite(5, 20), )),
+	\delta, Pif(Pkey(\normal), 0, Pkey(\dur)),
+	\pan, Pif(Pkey(\normal), 0, Pwhite(-1, 1.0)),
 	\hello, Pfunc { |ev|
 		if (ev.part == 2) {
 			var rep;
@@ -30,6 +78,7 @@ q.player.setPtn(Pbind(
 			//TODO: This effect could be better/more interesting
 			if ((rep = ~t.repeats[ev.phrase]) > 1) {
 				rep.debug("Distance");
+				//FIXME: can't just change instrument, see normal above
 				ev.instrument = \bufSegmentMS;
 				ev.midAmp = ((rep - 1) * -6).dbamp;
 				ev.sideAmp = ((rep - 1) * 1.5).dbamp;
@@ -49,7 +98,7 @@ q.player.setIterator(
 			//First phrase is always the same
 			0,
 			//Part 0 have randomized phrases
-			Pseq(Array.series(part[1]-1, 1).scramble),
+			Pn(Plazy({ Pseq(Array.series(part[1]-1, 1).scramble) }), 6),
 			//Part 1 is sequential
 			Pseries(part[1], 1, part[2]-part[1]),
 			//TODO: How long will this go on? How should we transition?
