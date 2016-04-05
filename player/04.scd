@@ -68,7 +68,7 @@ q.player.setPtn(Pbind(
 		}
 	}),
 	//TODO: generalize separate keys into a chained Psym or something
-	\instrument, Pif(Pkey(\normal), \bufSegment, \bufSegmentFreqshift),
+	\instrument, Pif(Pkey(\normal), \bufSegment, Pwrand([\bufSegmentFreqshift, \bufSegmentPlank], [0.9, 0.1], inf)),
 	\out, Pif(Pkey(\normal), 0, Pfunc { ~t.freqshiftbus }),
 	\freqshift, Pwhite(-200, -2000),
 	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
