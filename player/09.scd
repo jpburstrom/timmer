@@ -45,8 +45,30 @@ q.player.use {
 
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
-        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp);
+        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp)
     ));
+
+	~parPtn = Pevent(
+		Pbind(
+			\instrument, \bufSegmentFreqshift,
+			\freqshift, -1000,
+			\timingOffset, 0.05,
+			\dur, Prout { |ev|
+				loop {
+
+					//TODO: split main duration in random chunks
+					//between min and max duration
+					//maybe end of main duration might be treated differently (a few pickup
+					//hits to next beat, or similar)
+
+					//just random
+					ev = 0.2.rrand(0.4).yield;
+				}
+			},
+			\startPos, Pxrand(~data.onset.flop[0], inf)
+		),
+		~protoEvent
+	);
 
     ~onReady = {
         var wood2 = [[1.0, 1.777, 2.378, 3.377],		// Wood2
