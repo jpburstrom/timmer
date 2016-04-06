@@ -31,15 +31,14 @@ Fdef(\twoPeaksPattern, { |size|
     Pseq((size * [1,2,0.4,3,0.5,1,0.6,2].normalizeSum).floor), \cub) ++ Pn(0))
 });
 
-
+//Look ahead 5 onset durations and try to find a number of onsets which has the
+//closest match to a multiple of a fixed tempo. Then divide the total duration so we end up with
+//a number close to the desired tempo, and spit them out until next "downbeat".
+//This way we get the feeling of a set tempo, semi-rubato, and still synced with the weird
+//sounds from the bass
 Fdef(\pFuzzyBeatMatch, { |durs, lookahead=5|
     Prout({ |ev|
 
-        //Look ahead 5 onset durations and try to find a number of onsets which has the
-        //closest match to a multiple of a fixed tempo. Then divide the total duration so we end up with
-        //a number close to the desired tempo, and spit them out until next "downbeat".
-        //This way we get the feeling of a set tempo, semi-rubato, and still synced with the weird
-        //sounds from the bass
 
         // var durs = q.player.data.onset[301..368].flop[1];
         var index = 0;
@@ -73,10 +72,68 @@ Fdef(\pFuzzyBeatMatch, { |durs, lookahead=5|
 });
 
 
+//Divide a stream of durations into almost random parts between min and max
+//A bit like a Pbrown, but ends with a few equal-length notes to sync with next downbeat
+Fdef(\pBrownDurDivision, { |dur=2, min=0.2, max=0.5, step=0.05|
+	Prout { |ev|
+
+
+		var mean = (max + min) * 0.5;
+
+		var tmpdur, val=mean, last, i;
+		var setVal = {
+
+			val = (val + step.value.rand2).fold(min.value, max.value);
+
+		};
+
+		var updateMean = {
+			mean = (0.6 * val) + (0.4 * mean);
+		};
+
+		dur = dur.asStream;
+		//Min and max durations
+		max = max.asStream;
+		min = min.asStream;
+		//Brownian motion step size
+		step = step.asStream;
+
+		loop {
+			//Pick up duration from parallel pattern
+			tmpdur = dur.next;
+			i = 0;
+			//Select how many notes should be a part of the non-random sequence to finish with.
+			//Not too many, or notes will becom too short
+			last = 1.rrand(4).min((tmpdur/mean).ceil);
+			last.postln;
+			setVal.value;
+			//Yield new random durations while remaining duration is enough
+			while { (tmpdur - val) > (mean * last) } {
+				tmpdur = tmpdur - val;
+				ev = val.yield;
+				//Update mean to be a moving average of a couple of previous values
+
+				setVal.value;
+				updateMean.value;
+			};
+			//And yield `last` number of equal-sized durations to finish up
+			last.do {
+				//TODO: might want to randomize/humanize these a bit
+				val = (tmpdur / last);
+				updateMean.value;
+				ev = val.yield
+
+			}
+
+		}
+	}
+});
+
+
 //## Synth helpers ##
 
 Fdef(\stereo2ms, { arg input, scale = -3;
-    [input[0] + input[1], input[0] - input[1]] * scale.dbamp
+	[input[0] + input[1], input[0] - input[1]] * scale.dbamp
 });
 
 Fdef(\ms2stereo, {arg mid, side, scale = -3;
@@ -120,6 +177,7 @@ Fdef(\scrambleAvoidSimilar, { |labelarray, offset=0|
 
 //create an array with ordered random segments from `first` to `last`,
 //with lengths between `minlen` and `maxlen`.
+//This seems a bit buggy, but works in 07, right?
 Fdef(\randomSegments, { arg first, last, minlen, maxlen;
     var midlen = ((maxlen-minlen) * 0.5) + minlen; //Todo:calc
     var i = minlen.rrand(maxlen) + first;
