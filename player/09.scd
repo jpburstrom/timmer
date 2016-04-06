@@ -45,38 +45,75 @@ q.player.use {
 
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
-        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp)
-    ));
+        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp),
+		\timingOffset, 0.1, //to sync with parPtn
+		// \test, Pfunc { |ev| ~data.groupscore[ev.onset].postln; 2 }
+	));
 
-	~parPtn = Pevent(
-		Pbind(
-			\instrument, \bufSegmentFreqshift,
-			\freqshift, -1000,
-			\timingOffset, 0.05,
-			\dur, Prout { |ev|
-				loop {
-
-					//TODO: split main duration in random chunks
-					//between min and max duration
-					//maybe end of main duration might be treated differently (a few pickup
-					//hits to next beat, or similar)
-
-					//just random
-					ev = 0.2.rrand(0.4).yield;
-				}
-			},
-			\startPos, Pxrand(~data.onset.flop[0], inf)
+	//Use ptpar to offset in time, to make sure ~currentEvent is accurate
+	~parPtn = Ptpar([0.1, Pevent( Pbind(
+		\instrument, \bufSegmentFreqshift,
+		\freqshift, -1000,
+		//Fade in, then
+		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \exp),
+		\dur, Fdef(\pBrownDurDivision).value(
+			Pfunc { ~currentEvent.dur }, 0.4, 0.6, 0.05
 		),
-		~protoEvent
-	);
-
-    ~onReady = {
-        var wood2 = [[1.0, 1.777, 2.378, 3.377],		// Wood2
-            [0.04, 0.01, 0.01, 0.008],
-            [0.2, 0.15, 0.15, 0.3]];
+		\startPos, Pxrand(~data.onset.flop[0], inf)
+	), ~protoEvent),
+	0.1, 	Pbind(
+		\instrument, \fmGloss,
+		\dur, Pwrand([Rest(15), Pfunc { ~currentEvent.dur }], [0.05, 0.95]),
+		\sustain, Pwhite(1, 8.0),
+		\type, p {
+			var resume;
+			loop {
+				//Wait 30-45 sec
+				resume = thisThread.beats + 30.rrand(45);
+				while { resume > thisThread.beats } {
+					\rest.yield;
+				};
+				//a note, followed by 2-5 rests. Repeat 4-9 times
+				3.rrand(6).do {
+					\note.yield;
+					2.rrand(5).do {
+						\rest.yield;
+					}
+				}
+			}
+		},
+		\root, 4,
+		\octave, 4,
+		\scale, Scale.dorian,
+		\amp, Plprand(0.001, 0.01),
+		\out, Pfunc { ~t.longRevBus },
+		\timingOffset, Pwhite(0.0, 0.05),
+		\group, Pfunc { ~t.mainGroup },
+		\note, p {
+			var prev, cur;
+			var note = [ 0, 1, 3, 5, 7, 10, 12, 14, 17 ];
+			loop {
+				cur = note.scramble.keep(3);
+				while {cur == prev} {
+					cur = note.scramble.keep(3).sort;
+				};
+				if (~data.groupscore[~currentEvent.onset] == 5) {
+					cur = cur.replace(14, 13)
+				};
+				cur.yield;
+				prev = cur;
+			}
+		};
+	)
+	]);
+	~onReady = {
 
 		//FIXME: reverb params
 		~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
+
+		~t.longRevBus = Bus.audio(s, 2);
+		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \decay, 1, \predelay, 0, \inbus, ~t.longRevBus], ~t.sendGroup);
+		~t.mixin = { In.ar(~t.longRevBus, 2) }.play(~t.postGroup);
 
         ~t.wood = Synth(\wood09, target:~t.postGroup);
 		~t.resonator = Synth(\resonator09, target:~t.postGroup);
@@ -100,7 +137,7 @@ q.player.use {
 };
 
 
-q.player.play;
+// q.player.play
 
-// q.player.bounce
+q.player.bounce
 )
