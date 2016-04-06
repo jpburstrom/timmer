@@ -105,7 +105,6 @@ Fdef(\pBrownDurDivision, { |dur=2, min=0.2, max=0.5, step=0.05|
 			//Select how many notes should be a part of the non-random sequence to finish with.
 			//Not too many, or notes will becom too short
 			last = 1.rrand(4).min((tmpdur/mean).ceil);
-			last.postln;
 			setVal.value;
 			//Yield new random durations while remaining duration is enough
 			while { (tmpdur - val) > (mean * last) } {
