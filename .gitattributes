@@ -1,2 +1,3 @@
 * annex.largefiles=(largerthan=100kb)
+*.wav annex.largefiles
 * annex.largefiles=(mimetype=audio/*)
