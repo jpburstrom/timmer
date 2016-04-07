@@ -196,3 +196,17 @@ Fdef(\randomSegments, { arg first, last, minlen, maxlen;
     };
     x
 });
+
+
+Fdef(\toggleMono, {
+	if (q.mono ? false) {
+		//Sum to mono
+
+		q.monoSynth.free;
+		q.mono = false;
+
+	} {
+		q.monoSynth = SynthDef(\monoSynth, { ReplaceOut.ar(0, In.ar(0, 2).sum.dup * -3.dbamp) }).play(addAction:\addAfter); //Add directly after default group
+		q.mono = true;
+	}
+});		
