@@ -4,7 +4,7 @@ SynthDef(\freqShift, { |inbus, outbus, amp=1, midAmp=1, sideAmp=1|
 	#mid,side = Fdef(\stereo2ms).value(snd);
 	snd = Fdef(\ms2stereo).value(mid*midAmp, side*sideAmp);
 	// Amplitude.kr(snd, 2, 2)./*poll*/;
-	Out.ar(0, snd * amp);
+	Out.ar(outbus, snd * amp);
 }).add;
 
 SynthDef(\freqShiftWeird_02, {
