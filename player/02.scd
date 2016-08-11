@@ -74,7 +74,7 @@ q.player.onReady = {
 
 };
 
-q.player.bounce
+q.player.play
 )
 
 

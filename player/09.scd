@@ -1,5 +1,7 @@
 //# Song 09 ###
 
+//FIXME: synth tail cutoff???
+
 //## Initialize ###
 (
 "lib/init".import;
@@ -137,7 +139,7 @@ q.player.use {
 };
 
 
-// q.player.play
+q.player.play
 
-q.player.bounce
+// q.player.bounce
 )

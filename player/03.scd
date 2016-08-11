@@ -65,7 +65,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
 	\type, Pseq([\rest, \note, \note], inf),
 	\dur, Pstutter(Pkey(\divisions), Pfunc { |ev| ~currentEvent.dur / ev.divisions }),
 	\group, Pfunc { ~t.mainGroup },
-	\amp, Pbrown(0.8, 2)
+	\amp, 0
 )]);
 
 //Give a pattern to setIterator, which is used to select which tick is to be played
