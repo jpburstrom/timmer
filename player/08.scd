@@ -15,20 +15,7 @@ q.playerui.connect(q.player)
 var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
 //To be called from within q.player environment
 var spawnResonatorSynth = {
-	~t.resonator = {
-		var freq = "G1".namecps * 5;
-		var snd = In.ar(0, 2);
-		var detune = 0.2;
-		//detune 1
-		var lo = detune.neg.midiratio ;
-		var hi = detune.midiratio ;
-		var bp = (Resonz.ar(snd, freq * LFNoise2.kr(0.1).range(lo, hi), LFNoise2.kr(0.2).range(0.001, 0.01), 2));
-		//Detune 2
-		snd = FreqShift.ar(bp, LFNoise2.ar(0.1).range(-10, 10), mul:1);
-		Out.ar(~t.convBus, snd); //Send to convo rev
-		snd
-		// ReplaceOut.ar(0, snd);
-	}.play(~t.postGroup);
+    ~t.resonator = Synth(\resonate_08, [\sendbus, ~t.convBus], ~t.postGroup);
 
 };
 //onReady is called when player buffer is loaded, and before playing
