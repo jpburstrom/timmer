@@ -482,16 +482,21 @@ p = Proto({
 
     ~asPattern = { |drop=0|
         var reset = ~reset.inEnvir;
+        var tail = ~data.tail ? 0;
         Pspawner({ arg sp;
+            var parStream;
             ~spawner = sp;
             //reset function
-            sp.seq(Event.silent(0, (addToCleanup: { reset.value })));
-            sp.par(~parPtn);
+            sp.seq(Event.silent(0, (addToCleanup: {
+                reset.value
+            })));
+            parStream = sp.par(~parPtn);
             sp.seq(Pchain(
                 ~modPtn,
                 Prout(e { |ev| loop { ev = ~next.value(ev).yield }})
             ).collect({ |ev| ~currentEvent = ev }).drop(drop));
-            //TODO: maybe add wait before suspending?
+            sp.suspend(parStream);
+            ~data.tail.wait;
             sp.suspendAll; //Hack, otherwise stream will never reset when ending by itself
         }.inEnvir);
     };
