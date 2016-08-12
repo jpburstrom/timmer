@@ -107,6 +107,25 @@ SynthDef(\bufSegmentFreqshift, { |out(0), bufnum(0), startPos(0), sustain(1)|
 	OffsetOut.ar(out, Balance2.ar(snd[0], snd[1], \pan.kr(0), \amp.kr(1)));
 }).add;
 
+//Simple segment player with freqshift
+//startPos in seconds
+SynthDef(\bufSegmentFreqshiftSmear, { |out(0), bufnum(0), startPos(0), sustain(1)|
+	var fadetime = \fadetime.kr(defaultFadeTime);
+    var snd, chains;
+
+    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+
+    snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
+
+    chains = FFT({LocalBuf(2048)}.dup, snd);
+    chains = PV_MagSmear(chains, \smear.kr(0));
+    snd = IFFT(chains);
+
+    snd = snd * EnvGen.ar(Env([0, 0, 1, 1, 0], [2048 / SampleRate.ir ,fadetime, sustain, fadetime]), doneAction:2);
+    OffsetOut.ar(out, Balance2.ar(snd[0], snd[1], \pan.kr(0), \amp.kr(1)));
+}).add;
+
 
 //Simple segment player with freqshift
 //startPos in seconds
