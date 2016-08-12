@@ -10,8 +10,12 @@ q.player.tickLabel = \onset;
 q.player.loadData("09");
 //q.player.extractFeatures;
 q.playerui.connect(q.player);
+q.player.data.tail = 15;
+
 
 q.player.use {
+
+    var claps = Pn(Plazy { Pseq(~t.handclaps.scramble) }).asStream;
 
     //The arrays represent different types of onsets,
     //sound classes or whatever. They were created with the segment-grouping ui in lib/misc
@@ -48,21 +52,35 @@ q.player.use {
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
         \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp),
-		\timingOffset, 0.1, //to sync with parPtn
+    	\timingOffset, 0.1, //to sync with parPtn
 		// \test, Pfunc { |ev| ~data.groupscore[ev.onset].postln; 2 }
 	));
 
 	//Use ptpar to offset in time, to make sure ~currentEvent is accurate
 	~parPtn = Ptpar([0.1, Pevent( Pbind(
-		\instrument, \bufSegmentFreqshift,
-		\freqshift, -1000,
+        \instrument, \bufSegmentFreqshiftSmear,
+        \bufnum, Pfunc( { |ev| [ev.bufnum, claps.next] } ),
+        \freqshift, [-1000, 0],
 		//Fade in, then
-		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \exp),
-		\dur, Fdef(\pBrownDurDivision).value(
-			Pfunc { ~currentEvent.dur }, 0.4, 0.6, 0.05
-		),
-		\startPos, Pxrand(~data.onset.flop[0], inf)
-	), ~protoEvent),
+		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \exp) * 0.3,
+        \smear, Pwhite(1, 20),
+        \pan, Pbrown(-0.2, 0.2, 0.125).repeat(9),
+        \amp, p { |ev|
+            loop {
+                25.rrand(50).do {
+                    ev = [ev.amp, 0].yield;
+                };
+                ev = [ev.amp, ev.amp * 0.1].yield;
+            }
+        },
+        \break, Pfunc { 0.2.coin },
+        \dur, Pif(Pkey(\break),
+            Pfunc { Rest(~currentEvent.dur) },
+            Fdef(\pBrownDurDivision).value(
+                Pfunc { ~currentEvent.dur }, 0.2, 0.22, 0.01
+        )),
+        \startPos, Ptuple([Pxrand(~data.onset.flop[0], inf), 0])
+    ), ~protoEvent),
 	0.1, 	Pbind(
 		\instrument, \fmGloss,
 		\dur, Pwrand([Rest(15), Pfunc { ~currentEvent.dur }], [0.05, 0.95]),
@@ -75,8 +93,8 @@ q.player.use {
 				while { resume > thisThread.beats } {
 					\rest.yield;
 				};
-				//a note, followed by 2-5 rests. Repeat 4-9 times
-				3.rrand(6).do {
+				//a note, followed by 2-5 rests. Repeat 2-4 times
+				2.rrand(4).do {
 					\note.yield;
 					2.rrand(5).do {
 						\rest.yield;
@@ -84,7 +102,7 @@ q.player.use {
 				}
 			}
 		},
-		\root, 4,
+        \root, 4,
 		\octave, 4,
 		\scale, Scale.dorian,
 		\amp, Plprand(0.001, 0.01),
@@ -115,10 +133,17 @@ q.player.use {
 
 		~t.longRevBus = Bus.audio(s, 2);
 		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \decay, 1, \predelay, 0, \inbus, ~t.longRevBus], ~t.sendGroup);
-		~t.mixin = { In.ar(~t.longRevBus, 2) }.play(~t.postGroup);
 
         ~t.wood = Synth(\wood09, target:~t.postGroup);
 		~t.resonator = Synth(\resonator09, target:~t.postGroup);
+
+        ~t.fftbus = Bus.audio(s, 2);
+
+        ~t.mixin = { In.ar(~t.longRevBus, 2) }.play(~t.postGroup);
+
+        ~t.handclaps = "samples/handclaps/*.wav".resolveRelative.pathMatch.collect { |path|
+            Buffer.read(s, path);
+        };
 
 
     };
