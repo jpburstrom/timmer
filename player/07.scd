@@ -13,6 +13,7 @@
 //The following is a few tryouts and fragments.
 
 ~buf = Buffer.read(s,"songs/07-20160316-1539.wav".resolveRelative )
+~buf = Buffer.read(s, "songs/07-20160813-1254.wav".resolveRelative )
 
 (
 var from = 300;//q.player.data.phrase.last;
@@ -48,21 +49,28 @@ Pdef(\sdf, Pbind(
 
 (
 var start = 300;
-Pdef(\test07, Pbind(
-    \instrument, \bufSegmentFreqshiftMS,
-    \bufnum, ~buf,
-    \startPos, Ptime() + Pwhite(-0.1, 0.1) + start,
-    \dur, 0.05,
-    \legato, 3,
-    \bufRate, 0.99,
-	//removing some mid from the signal to make it less focused
-    \midAmp, -6.dbamp,
-    \freqshift, -1400,
-    \amp, 0.1,
-    \fadetime, 0.01
-)).play;
+Pdef(\test07,
+    Pn(
+        Plazy({
+            var dur = 0.01.rrand(0.1);
+            var totDur = 20.rrand(60);
+            Pbind(
+                \instrument, \bufSegmentFreqshiftMS,
+                \bufnum, ~buf,
+                \startPos, Ptime() + Pwhite(-0.1, 0.1) + start,
+                \dur, Pwhite(0.01, 0.1),
+                \legato, 3,
+                \bufRate, Pwhite(0.99, 1.00),
+                //removing some mid from the signal to make it less focused
+                \midAmp, Pseg(Pwhite(-12, -3), Pwhite(4, 8.0)).dbamp,
+                \freqshift, Ptuple([Pseg(Pwhite(-600, -1400), Pwhite(5.0, 10.0), -32), 0]),
+                \amp, Ptuple([0.8, Pseg([0.0001,1, 0.0001], totDur * 0.5, \exp)]),
+                \fadetime, 0.01
+            )
+        })
+    )
+).play;
 )
-
 
 //## Test 3 ##
 
@@ -212,20 +220,23 @@ x = fork { 10.do { "hello".postln; 1.wait }}
 x.stop
 
 
+(
 //Synthesizer
 Pdef(\gloglo, Pbind(
     \instrument, \fmGloss,
-    \dur, Pseq([Rest(25), 15]),
-    \legato, 1.5,
+    \dur, Pxrand([0.1,0.12,0.8,0.4], inf),
+    \legato, Pwhite(0.5, 3),
     \root, 7,
-    \octave, 5,
+    \octave, 3,
     \ctranspose, 0.25,
-    \scale, Scale.dorian,
-    \amp, 0.02,
+    \scale, Prand([Scale.dorian, Scale.mixolydian], inf),
+    \amp, Pwhite(0.05, 0.1),
     \out, 0,
     // \timingOffset, Pwhite(0.0, 0.05),
-    \strum, Pwhite(0.0, 0.1),
-    \degree, Pfunc { (0..7).scramble[..2] },
+    // \strum, Pwhite(0.0, 0.1),
+    \degree, Pbrown(0, 12, Pwhite(1, 2)),
     // \degree, 0
 )).play
+)
+Pdef(\gloglo).stop
 
