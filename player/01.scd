@@ -13,8 +13,13 @@ q.player.bounce;
 q.player.play
 q.player.stop
 
+
+q.player.t.freqShift.set(\amp, 1)
+
 //TODO:
 //~6.30: Work with shorter durations
+//FIXME:
+//Freqshift noise channel
 
 (
 q.player.onReady = {
@@ -231,7 +236,8 @@ q.player.setPtn(Pbind(
 
         x = ~getknn.value(ev.onset, 1.rrand(5));
         x = ~data.onset[x];
-        ev.sustain = [ev.dur, x[1] - 0.1];
+        ev.sustain = [ev.dur, x[1]];
+        ev.bufRate = [1, 0.9];
         //return startPos
 		[ev.startPos, x[0]];
     },

@@ -88,7 +88,7 @@ Ndef(\fbfb, {
 		sn2 = CombN.ar(sn2, 0.05, (fq * LFNoise2.ar(0.13).range(0.99,1.02)).reciprocal, 4, (1 - amp.lagud(0.1, 0.5)).clip(0, 1));
 
 		//Add Impulse, to get some rhythm into the mix
-		sn2 = LeakDC.ar(sn2)  + Impulse.ar(10, 0, LFNoise2.kr(2).exprange(0.5, 4));
+        sn2 = LeakDC.ar(sn2)  + RLPF.ar(Impulse.ar(10, 0, LFNoise2.kr(2).exprange(0.5, 4)), 876, 0.05);
 		fb.write(sn2);
 
 	};
@@ -103,7 +103,7 @@ Ndef(\fbfb, {
 
     // buf = buf + CombC.ar(buf, 8, 8, 8, 0.3);
 
-	RLPF.ar(buf, 880, 0.1) + (snd * 0.1 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
+	RLPF.ar(buf, 16000, 0.0) + (snd * 0.1 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
 }).play
 )
 
@@ -151,7 +151,7 @@ q.player.actions.part.onStart = { |ev, part|
 				~t.comb.set(\partials, 102 * (1..8));
 			}
 	});
-}
+};
 
 q.player.setPtn(Pbind(
 	//This is good -- first part should have overlapping segments
@@ -212,4 +212,20 @@ x = fork { 10.do { "hello".postln; 1.wait }}
 x.stop
 
 
+//Synthesizer
+Pdef(\gloglo, Pbind(
+    \instrument, \fmGloss,
+    \dur, Pseq([Rest(25), 15]),
+    \legato, 1.5,
+    \root, 7,
+    \octave, 5,
+    \ctranspose, 0.25,
+    \scale, Scale.dorian,
+    \amp, 0.02,
+    \out, 0,
+    // \timingOffset, Pwhite(0.0, 0.05),
+    \strum, Pwhite(0.0, 0.1),
+    \degree, Pfunc { (0..7).scramble[..2] },
+    // \degree, 0
+)).play
 
