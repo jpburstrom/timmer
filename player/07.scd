@@ -25,15 +25,18 @@ var to = 400;//from.sum;
 //Segmentation & randomization of last part
 Pdef(\sdf, Pbind(
     \instrument, \bufSegmentFreqshift,
+    \freqshift, Pseg([-2000, -0.1], 60*5, \exp),
     \dur, Prout({ |ev|
 
-		//This splits the part (from..to) into random-sized segments (between 3 and 7)
-        var positions = Fdef(\randomSegments).(from, to, 3.0, 7.0);
-        var durations = (positions ++ to).differentiate[1..];
-        var order = Array.series(positions.size).scramble;
-        order.do { |index|
-            ev.startPos = positions[index];
-            ev = durations[index].yield;
+        loop {
+            //This splits the part (from..to) into random-sized segments (between 3 and 7)
+            var positions = Fdef(\randomSegments).(from, to, 3.0, 7.0);
+            var durations = (positions ++ to).differentiate[1..];
+            var order = Array.series(positions.size).scramble;
+            order.do { |index|
+                ev.startPos = positions[index];
+                ev = durations[index].yield;
+            }
         }
 
     }),
@@ -42,13 +45,14 @@ Pdef(\sdf, Pbind(
     \freqshift, Pwrand([0, -98], [0.9, 0.1], inf),
     \amp, Pwhite(0.1, 1),
     \bufnum, ~buf,
-    \legato, Pn(2, inf),
+    \legato, Pbrown(1.0, 2.0),
     \fadetime, 5
 ).repeat(inf)).play;
 )
 
 Pdef(\sdf).fadeTime = 10
 Pdef(\sdf).stop
+
 //## Test 2 ##
 
 //Granulated and freqshifted
@@ -90,6 +94,10 @@ Pdef(\test07,
 ).play;
 )
 Pdef(\test07).stop
+
+Pdef(\test07).clear
+
+PdefAllGui()
 
 //## Test 3 ##
 
