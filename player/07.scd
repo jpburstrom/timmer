@@ -24,7 +24,7 @@ var to = 400;//from.sum;
 
 //Segmentation & randomization of last part
 Pdef(\sdf, Pbind(
-    \instrument, \bufSegment,
+    \instrument, \bufSegmentFreqshift,
     \dur, Prout({ |ev|
 
 		//This splits the part (from..to) into random-sized segments (between 3 and 7)
@@ -37,40 +37,59 @@ Pdef(\sdf, Pbind(
         }
 
     }),
+    \bufrate, 1,
+    //TODO: freqshift shifts, reasonable weights, reasonable frequencies
+    \freqshift, Pwrand([0, -98], [0.9, 0.1], inf),
+    \amp, Pwhite(0.1, 1),
     \bufnum, ~buf,
-    \legato, Pn(1, 100),
+    \legato, Pn(2, inf),
     \fadetime, 5
-).trace).play;
+).repeat(inf)).play;
 )
 
+Pdef(\sdf).fadeTime = 10
+Pdef(\sdf).stop
 //## Test 2 ##
 
 //Granulated and freqshifted
-
 (
 var start = 300;
 Pdef(\test07,
-    Pn(
-        Plazy({
-            var dur = 0.01.rrand(0.1);
-            var totDur = 20.rrand(60);
-            Pbind(
-                \instrument, \bufSegmentFreqshiftMS,
-                \bufnum, ~buf,
-                \startPos, Ptime() + Pwhite(-0.1, 0.1) + start,
-                \dur, Pwhite(0.01, 0.1),
-                \legato, 3,
-                \bufRate, Pwhite(0.99, 1.00),
-                //removing some mid from the signal to make it less focused
-                \midAmp, Pseg(Pwhite(-12, -3), Pwhite(4, 8.0)).dbamp,
-                \freqshift, Ptuple([Pseg(Pwhite(-600, -1400), Pwhite(5.0, 10.0), -32), 0]),
-                \amp, Ptuple([0.8, Pseg([0.0001,1, 0.0001], totDur * 0.5, \exp)]),
-                \fadetime, 0.01
-            )
-        })
+    Pbindf(
+        Pspawner({ |sp|
+            loop {
+                var totDur = 1.0.rrand(30);
+                "spawn".postln;
+                sp.par(
+                    Plazy({
+                        var dur = 0.01.rrand(0.05);
+                        var freqShift = -800;
+                        var start = 300.rrand(350);
+                        Pbind(
+                            \instrument, \bufSegmentFreqshiftMS,
+                            \bufnum, ~buf,
+                            \dur, dur,
+                            \legato, 3,
+                            \startPos, Ptime() + Pwhite(-0.1, 0.1) + start + Pn(Pseries(0, 1, Pwhite(2, 16).asStream)),
+                            \bufRate, Pwhite(0.99, 1.00),
+                            //removing some mid from the signal to make it less focused
+                            \freqshift, freqShift,
+                            \amp, Pseg([0.01,2, 0.01], totDur * 0.5, \exp),
+                            \fadetime, 0.01
+                        )
+                    })
+                );
+                (totDur * 0.5).wait;
+            }
+        }),
+        \midAmp, Pseg(Pwhite(-12, 0), Pwhite(4, 8.0), \lin).dbamp,
+        \sideAmp, Pseg(Pwhite(0, 9), Pwhite(4, 8.0), \lin).dbamp,
+
+
     )
 ).play;
 )
+Pdef(\test07).stop
 
 //## Test 3 ##
 
@@ -85,18 +104,18 @@ Ndef(\fbfb, {
 	var bufamp = Amplitude.ar(buf.sum, 0.1, 1);
 
 	//Feedback loops
-	snd = (1.088 * [55, 110, 165]).collect { |fq|
+	snd = (1.088 * [55, 110, 165, 220, 330]).collect { |fq|
 		var sn2, fb = FbNode(1, 0.05, 0);
 		var amp = Amplitude.ar(fb, 0.1, 1);
 
 		sn2 =(fb * 1) + buf.sum;
 		fb.delay(LFDNoise3.ar(amp.lag(2)).range(110, 880).reciprocal);
 
-		sn2 = LPF.ar(sn2.distort, LFNoise2.ar(0.3).exprange(500,1000));
+		sn2 = LPF.ar(sn2.distort, LFNoise2.ar(0.3).exprange(500,12000));
 		sn2 = CombN.ar(sn2, 0.05, (fq * LFNoise2.ar(0.13).range(0.99,1.02)).reciprocal, 4, (1 - amp.lagud(0.1, 0.5)).clip(0, 1));
 
 		//Add Impulse, to get some rhythm into the mix
-        sn2 = LeakDC.ar(sn2)  + RLPF.ar(Impulse.ar(10, 0, LFNoise2.kr(2).exprange(0.5, 4)), 876, 0.05);
+        sn2 = LeakDC.ar(sn2);//  + RLPF.ar(Impulse.ar(10, 0, LFNoise2.kr(2).exprange(0.5, 4)), 5876, 0.05);
 		fb.write(sn2);
 
 	};
@@ -105,18 +124,20 @@ Ndef(\fbfb, {
 
 	//Add freqshift
 	snd = snd + FreqShift.ar(snd, Fdef(\autoscale).(bufamp * PinkNoise.ar(0.1), 410, Line.ar(420, 880, dur), inf, -inf, \ar));
-	snd = AllpassN.ar(snd, 0.1, LFNoise2.ar(0.1).range(0.04, 0.06), 5);
+    // snd = AllpassN.ar(snd, 0.1, LFNoise2.ar(0.1).range(0.04, 0.06), 5);
 
 	snd = snd;
 
     // buf = buf + CombC.ar(buf, 8, 8, 8, 0.3);
 
-	RLPF.ar(buf, 16000, 0.0) + (snd * 0.1 * bufamp.lag(10)) // + FreqShiftAA.ar(buf2, -4000);
+    Line.ar(0, 75, dur:75, doneAction:2).poll;
+
+    (buf + (snd * 0.1 * bufamp.lag(10))) * 4 + FreqShiftAA.ar(buf2, -4000, 0, 0.1);
 }).play
 )
-
-Ndef(\fbfb).stop
-
+Ndef(\fbfb).fadeTime = 0;
+Ndef(\fbfb).clear
+NdefGui(Ndef(\fbfb))
 
 //## Test 4 ##
 
@@ -224,19 +245,39 @@ x.stop
 //Synthesizer
 Pdef(\gloglo, Pbind(
     \instrument, \fmGloss,
-    \dur, Pxrand([0.1,0.12,0.8,0.4], inf),
-    \legato, Pwhite(0.5, 3),
+    \dur, 2,
+    \legato, 4,
     \root, 7,
     \octave, 3,
     \ctranspose, 0.25,
     \scale, Prand([Scale.dorian, Scale.mixolydian], inf),
-    \amp, Pwhite(0.05, 0.1),
+    \amp, Pwhite(0.05, 0.8),
     \out, 0,
+    \detune, -10,
     // \timingOffset, Pwhite(0.0, 0.05),
     // \strum, Pwhite(0.0, 0.1),
-    \degree, Pbrown(0, 12, Pwhite(1, 2)),
+    \degree, 0 ,
     // \degree, 0
 )).play
 )
 Pdef(\gloglo).stop
 
+//Sine waves for beatings
+(
+Ndef(\sino, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.99)) * 0.05.dup }).mold.play;
+Ndef(\sino3, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.99 ) * 1.5) * 0.009.dup }).mold.play;
+Ndef(\sino2, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.990001) * 2) * 0.01.dup }).mold.play;
+)
+
+Ndef(\sino2).fadeTime = 10;
+Ndef(\sino).fadeTime = 10;
+Ndef(\sino).end; Ndef(\sino2).end; Ndef(\sino3).end
+
+//Freq shift to lose root note
+Ndef(\fqshift, { arg gate=1; var snd = In.ar(0, 2); var env = EnvGen.kr(Env.asr, gate, doneAction:2); ReplaceOut.ar(0, (env * FreqShiftAA.ar(snd, Line.ar(-1000, -10000, 30))) + ((1 - env) * snd)) }).play(addAction:\addToTail);
+
+//test-08-magsmooth is also good
+
+Ndef(\fqshift).set(\gate,0)
+Ndef(\fqshift).fadeTime = 10
+Ndef(\fqshift).end
