@@ -12,25 +12,29 @@
 
 //The following is a few tryouts and fragments.
 
-~buf = Buffer.read(s,"songs/07-20160316-1539.wav".resolveRelative )
-~buf = Buffer.read(s, "songs/07-20160813-1254.wav".resolveRelative )
+(
+"lib/init".import;
+~buf = Buffer.read(s, "../player/songs/07*".resolveRelative.pathMatch.reverse[0] );
+~claps = "../player/samples/handclaps/*.wav".resolveRelative.pathMatch.collect (Buffer.read(s, _ ));
+)
+
 
 (
+value {
 var from = 300;//q.player.data.phrase.last;
 var to = 400;//from.sum;
-// from = from[0];
-
-//## Test 1 ##
-
-//Segmentation & randomization of last part
+var dur = 60*5; //unused?
+//Moving from freqshifted to plain
 Pdef(\sdf, Pbind(
-    \instrument, \bufSegmentFreqshift,
-    \freqshift, Pseg([-2000, -0.1], 60*5, \exp),
+    \instrument, \bufSegmentFreqshiftMS,
+    \freqshift, 0,
+    \minSize, 3,
+    \maxSize, Pkey(\minSize) * 2.5,
     \dur, Prout({ |ev|
 
         loop {
             //This splits the part (from..to) into random-sized segments (between 3 and 7)
-            var positions = Fdef(\randomSegments).(from, to, 3.0, 7.0);
+            var positions = Fdef(\randomSegments).(from, to, ev.minSize, ev.maxSize);
             var durations = (positions ++ to).differentiate[1..];
             var order = Array.series(positions.size).scramble;
             order.do { |index|
@@ -40,23 +44,39 @@ Pdef(\sdf, Pbind(
         }
 
     }),
-    \bufrate, 1,
-    //TODO: freqshift shifts, reasonable weights, reasonable frequencies
-    \freqshift, Pwrand([0, -98], [0.9, 0.1], inf),
-    \amp, Pwhite(0.1, 1),
     \bufnum, ~buf,
+    \midAmp, Pwhite(-12, 0).dbamp,
     \legato, Pbrown(1.0, 2.0),
-    \fadetime, 5
-).repeat(inf)).play;
-)
+    \amp, Plprand(0.02, 0.5),
+    //Problem: boring fades
+    \pan, Pfuncn({ 0.7.bilinrand }, inf),
+    \fadetime, Pwrand([Pfuncn { "click".postln; 0.002 }, Pwhite(4.0, 5.0, 1)], [0.01, 0.99], inf);
+));
+};
 
-Pdef(\sdf).fadeTime = 10
-Pdef(\sdf).stop
+//Static radio noise thing
+Ndef(\meckamack_07, {
+    var snd = PlayBuf.ar(2, ~buf, 1, Impulse.kr(100),
+        startPos:Phasor.ar(Dust.ar(1), SampleRate.ir.reciprocal * LFNoise1.kr(0.2).range(0, 0.2), 300, 500, Stepper.ar(Impulse.ar(0.1), 300, 300, 400))*BufSampleRate.kr(~buf));
+    // var snd = BufRd.ar(2, ~buf, LFNoise1.ar(LFNoise1.ar(0.1).range(0.001, 0.003)).range(300, 400).poll * BufSampleRate.kr(~buf));
+    var impchain, chain = FFT({LocalBuf(16384)}.dup, snd);
+    var noise = LFNoise0.ar(LFNoise0.kr(0.5).range(0.1,1)).range(0.001, 0.1);
+    var imp = Splay.ar({ |i| BPF.ar(WhiteNoise.ar(1), (i*LFNoise1.kr(0.2).range(96,100)) + 400, noise) }.dup(10).scramble);
 
-//## Test 2 ##
+    // imp = (imp * 0.6) + (imp.reverse * 0.4);
 
-//Granulated and freqshifted
-(
+    impchain = FFT({LocalBuf(16384)}.dup, imp);
+
+    chain = PV_CopyPhase(impchain, chain);
+    // chain = PV_MagSmooth(chain, 0.4);
+    imp = IFFT(chain) * snd * 20;
+
+    // snd
+    LPF.ar(imp * 0.007, LFNoise2.ar(0.3).exprange(1000, 10000)); //(snd * 10).distort * 0.1
+    // snd.dup
+});
+
+value {
 var start = 300;
 Pdef(\test07,
     Pbindf(
@@ -75,34 +95,26 @@ Pdef(\test07,
                             \dur, dur,
                             \legato, 3,
                             \startPos, Ptime() + Pwhite(-0.1, 0.1) + start + Pn(Pseries(0, 1, Pwhite(2, 16).asStream)),
-                            \bufRate, Pwhite(0.99, 1.00),
-                            //removing some mid from the signal to make it less focused
-                            \freqshift, freqShift,
-                            \amp, Pseg([0.01,2, 0.01], totDur * 0.5, \exp),
-                            \fadetime, 0.01
-                        )
-                    })
-                );
-                (totDur * 0.5).wait;
-            }
-        }),
-        \midAmp, Pseg(Pwhite(-12, 0), Pwhite(4, 8.0), \lin).dbamp,
-        \sideAmp, Pseg(Pwhite(0, 9), Pwhite(4, 8.0), \lin).dbamp,
+                                \bufRate, Pwhite(0.99, 1.00),
+                                //removing some mid from the signal to make it less focused
+                                \freqshift, freqShift,
+                                \amp, Pseg([0.01,2, 0.01], totDur * 0.5, \exp),
+                                \fadetime, 0.01
+                            )
+                        })
+                    );
+                    (totDur * 0.5).wait;
+                }
+            }),
+            \midAmp, Pseg(Pwhite(-12, 0), Pwhite(4, 8.0), \lin).dbamp,
+            \sideAmp, Pseg(Pwhite(0, 9), Pwhite(4, 8.0), \lin).dbamp,
 
 
-    )
-).play;
-)
-Pdef(\test07).stop
-
-Pdef(\test07).clear
-
-PdefAllGui()
-
-//## Test 3 ##
+        )
+    );
+};
 
 //Feedback drone controlled by buffer amp
-(
 Ndef(\fbfb, {
 	var buf = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf), startPos:44100*20);
 	//parallel buffer playback
@@ -112,7 +124,8 @@ Ndef(\fbfb, {
 	var bufamp = Amplitude.ar(buf.sum, 0.1, 1);
 
 	//Feedback loops
-	snd = (1.088 * [55, 110, 165, 220, 330]).collect { |fq|
+    // snd = (1.088 * [55, 110, 165, 220, 330]).collect { |fq|
+    snd = (1.088 * 5.collect { 55.rrand(330) }).collect { |fq|
 		var sn2, fb = FbNode(1, 0.05, 0);
 		var amp = Amplitude.ar(fb, 0.1, 1);
 
@@ -131,23 +144,111 @@ Ndef(\fbfb, {
 	snd = Splay.ar(snd);
 
 	//Add freqshift
-	snd = snd + FreqShift.ar(snd, Fdef(\autoscale).(bufamp * PinkNoise.ar(0.1), 410, Line.ar(420, 880, dur), inf, -inf, \ar));
+    snd = snd + FreqShift.ar(snd, Fdef(\autoscale).(bufamp * PinkNoise.ar(0.1), 410, Line.ar(420, 880, dur), inf, -inf, \ar));
     // snd = AllpassN.ar(snd, 0.1, LFNoise2.ar(0.1).range(0.04, 0.06), 5);
 
 	snd = snd;
 
     // buf = buf + CombC.ar(buf, 8, 8, 8, 0.3);
 
-    Line.ar(0, 75, dur:75, doneAction:2).poll;
+    snd = HPF.ar(((buf + (snd * 0.01 * bufamp.lag(10))) * 4 + FreqShiftAA.ar(buf2, -4000, 0, 0.1)), 5);
 
-    (buf + (snd * 0.1 * bufamp.lag(10))) * 4 + FreqShiftAA.ar(buf2, -4000, 0, 0.1);
-}).play
+    snd = snd * EnvGen.ar(Env([0.0,1,1,0], [3, 64, 8], [-4, 0, 4]), doneAction:2) * 0.3;
+
+});
+
+//Synthesizer
+Pdef(\gloglo, Pbind(
+    //TODO: change instrument
+    \instrument, \fmGloss,
+    \dur, Pbrown(0.01, 0.2, 0.009),
+    \sustain, Pseq([0.01, 0.02, 0.03], inf),
+    \freq, Pseg(Pwhite(40, 80), 10),
+    \amp, Pbrown(0.1, 0.3, 0.01) * Pseg([1, 0.0001], 100, \exp) * 0.1,
+    \out, 0,
+    // \timingOffset, Pwhite(0.0, 0.05),
+    // \strum, Pwhite(0.0, 0.1),
+    // \degree, 0
+));
+
+Pdef(\claps, Pbind(
+    \instrument, \bufSegmentFreqshiftMS,
+    \freqshift, Pwhite(-500, -10000),
+    \midAmp, Pwhite(0.1, 1),
+    \sideAmp, Pwhite(0.1, 1),
+    \bufnum, Pseq(~claps, inf),
+    \dur, Pwhite(0.01, 0.06) * Pseg(Pwhite(1.0, 10.0), Pwhite(1.0, 20.0)),
+    \sustain, 0.5,
+    \amp, Pseg([1, 0.01, 0], Pseq([10, Pwhite(10, 30, 1)], inf), Pseq([\exp, \lin], inf), inf) * 0.4
+));
+
+
 )
-Ndef(\fbfb).fadeTime = 0;
-Ndef(\fbfb).clear
-NdefGui(Ndef(\fbfb))
 
-//## Test 4 ##
+
+(
+////////
+//SONG//
+////////
+var freqs = \G1.namecps * ((-1..-100) ++ (1..10));
+Pdef(\sdf10, Pspawner({ |sp|
+    var st = ();
+    var it = 8;
+    var type = \note;
+
+    var durs = Pgeom(15, 0.9, it).integrate.asStream - 15;
+    it.do {
+        sp.par(Pbindf(Pdef(\sdf),
+            //Route two signals,
+            \amp, Ptuple([Pkey(\amp), 0.5 - Pkey(\amp)]) * 0.7,
+            \out, [0, 2],
+            \type, Pfunc { type },
+            \dur, Pkey(\dur) * Pseg([1, 0.7, 1], 30, repeats:inf),
+            // \fadetime, Pkey(\fadetime) * Pseg([1, 0.1, 1], 30, repeats:inf),
+            //TODO: multiply w/ Pseg long-form
+            \freqshift, Pxrand(freqs, inf) * Pseg([1, 0, 1], 30, repeats:inf) * Pseg([0, 1, 1, 0], Pseq([30, 150, 60])),
+        ), durs.next);
+    };
+    // sp.wait(45);
+    // Ndef(\fbfb).end;
+    sp.wait(200);
+    Ndef(\meckamack_07).play;
+    sp.wait(100);
+    "Ndef comes here".postln;
+    Ndef(\fbfb).play;
+    type = \rest;
+    sp.wait(10.rrand(20));
+    type = \note;
+
+    sp.suspendAll;
+    st.claps = sp.par(Pdef(\claps), 0.0.rrand(3));
+    st.glo = sp.par(Pdef(\gloglo), 0.0.rrand(3));
+    st.test07 = sp.par(Pdef(\test07), 0.0.rrand(3));
+
+    5.rrand(20).wait;
+    // sp.suspendAll; //TODO fade/wait for next, especially \test_07 is a bit harsh...
+
+
+    Ndef(\fbfb).play ; //bug: doesn't play
+
+    //Finish off a bit randomly
+    st.values.scramble.do { |stream|
+        2.0.rand.wait;
+        sp.suspend(stream);
+    };
+    //Fade out last
+    Ndef(\meckamack_07).fadeTime = 20;
+    Ndef(\meckamack_07).end;
+
+    //wait for \fbfb to stop
+
+})).play
+)
+
+
+
+
+//--sketches--
 
 (
 "lib/init".import;
@@ -249,30 +350,9 @@ x = fork { 10.do { "hello".postln; 1.wait }}
 x.stop
 
 
-(
-//Synthesizer
-Pdef(\gloglo, Pbind(
-    \instrument, \fmGloss,
-    \dur, 2,
-    \legato, 4,
-    \root, 7,
-    \octave, 3,
-    \ctranspose, 0.25,
-    \scale, Prand([Scale.dorian, Scale.mixolydian], inf),
-    \amp, Pwhite(0.05, 0.8),
-    \out, 0,
-    \detune, -10,
-    // \timingOffset, Pwhite(0.0, 0.05),
-    // \strum, Pwhite(0.0, 0.1),
-    \degree, 0 ,
-    // \degree, 0
-)).play
-)
-Pdef(\gloglo).stop
-
 //Sine waves for beatings
 (
-Ndef(\sino, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.99)) * 0.05.dup }).mold.play;
+Ndef(\sino, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.99)) * 0.005.dup }).mold.play;
 Ndef(\sino3, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.99 ) * 1.5) * 0.009.dup }).mold.play;
 Ndef(\sino2, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.990001) * 2) * 0.01.dup }).mold.play;
 )
