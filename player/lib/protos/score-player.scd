@@ -452,8 +452,17 @@ p = Proto({
         path = opt.path.value;
 
         ~isRendering = true;
+
+        //This apparently fixes the ERROR: makeSynthMsgWithTags: buffer overflow bug.
+        //For some reason the synthdef loading message (d_recv) becomes too large or something if we don't
+        //clear the score first, like this. Then we can ~loadSynthDefs again. This only happens when loading synthdefs
+        //right before... :|
+        ScoreClock.beginScore;
+        ScoreClock.makeScore;
+
         ScoreClock.beginScore;
         ~loadSynthDefs.value;
+
         ~play.value(0, ScoreClock);
         score = ScoreClock.makeScore(opt.dur, opt.tail);
         ~stop.value;
