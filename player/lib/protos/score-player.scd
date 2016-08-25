@@ -505,7 +505,7 @@ p = Proto({
                 Prout(e { |ev| loop { ev = ~next.value(ev).yield }})
             ).collect({ |ev| ~currentEvent = ev }).drop(drop));
             sp.suspend(parStream);
-            ~data.tail.wait;
+            tail.wait;
             sp.suspendAll; //Hack, otherwise stream will never reset when ending by itself
         }.inEnvir);
     };
@@ -514,8 +514,8 @@ p = Proto({
 
         if (what == \position) {
             var segment = ~data[~tickLabel].flop[0].select({ |x| x < args[0] }).size - 1;
-            if (~streamPlayer.isPlaying) {
-                 ~stop.value;
+            if (~isRendering.not and: { ~streamPlayer.isPlaying }) {
+                ~stop.value;
                 fork {
                     0.3.wait;
                     ~play.value(segment);
