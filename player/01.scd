@@ -241,9 +241,8 @@ q.player.setPtn(Pbind(
         //return startPos
 		[ev.startPos, x[0]];
     },
-    //lag doesn't work with bounce?
-	//see fix at ../tests/scoreClock-lagfix.scd
-	// \lag, Pwhite(0.0, 0.04).clump(2) * [0, 1],
+
+    \strum, Pwhite(0.0, 1),
     \fadetime, [0.002, 0.002]
 ));
 
