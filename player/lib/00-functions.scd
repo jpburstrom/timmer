@@ -136,7 +136,7 @@ Fdef(\stereo2ms, { arg input, scale = -3;
 });
 
 Fdef(\ms2stereo, {arg mid, side, scale = -3;
-    [mid - side, mid + side] * scale.dbamp;
+    [mid + side, mid - side] * scale.dbamp;
 });
 
 Fdef(\checkBad, { arg in1, id=0;
