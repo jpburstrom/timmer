@@ -466,10 +466,8 @@ p = Proto({
         //clear the score first, like this. Then we can ~loadSynthDefs again. This only happens when loading synthdefs
         //right before... :|
         ScoreClock.beginScore;
-        ScoreClock.makeScore;
-
-        ScoreClock.beginScore;
-        ~loadSynthDefs.value;
+        ScoreClock.addSynthDefs;
+        // ~loadSynthDefs.value;
 
         ~play.value(0, ScoreClock);
         score = ScoreClock.makeScore(opt.dur, opt.tail);
