@@ -27,5 +27,7 @@ q.clear;
 q.player = "protos/score-player".import;
 q.playerui = "protos/score-player-gui".import;
 
-
+//Use this with a callback function to get a copy of the q object
+//So we can run multiple files simultaneously
+{ |func| func.value(q.deepCopy) };
 
