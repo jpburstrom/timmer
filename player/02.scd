@@ -1,4 +1,5 @@
 (
+var relPath = "".resolveRelative;
 "lib/init".import;
 q.player.actionLabels = #[phrase, beat];
 q.player.tickLabel = \phrase;
@@ -13,7 +14,7 @@ q.player.loadData("02");
 // 	\instrument, \plank
 // ));
 // q.player.parPtn = Pbind(\adjustDur, Pfunc { |ev| ev.dur = ev.dur * 0.5}) <> q.player2.asPattern
-q.playerui.connect(q.player);
+// q.playerui.connect(q.player);
 
 
 //Randomizing works a lot of the times, but not when
@@ -30,7 +31,7 @@ q.player.setIterator(Prout({
 			count = count + 1;
 		};
 		score.remove(count);
-    	count.postln.yield;
+    	count.yield;
      };
 
 	(size - 1).yield
@@ -55,10 +56,10 @@ q.player.parPtn = Ptpar([0.1, Pbind(
 
 q.player.onReady = {
 	~t.irSpectrum = 2.collect {|i|
-		Buffer.read(s, "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i).resolveRelative);
+		Buffer.read(s, relPath +/+ "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i));
 	};
 	~t.convBus = Bus.audio(s, 2);
-	s.sync;
+    s.sync;
 	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 0, \irbufs, ~t.irSpectrum,
 		\sideAmp, 1, \amp, 0.25
 	], ~t.sendGroup);
@@ -74,7 +75,7 @@ q.player.onReady = {
 
 };
 
-q.player.play
 )
 
-
+/*EOF*/
+q.player.play
