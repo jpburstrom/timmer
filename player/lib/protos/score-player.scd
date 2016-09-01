@@ -431,6 +431,14 @@ p = Proto({
         }
     };
 
+    ~playStop = {
+        if (~streamPlayer.isPlaying) {
+            ~stop.value;
+        } {
+            ~play.value
+        }
+    };
+
     //Bounce == render
     //By default it creates a 44100/24bit .wav file in /tmp, named with song + timestamp.
     ~bounce = { |opt|
