@@ -1,26 +1,12 @@
 (
-s.latency = 0.5;
 "lib/init".import;
+s.latency = 0.5;
 q.player.actionLabels = #[onset, phrase];
-q.player.loadData("01");
+q.play er.loadData("01");
 //Connect UI to player
-q.playerui.connect(q.player);
+// q.playerui.connect(q.player);
 q.player.extractFeatures;
-
 )
-
-q.player.bounce;
-q.player.play
-q.player.stop
-
-
-q.player.t.freqShift.set(\amp, 1)
-
-//TODO:
-//~6.30: Work with shorter durations
-//FIXME:
-//Freqshift noise channel
-
 (
 q.player.onReady = {
 
@@ -32,12 +18,12 @@ q.player.onReady = {
 	~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, 0], ~t.postGroup);
 
 	//Freqshift fx synth
-    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, 0, \amp, 4, \midAmp, -9.dbamp], ~t.postGroup);
+    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, 2, \amp, 4, \midAmp, -3.dbamp], ~t.postGroup);
 
 	//Filterbank acting as a kind of mellow drone,
 	//with frequencies from the first 5 notes in song
 	//(Harmonics of A and D + a weird harmonic from prepared G)
-	~t.filterBank = {
+	~t.filterBank = SynthDef(\filterBank, {
 		var d1 = "D1".namecps;
 		var a1 = 55;
 		//5 first notes in song
@@ -52,7 +38,7 @@ q.player.onReady = {
 		snd = snd + Mix(freqs.collect({ |fq| Resonz.ar(snd, fq * LFNoise2.kr(0.1).range(lo, hi), 0.002, 3)}));
 		// snd.postln;
 		ReplaceOut.ar(0, snd);
-	}.play(target:~t.klank, addAction:\addBefore);
+    }).play(target:~t.klank, addAction:\addBefore);
 
 
 };
@@ -144,15 +130,16 @@ q.player.setIterator(p {
         i = counter.value;
     }
 });
-)
 
-(
 q.player.setPtn(Pbind(
     \instrument, \bufSegmentAttackSend,
     \bufRate, 1,
-    \attackSendAmp, p { |ev| loop { 16.rrand(24).do { ev = 0.yield }; (ev.varFactor > 0.35).asInt.yield } },
+    \attackSendAmp, Ptuple([
+        p { |ev| loop { 16.rrand(24).do { ev = 0.yield }; (ev.varFactor > 0.35).asInt.yield } },
+        Pstutter(Pwhite(2, 8), Pwrand([0, Pbrown(-36, -12, 2.8).dbamp], [0.8, 0.2], inf))
+    ]),
     // \attackSendAmp, 0,
-    \attackSendBus, Pfunc { ~t.klankBus },
+    \attackSendBus, Pfunc { [~t.klankBus, ~t.freqShiftBus] },
     \attackStartPos, Pkey(\startPos),
     //Go back and forth between orig dur and swing
     \quantAmt, p({ |ev|
@@ -172,7 +159,7 @@ q.player.setPtn(Pbind(
 			prob = probBase * (ev.origIndex / 740).wrap(0,1) * 0.9;
 			ev.qprob = prob; //For tracingd
 
-			//Check for ev.phrase not nil because for some reason it choked on that one time
+            //Check for ev.phrase not nil because for some reason it choked on that one time
 			if (ev.isPhraseStart.not and: {  prob.coin } and: { ev.phrase.notNil } ) {
 				//Calculate number of onsets to next phrase start
 				var len = ~data.lookup.phrase[ev.phrase + 1];
@@ -184,7 +171,7 @@ q.player.setPtn(Pbind(
 					//Embed envelope in stream
 					//Handle odd lengths gracefully
 					qcount = qcount + 1;
-					q.playerui.log(qcount, "quantized");
+                    // q.playerui.log(qcount, "quantized");
 					Pseg2([0,1,0], Pseq([len + 1, len].div(2)), Pseq([curve.neg, curve])).embedInStream(ev);
 				};
 
@@ -193,9 +180,9 @@ q.player.setPtn(Pbind(
 			//0 is the default
 			ev = 0.yield;
 
-
 		}
 	}),
+
 	\dur, Pfunc { |ev|
         if (ev.isRandom) {
             ev.dur = ev.dur - 0.05.rand;
@@ -208,13 +195,14 @@ q.player.setPtn(Pbind(
 	//Where 75hz = D1
 	\fqshift, Pxrand((5..8) * -75, inf),
 
+    /*
 	\sendAmp, p { |ev|
         var out = 0;
 		var prev = 0;
 		loop {
 
 			//Shorter notes have greater probability of being frequency shifted
-			if (ev.isPhraseStart.not and: { q.playerui.log(((1 - ev.dur).max(0) * 2)).coin } ) {
+			if (ev.isPhraseStart.not and: { ((1 - ev.dur).max(0) * 2).coin } ) {
 				//Ok, we're setting freqshift params from here, which probably would be regarded
 				//as a big hack.
 				s.bind { ~t.freqShift.set(\freq, ev.fqshift); };
@@ -228,22 +216,26 @@ q.player.setPtn(Pbind(
 
     	};
 	},
-    \sendAmp, Ptuple([0, Pbrown(-12, 6, 0.8).dbamp], inf),
-    \sendBus, Pfunc { ~t.freqShiftBus },
-    \out, 0,
+    */
+    \out, [0, 2],
     \amp, [1, 0],
     \startPos, Pfunc { |ev|
 
         x = ~getknn.value(ev.onset, 1.rrand(5));
         x = ~data.onset[x];
-        ev.sustain = [ev.dur, x[1]];
-        ev.bufRate = [1, 0.9];
+        ev.attackDecay = [0.03, x[1]];
+        ev.bufRate = [1, 1];
         //return startPos
 		[ev.startPos, x[0]];
     },
 
-    \strum, Pwhite(0.0, 1),
-    \fadetime, [0.002, 0.002]
+    \strum, Pkey(\dur) * Pseg(Pwrand([Pwhite(0, 1, 1), 0.667, Pwhite(0.0, 1, 1)], [0.98, 0.01, 0.01], inf), 2),
+    \fadetime, 0.002
+
 ));
 
 )
+/*EOF*/
+
+
+q.player.play
