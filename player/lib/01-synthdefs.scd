@@ -64,7 +64,7 @@ SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, 
 
     //mix attack and release
 	snd = LinSelectX.ar(1, [snd, LinSelectX.ar(Line.ar(0, 1, attackDur), [attack, release])]);
-    OffsetOut.ar(\attackSendBus.kr(16), \attackSendAmp.kr * EnvGen.ar(Env.perc(0.002, 0.03)) * attack);
+    OffsetOut.ar(\attackSendBus.kr(16), \attackSendAmp.kr * EnvGen.ar(Env.perc(0.002, \attackDecay.kr(0.03))) * attack);
 	//output + envelope
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr(0, 0.1) * snd);
@@ -132,12 +132,13 @@ SynthDef(\bufSegmentFreqshiftSmear, { |out(0), bufnum(0), startPos(0), sustain(1
 SynthDef(\bufSegmentFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd, mid, side;
+    var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
-    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1) * flutter, 1, startPos);
     snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     #mid, side = Fdef(\stereo2ms).value(snd);
-	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1) * -3.dbamp, side * \sideAmp.kr(1) * -3.dbamp);
+	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
     OffsetOut.ar(out, snd * \amp.kr(1));
 }).add;
 
@@ -151,3 +152,8 @@ SynthDef(\tick, {
 }).add;
 
 
+SynthDef(\sinewave, {
+    var snd = SinOsc.ar(\freq.kr(440), 0, \amp.kr(0.1));
+    snd = snd * EnvGen.ar(Env.asr(\attack.kr(0.01), \susLevel.kr(1), \release.kr(1)), \gate.kr(1), doneAction:2);
+    Out.ar(\outbus.kr(0), Pan2.ar(snd, \pan.kr(0)));
+}).add;
