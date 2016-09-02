@@ -24,3 +24,17 @@
 });
 
 ~mangle.beat("02/beat.txt".resolveRelative);
+
+
+(
+var magic_offset = 91.914;
+var f, t = FileReader.read("03/onset-old.txt".resolveRelative);
+t = t.collect(_[0].asFloat);
+t = t.reject(_ < magic_offset);
+t = t - magic_offset;
+f = File("03/onset.txt".resolveRelative,"w");
+t.do { |n|
+    f.write("%\n".format(n));
+};
+f.close;
+)
