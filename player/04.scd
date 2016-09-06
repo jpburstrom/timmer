@@ -8,18 +8,35 @@
 
 //## Initialize ###
 (
+var markov;
+
 "lib/init".import;
 q.player.actionLabels = #[phrase, part];
 q.player.tickLabel = \phrase;
 q.player.loadData("04");
 //q.player.extractFeatures;
-q.playerui.connect(q.player);
+// q.playerui.connect(q.player);
+
+
+SynthDef(\bufSegmentResonance, {|out(0), bufnum(0), startPos(0), sustain(1)|
+	var fadetime = \fadetime.kr(0.002);
+    var snd;
+    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+    snd = RLPF.ar(PinkNoise.ar * FreqShiftAA.ar(snd, \freq.kr(440).neg), \freq.kr, 0.01);
+    snd = snd.tanh * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
+
+
+
+    OffsetOut.ar(out, snd * \amp.kr(1));
+}).add;
+
 
 //This loads a previously generated markov chain
-q.markov = "lib/protos/markov-trainer".import;
-q.markov.setBounds(q.player.data.lookup.part[2], q.player.data.lookup.part[3] - 1);
-q.markov.connect(q.player);
-q.markov.initChain;
+markov = "lib/protos/markov-trainer".import;
+markov.setBounds(q.player.data.lookup.part[2], q.player.data.lookup.part[3] - 1);
+markov.connect(q.player);
+markov.initChain;
 
 q.player.onReady = {
 	//TODO: separate send bus for reverb
@@ -68,12 +85,12 @@ q.player.setPtn(Pbind(
 		}
 	}),
 	//TODO: generalize separate keys into a chained Psym or something
-	\instrument, Pif(Pkey(\normal), \bufSegment, Pwrand([\bufSegmentFreqshift, \bufSegmentPlank], [0.9, 0.1], inf)),
-	\out, Pif(Pkey(\normal), 0, Pfunc { ~t.freqshiftbus }),
+	\instrument, Pif(Pkey(\normal), \bufSegment, Pwrand([\bufSegmentFreqshift, \bufSegmentPlank, \bufSegmentResonance], [0.8, 0.1, 0.1], inf)),
+    \out, Pif(Pkey(\normal), 0, Pfunc { ~t.freqshiftbus }),
 	\freqshift, Pwhite(-200, -2000),
 	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
 	\fadetime, 0.02,
-	\bufRate, Pif(Pkey(\normal), 1, Pwrand([0.5, 1, -1], [0.1, 0.9, 0.3].normalizeSum, inf)),
+    \bufRate, Pif(Pkey(\normal), 1, Pwrand([0.5, 1], [0.1, 0.9].normalizeSum, inf)),
 	\dur, Pif(Pfunc { |ev|
 		ev.normal or: {
 			ev.phrase >= 46 //46 and 47 are possible last phrases;
@@ -81,12 +98,18 @@ q.player.setPtn(Pbind(
 	},
 		Pkey(\dur), Pkey(\dur) * Pwhite(0.4, 1) * Pseg(Pseq([Pwhite(0.01, 0.1, 1), Pwhite(0.5, 1, 1)], inf), Pwhite(5, 20), )),
 	\delta, Pif(Pkey(\normal), 0, Pkey(\dur)),
-	\pan, Pif(Pkey(\normal), 0, Pwhite(-1, 1.0)),
+    // \pan, Pif(Pkey(\normal), 0, Pwhite(-1, 1.0)),
 	\hello, Pfunc { |ev|
-		if (ev.part == 2) {
+        if (ev.instrument == \bufSegmentResonance) {
+            ev.freq = #[40,45,50,55].midicps.choose;
+            ev.fadetime = 0.1;
+        };
+
+        if (ev.part == 2) {
 			var rep;
 			//Make phrase more distant for every repeat
 			//TODO: This effect could be better/more interesting
+            /*
 			if ((rep = ~t.repeats[ev.phrase]) > 1) {
 				rep.debug("Distance");
 				//FIXME: can't just change instrument, see normal above
@@ -95,6 +118,7 @@ q.player.setPtn(Pbind(
 				ev.sideAmp = ((rep - 1) * 1.5).dbamp;
 
 			}
+            */
 		};
 		0;
 	}
@@ -104,7 +128,7 @@ q.player.setPtn(Pbind(
 q.player.setIterator(
 	Plazy({
 		var part = ~data.lookup.part;
-        var mk = MarkovSet(q.markov.markovSet);
+        var mk = MarkovSet(markov.markovSet);
 		Pseq([
 			//First phrase is always the same
 			0,
@@ -132,11 +156,69 @@ q.player.setIterator(
 	})
 );
 
-q.player.play
+// q.player.play
+)
+
+/*------------------------------------------------------------*/
+/*EOF*/
+/*------------------------------------------------------------*/
+
+~buf4 = Buffer.read(s, "songs/04*.wav".resolveRelative.pathMatch.last);
+
+(
+Ndef(\noiseOnly, {
+
+    var winSize = 4096;
+
+    var amp, snd = PlayBuf.ar(2, ~buf4, BufRateScale.kr(~buf4)).sum;
+
+    var chain = FFT(LocalBuf(winSize), snd);
+
+    chain = PV_NoiseSynthF(chain, 1);
+    // chain = PV_MagSmear(chain, MouseX.kr(1, 20));
+    // chain = PV_NoiseSynthP(chain, 0.2pi);
+    // chain = PV_PhaseShift(chain, 10, 1);
+
+    // amp = Amplitude.ar(snd, winSize * SampleRate.ir, 0.1).poll;
+
+    snd = DelayN.ar(snd, 0.2, winSize * SampleRate.ir);
+
+
+    // snd = IFFT(chain);
+    // snd = LinXFade2.ar(snd, IFFT(chain), K2A.ar(MouseY.kr(-1, 1.0)));
+    snd = IFFT(chain);
+
+    // snd = HPF.ar(snd, 440);
+
+    snd.dup
+
+}).mold.play
 )
 
 
-//### HELLO TEST ###
+(
+Ndef(\noiseOnly2, {
+
+    var winSize = 4096;
+
+    var amp, snd = PlayBuf.ar(2, ~buf4, BufRateScale.kr(~buf4), startPos:10*44100).sum;
+
+    var fq = LFNoise2.kr(1).exprange(50, 2000);
+    var chain1 = FFT(LocalBuf(winSize), FreqShiftAA.ar(snd, -4000));
+    var chain2 = FFT(LocalBuf(winSize), snd);
+
+    chain1 = PV_MagMul(chain2, chain1);
+
+    IFFT(chain1).dup;
+
+
+    RLPF.ar(PinkNoise.ar * FreqShiftAA.ar(snd, fq.neg).dup, fq, 0.01);
+
+    // snd
+
+}).mold.play
+)
+
 (
 Ndef(\fqShiftTest, {
     //Frequencies as multiples of EADG
@@ -179,5 +261,4 @@ Ndef(\sonny, {
     snd + sonny.softclip;
 }).play;
 )
-//### END TEST ###
 
