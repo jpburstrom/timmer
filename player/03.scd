@@ -60,28 +60,28 @@ q.player.setPtn(Pbind(
 	\out, Pfunc { ~t.mainBus; 0 },
     \timingOffset, 0.1,
     \legato, 1,
-    \type, Pseq([\rest, Pn(\note, inf)])
+    \type, Pseq([\rest, Pn(\note, inf)]),
     // \dur, Pkey(\dur) * Pwrand([0.1, 1], [0.1, 0.9], inf)
     // \dur, Pkey(\dur) * Pseg(Pwhite(0.8, 1), 4)
 ));
 
 
-
 q.player.parPtn = Ptpar([0.1, Pbind(
 	\instrument, \bufSegmentPlank,
     \bufnum, Pfunc { ~protoEvent.bufnum },
-    \index, Pfunc { ~currentEvent.onset.rand }, //Randomize among already played onsets
-    \startPos, Plazy({ var times = ~data.onset.flop[0]; Pfunc { |ev| times[ev.index] } }),
+    \clump, Pwrand([1,2], [0.9,0.1], inf),
+    \index, Pclump(Pkey(\clump), Pwhite(0, Pfunc { ~currentEvent.onset })), //Randomize among already played onsets
+    \startPos, Plazy({ var times = ~data.onset.flop[0]; Pfunc { |ev| times[ev.index] } }) + Pwhite(-0.01, 0.02),
     \totalDur, p { var dur = ~data.onset.last[0]; loop { dur.yield } },
-    \freqPtnLength, Pseg([50, 1], Pkey(\totalDur)),
+    \freqPtnLength, Pseg([50, 1, 50], Pkey(\totalDur), \lin, inf),
     //Choose 5 new overtones of E1 and F1, A1 every 25-50
-    \freq, Pclump(Pwrand([1,2], [0.9,0.1], inf),
+    \freq, Pclump(Pkey(\clump),
         Pn(Plazy { |ev| Prand(([40, 41, 45].midicps *.x (2..8)).select(_ > 200).scramble.keep(5), ev) })),
-    \pan, Pkey(\freq).wrap(-0.4, 0.4),
+    \pan, Pkey(\freq).explin(60, 800, -0.2, 0.2),
     \sustain, Pkey(\freq).wrap(1, 3) * Pwhite(0.5, 1),
     //Divide overtones
     //TODO: Balance density/duration
-    \divisions, Pwhite(1, Pseg([5,1.5,5,1.5,3], Plazy { Pseq([[0.5, 1], [4.0, 6], [2.0, 5], [1.0, 9.0]].collect(_[0].rrand(_[1])).normalizeSum) } * Pkey(\totalDur)).trace),
+    \divisions, Pwhite(1, Pseg([5,1.5,5,1.5,3], Plazy { Pseq([[0.5, 1], [4.0, 6], [2.0, 5], [1.0, 9.0]].collect(_[0].rrand(_[1])).normalizeSum) } * Pkey(\totalDur), \lin, inf)),
     \dur, PdurStutter(Pkey(\divisions).round, Pfunc { |ev| ~currentEvent.dur }),
     // \dur, Pfunc { |ev| ~currentEvent.dur },
 	\group, Pfunc { ~t.mainGroup },
@@ -108,8 +108,11 @@ q.player.parPtn = Ptpar([0.1, Pbind(
     \out, 2
 )]);
 //Give a pattern to setIterator, which is used to select which tick is to be played
-q.player.setIterator(Pseries(0));
+q.player.setIterator(Plazy {
+    var last = 345; //last wanted onset
+    (Pseries(last.rand) + Pstutter(Pwhite(1,3), Pwrand([0, Pwhite(-10, -3, 1)], [0.95, 0.5], inf))).wrap(0, last).trace;
 //q.player.play
+});
 )
 /*
 Ndef(\testtone).prime({ SinOscFB.ar(\freq.kr(84), \fb.kr(0.0) ).dup * \amp.kr(0.1) })
@@ -118,3 +121,5 @@ Ndef(\testtone).gui
 */
 
 q.player.bounce((dur:10))
+
+1
