@@ -66,13 +66,13 @@ Ndef(\meckamack_07, {
     var snd = PlayBuf.ar(2, ~buf, 1, Impulse.kr(100),
         startPos:Phasor.ar(Dust.ar(1), SampleRate.ir.reciprocal * LFNoise1.kr(0.2).range(0, 0.2), 300, 500, Stepper.ar(Impulse.ar(0.1), 300, 300, 400))*BufSampleRate.kr(~buf));
     // var snd = BufRd.ar(2, ~buf, LFNoise1.ar(LFNoise1.ar(0.1).range(0.001, 0.003)).range(300, 400).poll * BufSampleRate.kr(~buf));
-    var impchain, chain = FFT({LocalBuf(16384)}.dup, snd);
+    var impchain, chain = FFT({LocalBuf(1024)}.dup, snd);
     var noise = LFNoise0.ar(LFNoise0.kr(0.5).range(0.1,1)).range(0.001, 0.1);
-    var imp = Splay.ar({ |i| BPF.ar(WhiteNoise.ar(1), (i*LFNoise1.kr(0.2).range(96,100)) + 400, noise) }.dup(10).scramble);
+    var imp = Splay.ar({ |i| BPF.ar(WhiteNoise.ar(1), (i*LFNoise1.kr(0.2).range(96,100)) + 200, noise) }.dup(1).scramble);
 
     // imp = (imp * 0.6) + (imp.reverse * 0.4);
 
-    impchain = FFT({LocalBuf(16384)}.dup, imp);
+    impchain = FFT({LocalBuf(1024)}.dup, imp);
 
     chain = PV_CopyPhase(impchain, chain);
     // chain = PV_MagSmooth(chain, 0.4);
@@ -161,7 +161,6 @@ Ndef(\fbfb, {
     snd = snd * EnvGen.ar(Env([0.0,1,1,0], [3, 64, 8], [-4, 0, 4]), doneAction:2) * 0.3;
 
 });
-
 //Synthesizer
 Pdef(\gloglo, Pbind(
     //TODO: change instrument
