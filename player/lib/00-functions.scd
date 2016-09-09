@@ -131,11 +131,11 @@ Fdef(\pBrownDurDivision, { |dur=2, min=0.2, max=0.5, step=0.05|
 
 //## Synth helpers ##
 
-Fdef(\stereo2ms, { arg input, scale = -3;
+Fdef(\stereo2ms, { arg input, scale = -3.01;
 	[input[0] + input[1], input[0] - input[1]] * scale.dbamp
 });
 
-Fdef(\ms2stereo, {arg mid, side, scale = -3;
+Fdef(\ms2stereo, {arg mid, side, scale = -3.01;
     [mid + side, mid - side] * scale.dbamp;
 });
 
