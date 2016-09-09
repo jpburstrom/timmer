@@ -120,7 +120,6 @@ q.player.setPtn(Pbind(
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(Pseries(0));
 
-
 )
 
 /*EOF*/
@@ -135,7 +134,7 @@ q.player.setIterator(Pseries(0));
 //- Kolla klick i första delen
 Ndef(\aptest, { arg feedback = 0.0;
     var snd = PlayBuf.ar(2, ~buf, 1);
-    var input = snd;
+    var lop, chain;
 
     //Delay. Line.ar have slightly longer dur
     // input = DelayC.ar(input, 10, (LFNoise2.ar(0.1).range(0,10) * Line.ar(dur:10.5)).poll);
@@ -144,11 +143,24 @@ Ndef(\aptest, { arg feedback = 0.0;
     // input = FreqShiftAA.ar(input, {LFNoise2.kr(10).range(-3000, -3100)}.dup(1));
     // (31..45).nthPrime.do { |f| input = AllpassC.ar(input, 0.1, f.reciprocal.postln, 0.1.rrand(20)) };
 
+    chain = FFT({LocalBuf(2048)}.dup, snd);
 
-    (snd * 0.05) + input;
-    input
+    chain = PV_MagSmooth(chain, 0.9);
 
-}).play
+    // snd = IFFT(chain);
+
+    lop = snd;
+    1.do { lop = LPF.ar(lop, 400) };
+    snd = snd - lop;
+
+    lop = FreqShiftAA.ar(DelayC.ar(lop, 0.3, LFNoise2.ar(0.1).range(0, 0.1)), TRand.ar(-100, -80, Dust.ar()), 0, 1);
+
+    snd = snd ++ lop;
+
+
+    snd
+
+}).mold.play
 
 )
 
