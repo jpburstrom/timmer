@@ -17,43 +17,50 @@
 ~buf = Buffer.read(s, "../player/songs/07*".resolveRelative.pathMatch.reverse[0] );
 ~claps = "../player/samples/handclaps/*.wav".resolveRelative.pathMatch.collect (Buffer.read(s, _ ));
 )
-
+~buf
 
 (
 value {
-var from = 300;//q.player.data.phrase.last;
-var to = 400;//from.sum;
-var dur = 60*5; //unused?
-//Moving from freqshifted to plain
-Pdef(\sdf, Pbind(
-    \instrument, \bufSegmentFreqshiftMS,
-    \freqshift, 0,
-    \minSize, 3,
-    \maxSize, Pkey(\minSize) * 2.5,
-    \dur, Prout({ |ev|
+    var from = 300;//q.player.data.phrase.last;
+    var to = 400;//from.sum;
+    var dur = 60*5; //unused?
+    //Moving from freqshifted to plain
+    Pdef(\sdf, Pbind(
+        \instrument, \bufSegmentASRFreqshiftMS,
+        // \smear, 10,
+        \minSize, 3,
+        \maxSize, Pkey(\minSize) * 2.5,
+        \dur, Prout({ |ev|
 
-        loop {
-            //This splits the part (from..to) into random-sized segments (between 3 and 7)
-            var positions = Fdef(\randomSegments).(from, to, ev.minSize, ev.maxSize);
-            var durations = (positions ++ to).differentiate[1..];
-            var order = Array.series(positions.size).scramble;
-            order.do { |index|
-                ev.startPos = positions[index];
-                ev = durations[index].yield;
+            loop {
+                //This splits the part (from..to) into random-sized segments (between 3 and 7)
+                var positions = Fdef(\randomSegments).(from, to, ev.minSize, ev.maxSize);
+                var durations = (positions ++ to).differentiate[1..];
+                var order = Array.series(positions.size).scramble;
+                order.do { |index|
+                    ev.startPos = positions[index];
+                    ev = durations[index].yield;
+                }
             }
-        }
 
-    }),
-    \bufnum, ~buf,
-    \midAmp, Pwhite(-12, 0).dbamp,
-    \legato, Pbrown(1.0, 2.0),
-    \amp, Plprand(0.02, 0.5),
-    //Problem: boring fades
-    \pan, Pfuncn({ 0.7.bilinrand }, inf),
-    \fadetime, Pwrand([Pfuncn { "click".postln; 0.002 }, Pwhite(4.0, 5.0, 1)], [0.01, 0.99], inf);
-));
+        }),
+
+        \deltaMul,Pwrand([1, Pwhite(0.0125, 0.5, Pwhite(3,8, 1))], [0.6, 0.4], inf),
+        \delta, Pkey(\dur) * Pkey(\deltaMul),
+        \freqshift, Pkey(\deltaMul).linlin(0, 1, -3000, 0).trace(prefix:"fqshfit "),
+        \bufnum, ~buf,
+        \midAmp, Pwhite(-12, 0).dbamp,
+        \legato, Pbrown(1.0, 2.0),
+        \amp, 0.2 * Pkey(\freqshift).linlin(-10000, 0, 20, 1),
+        //Problem: boring fades
+        \pan, Pfuncn({ 0.7.bilinrand }, inf),
+        \attack, Pkey(\deltaMul) * 3,
+        \release, Pwhite(5.0, 10.0),
+        \decay, 1,
+        \susLevel, 0.5
+        // \fadetime, Pwrand([Pfuncn { "click".postln; 0.002 }, Pwhite(4.0, 5.0, 1)], [0.01, 0.99], inf);
+    ));
 };
-
 //Static radio noise thing
 Ndef(\meckamack_07, {
     var snd = PlayBuf.ar(2, ~buf, 1, Impulse.kr(100),
@@ -81,10 +88,9 @@ var start = 300;
 Pdef(\test07,
     Pbindf(
         Pspawner({ |sp|
-            loop {
-                var totDur = 1.0.rrand(30);
+                var totDur = 30;
                 "spawn".postln;
-                sp.par(
+                sp.seq(
                     Plazy({
                         var dur = 0.01.rrand(0.05);
                         var freqShift = -800;
@@ -92,24 +98,23 @@ Pdef(\test07,
                         Pbind(
                             \instrument, \bufSegmentFreqshiftMS,
                             \bufnum, ~buf,
-                            \dur, dur,
-                            \legato, 3,
+                            \dur, Pwhite(0.01, 0.05),
+                            \legato, 10,
                             \startPos, Ptime() + Pwhite(-0.1, 0.1) + start + Pn(Pseries(0, 1, Pwhite(2, 16).asStream)),
                                 \bufRate, Pwhite(0.99, 1.00),
                                 //removing some mid from the signal to make it less focused
-                                \freqshift, freqShift,
-                                \amp, Pseg([0.01,2, 0.01], totDur * 0.5, \exp),
+                            \freqshift, freqShift,
+                            \amp, Pseg([0.01,1, 1, 0.01], Pseq(totDur * [0.01, 0.89, 0.1]), \exp),
                                 \fadetime, 0.01
                             )
                         })
                     );
-                    (totDur * 0.5).wait;
-                }
+                // (totDur * 0.5).wait;
+
             }),
-            \midAmp, Pseg(Pwhite(-12, 0), Pwhite(4, 8.0), \lin).dbamp,
+            \midAmp, Pseg(Pwhite(-12, 0), Pwhite(4, 8.0), \lin).dbamp * Pseg([1, 0.1], 30, \exp),
             \sideAmp, Pseg(Pwhite(0, 9), Pwhite(4, 8.0), \lin).dbamp,
-
-
+            // \dur, Pkey(\dur) * Pseg([1, 100], 30);
         )
     );
 };
@@ -185,7 +190,6 @@ Pdef(\claps, Pbind(
 
 )
 
-
 (
 ////////
 //SONG//
@@ -195,6 +199,9 @@ Pdef(\sdf10, Pspawner({ |sp|
     var st = ();
     var it = 8;
     var type = \note;
+    //Wait 60-180 secs before a temporary flutter thing
+    var flutterDepth = (Pseg([0, 0, 0.1.rrand(0.3), 0], Pseq([60.rrand(180), 1, 25.rrand(50)]).trace, Pseq([\step, \lin, \lin])) ++ Pn(0)).trace.asStream;
+    var flutterSpeed = 50.rrand(200.0);
 
     var durs = Pgeom(15, 0.9, it).integrate.asStream - 15;
     it.do {
@@ -204,8 +211,13 @@ Pdef(\sdf10, Pspawner({ |sp|
             \out, [0, 2],
             \type, Pfunc { type },
             \dur, Pkey(\dur) * Pseg([1, 0.7, 1], 30, repeats:inf),
+            \bufRate, Pwhite(0.95, 1.1),
+            \flutterDepth, flutterDepth,
+            \flutterSpeed, flutterSpeed,
+
             // \fadetime, Pkey(\fadetime) * Pseg([1, 0.1, 1], 30, repeats:inf),
             //TODO: multiply w/ Pseg long-form
+
             \freqshift, Pxrand(freqs, inf) * Pseg([1, 0, 1], 30, repeats:inf) * Pseg([0, 1, 1, 0], Pseq([30, 150, 60])),
         ), durs.next);
     };
@@ -223,7 +235,7 @@ Pdef(\sdf10, Pspawner({ |sp|
     sp.suspendAll;
     st.claps = sp.par(Pdef(\claps), 0.0.rrand(3));
     st.glo = sp.par(Pdef(\gloglo), 0.0.rrand(3));
-    st.test07 = sp.par(Pdef(\test07), 0.0.rrand(3));
+    sp.par(Pdef(\test07), 0.0.rrand(3));
 
     5.rrand(20).wait;
     // sp.suspendAll; //TODO fade/wait for next, especially \test_07 is a bit harsh...
@@ -357,12 +369,12 @@ Ndef(\sino3, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.99 ) * 1.5) * 0.009.dup })
 Ndef(\sino2, { SinOsc.ar(SinOsc.kr(0.02).range(94, 97.990001) * 2) * 0.01.dup }).mold.play;
 )
 
-Ndef(\sino2).fadeTime = 10;
+Ndef(\sino3).fadeTime = 10;
 Ndef(\sino).fadeTime = 10;
 Ndef(\sino).end; Ndef(\sino2).end; Ndef(\sino3).end
 
 //Freq shift to lose root note
-Ndef(\fqshift, { arg gate=1; var snd = In.ar(0, 2); var env = EnvGen.kr(Env.asr, gate, doneAction:2); ReplaceOut.ar(0, (env * FreqShiftAA.ar(snd, Line.ar(-1000, -10000, 30))) + ((1 - env) * snd)) }).play(addAction:\addToTail);
+Ndef(\fqshift, { arg gate=1; var snd = In.ar(0, 2); var env = EnvGen.kr(Env.asr(10, 1, 10), gate, doneAction:2); ReplaceOut.ar(0, (env * FreqShiftAA.ar(snd, Line.ar(0, -10000, 30))) + ((1 - env) * snd)) }).play(addAction:\addToTail);
 
 //test-08-magsmooth is also good
 
