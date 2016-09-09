@@ -1,43 +1,68 @@
-~buf = Buffer.read(s, "songs/10*".resolveRelative.pathMatch[0]);
-
-
-~midside ={ arg input, scale = -3;   [input[0] + input[1], input[0] - input[1]] * scale.dbamp };
 (
-Ndef(\FreqshiftThing_10, {
-	var freq = [72.5, 157];
-	var bp, snd = PlayBuf.ar(2, ~buf, BufRateScale.kr(~buf) * \bufRate.kr(1), 1, 0);
-
-	//M-S encoding
-	snd = ~midside.value(snd);
-
-	//rq decides on
-	bp = BPF.ar(snd[1], freq, 0.006) * 12;//LFNoise2.kr(4).range(18, 24).dbamp;
-
-
-	bp = FreqShift.ar(bp, [freq[0] * -0.5, (freq[1] * 1.5) - freq[1]]);
-
-	bp = bp.sum;
-
-	snd[1] = (snd[1] * LFNoise2.kr(0.1).exprange(1,2));
-
-	snd[1] = snd[1] + bp;
-
-	snd[1] = snd[1] + LPF.ar(CombL.ar(snd[1].neg, 0.2, 205.reciprocal, 1));
-
-	//This is good -- frequency shift side part
-	//match frequency with audio (in this case (01) a lot of D)
-	snd[1] = FreqShiftAA.ar(snd[1], -670, mul:3);
-
-
-
-
-
-	//Remove mid
-	// snd[0] = DC.ar;
-
-	~midside.value(snd).reverse;
-
-	// DC.ar
-}).play
+"lib/init".import;
+q.player.actionLabels = #[onset];
+q.player.tickLabel = \onset;
+q.player.loadData("10");
 )
 
+(
+q.player.setIterator(p { |ev|
+    var i = 0, last = 276; //Remove last segment
+
+    var time = thisThread.seconds;
+
+    i = last.rand;
+
+    while {(thisThread.seconds - time) < 300} {
+        var tmp = i;
+        if (0.1.coin) {
+            tmp = 0.rrand(i);
+        };
+        ev = tmp.debug("onset").yield;
+        if (0.99.coin) {
+            i = i + 1;
+        } {
+            i = i - 3.rrand(4);
+        };
+        i = i.wrap(0, last - 1)
+    };
+
+    last.yield
+
+});
+
+q.player.setPtn(Pbind(
+    \instrument, \bufSegmentFreqSplitShiftMS,
+    \warp, Pseg(Pwrand([0, 1], [0.9, 0.1], Pwhite(0.01, 1), inf), 1).trace,
+    \dur, Pfunc { |ev| ((1-ev.warp) * ev.dur) + (ev.warp * 0.125) },
+    \legato, 1 + (Pkey(\warp) * 0.25),
+    \ffreq, 392, //G3
+    \freqshiftDev, Pwhite(0.95, 1.05),
+    \maxFreqshift, -10000,
+    \freqshift, Pif(Pfunc { |ev| ev.warp == 0 }, 0, Pn(Plazy { |ev|
+        var base = -97.99;
+        var maxi = (ev.maxFreqshift / base).floor.abs.asInt;
+        Pseries(base, base, maxi)
+})) * Pkey(\freqshiftDev),
+    \freqshiftAmp, Pkey(\freqshift).linexp(-10000, 0, 16, 1),
+    \timingOffset, 0.1
+
+));
+/*
+q.player.parPtn = Ptpar([0.1,Pbind(
+    \instrument, \sinewave,
+    \freq, Pwhite(94.0, 98),
+    \attack, Pwhite(0.0, 0.1),
+    \release, 1,
+    \db, -42,
+    \dur, Pfunc { ~currentEvent.dur }
+)]);
+*/
+)
+
+
+/*EOF*/
+
+q.player.play
+
+q.player.bounce

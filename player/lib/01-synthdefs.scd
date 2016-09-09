@@ -143,6 +143,53 @@ SynthDef(\bufSegmentFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
 }).add;
 
 
+//ADSR segment player with freqshift
+//startPos in seconds
+SynthDef(\bufSegmentASRFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+	var fadetime = \fadetime.kr(defaultFadeTime);
+    var snd, mid, side;
+    var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
+    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1) * flutter, 1, startPos);
+    snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
+    snd = snd * EnvGen.ar(Env.asr(\attack.kr(0.01),\susLevel.kr(1), \release.kr(1), 1, -10), \gate.kr(1), doneAction:2);
+    #mid, side = Fdef(\stereo2ms).value(snd);
+	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
+    OffsetOut.ar(out, snd * \amp.kr(1));
+}).add;
+
+//Simple segment player with freqshift
+//startPos in seconds
+SynthDef(\bufSegmentFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+	var fadetime = \fadetime.kr(defaultFadeTime);
+    var snd, mid, side;
+    var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
+    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1) * flutter, 1, startPos);
+    snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
+    snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
+    #mid, side = Fdef(\stereo2ms).value(snd);
+	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
+    OffsetOut.ar(out, snd * \amp.kr(1));
+}).add;
+
+
+//Simple segment player with freqshift
+//startPos in seconds
+SynthDef(\bufSegmentFreqSplitShiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+	var fadetime = \fadetime.kr(defaultFadeTime);
+    var snd, mid, side, lop;
+    var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
+    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1) * flutter, 1, startPos);
+    lop = LPF.ar(snd, \ffreq.kr(440));
+    snd = FreqShiftAA.ar(snd - lop, \freqshift.kr(0), 1, \freqshiftAmp.kr(1));
+    #mid, side = Fdef(\stereo2ms).value(snd);
+    snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
+    snd = lop + snd;
+    snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
+    OffsetOut.ar(out, snd * \amp.kr(1));
+}).add;
 
 
 //Debug tick
