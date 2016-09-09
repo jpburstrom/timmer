@@ -2,31 +2,32 @@
 
 //## Initialize ###
 (
-"lib/init".import;
-q.player.actionLabels = #[onset];
-q.player.tickLabel = \onset;
-q.player.loadData("08");
-//q.player.extractFeatures;
-q.playerui.connect(q.player)
-// q.markov = "/lib/protos/markov-trainer".import;
-)
-
-(
+var relPath = "".resolveRelative;
 var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
 //To be called from within q.player environment
 var spawnResonatorSynth = {
     ~t.resonator = Synth(\resonate_08, [\sendbus, ~t.convBus], ~t.postGroup);
 
 };
+"lib/init".import;
+q.player.actionLabels = #[onset];
+q.player.tickLabel = \onset;
+q.player.loadData("08");
+//q.player.extractFeatures;
+// q.playerui.connect(q.player);
+// q.markov = "/lib/protos/markov-trainer".import;
+
 //onReady is called when player buffer is loaded, and before playing
 //It's called within a routine, so we can use s.sync, .wait or similar
 q.player.onReady = {
 
-	~t.ez = EZConv("data/impulses/impulse-closed-ms-48.wav".resolveRelative);
-	~t.convBus = Bus.audio(s, 2);
+	~t.irSpectrum = 2.collect {|i|
+		Buffer.read(s, relPath +/+ "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i));
+	};
+    ~t.convBus = Bus.audio(s, 2);
 	s.sync;
 
-	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 0, \irbufs, ~t.ez.irSpectrum,
+	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 0, \irbufs, ~t.irSpectrum,
 		\sideAmp, 1, \amp, 0.25
 	], ~t.sendGroup);
 
@@ -181,17 +182,12 @@ q.player.setPtn(Plazy({
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(Plazy { Psym(Pseq(#[p1, p2, p3, p4, p5, p6]), ~data.iterators) });
 // q.player.setIterator(Pseries(301));
-q.player.play
+// q.player.play
 )
 
-q.player.setIterator(Pseries(301))
+/*EOF*/
 
-q.player.stop
-//TESTS
-q.player.bounce
+q.player.play
 
-
-
-
-
+q.player.bounce((dur: 10))
 
