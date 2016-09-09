@@ -1,4 +1,3 @@
-~buf = Buffer.read(s, "songs/11*".resolveRelative.pathMatch[0])
 
 //## Initialize ###
 (
@@ -9,13 +8,6 @@ q.player.loadData("11");
 //q.player.extractFeatures;
 q.playerui.connect(q.player);
 )
-q.player.play
-q.player.stop
-q.player.data.score.do(_.postln); nil
-q.player.currentEvent
-q.player.reset; q.player.asPattern(1).asStream.nextN(10, ()).do(_.postln);nil;
-
-q.player.bounce;
 (
 //## Patterns #######
 
@@ -51,14 +43,15 @@ q.player.setPtn(Pbind(
 			};
 
 		};
+        ev.part.postln;
 		switch(ev.part,
 			1, {
 				var delays = 2;
-				~t.zerox_env = { Out.kr(~t.zerox_envbus, Line.kr(0.02, 1, partDur)) }.play(target:~t.preGroup);
+				~t.zerox_env = { Out.kr(~t.zerox_envbus, Line.kr(1, 2, partDur)) }.play(target:~t.preGroup);
 
-				createDelays.value(4, \zerox_play);
+				createDelays.value(2, \zerox_play, 1);
 				~t.zerox_play.do { |x|
-					x.map(\maxDelay, ~t.zerox_envbus);
+                    x.map(\maxDelay, ~t.zerox_envbus);
 					x.set(\releaseTime, 10)
 				};
 				~t.tmpFork = fork {
@@ -108,7 +101,7 @@ q.player.setPtn(Pbind(
                     Out.ar(0, Splay.ar(bp.flat) * 3);
 
                 }.play(target:~t.postGroup);
-        },
+            },
 		4, {
 				~t.synth1.free; //FIXME
 				~t.zerox_env.free; //FIXME
@@ -125,12 +118,14 @@ q.player.setPtn(Pbind(
 ));
 
 //Give a pattern to setIterator, which is used to select which tick is to be played
-q.player.setIterator(Pseries());
+q.player.setIterator(Pseries(0));
 
 
 )
 
+/*EOF*/
 
+~buf = Buffer.read(s, "songs/11*".resolveRelative.pathMatch[0])
 
 (
 //## TODO ##
@@ -139,19 +134,19 @@ q.player.setIterator(Pseries());
 //- Vissa delar kan ev behöva loopas. Hur?
 //- Kolla klick i första delen
 Ndef(\aptest, { arg feedback = 0.0;
-    var snd = PlayBuf.ar(2, ~buf);
+    var snd = PlayBuf.ar(2, ~buf, 1);
     var input = snd;
 
     //Delay. Line.ar have slightly longer dur
-    input = DelayC.ar(input, 10, (LFNoise2.ar(0.1).range(0,10) * Line.ar(dur:10.5)).poll);
-    input = FreqShiftAA.ar(input, {LFNoise2.kr(0.01).range(-1000, -4000)}.dup);
+    // input = DelayC.ar(input, 10, (LFNoise2.ar(0.1).range(0,10) * Line.ar(dur:10.5)).poll);
+    // input = FreqShiftAA.ar(input, {LFNoise2.kr(0.01).range(-1000, -4000)}.dup);
+
+    // input = FreqShiftAA.ar(input, {LFNoise2.kr(10).range(-3000, -3100)}.dup(1));
+    // (31..45).nthPrime.do { |f| input = AllpassC.ar(input, 0.1, f.reciprocal.postln, 0.1.rrand(20)) };
 
 
-
-    (31..45).nthPrime.do { |f| input = AllpassC.ar(input, 0.1, f.reciprocal.postln, 0.1.rrand(20)) };
-
-
-    (snd * 0.05) + input
+    (snd * 0.05) + input;
+    input
 
 }).play
 
