@@ -15,10 +15,12 @@ Document.globalKeyDownAction = { |doc, char, mod, unicode, key|
         99, nil, //F3
         118, nil, //F4
         109, nil,//F10
-        103, nil, //F11
+        103, {q.playerui.connect(q.player)}, //F11
         111, {q.player.bounce} //F12
     );
 };
+
+TempoClock.default.tempo = 1;
 
 q ?? { q = () };
 q.do(_.free);
