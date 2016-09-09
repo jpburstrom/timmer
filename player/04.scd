@@ -5,6 +5,7 @@
 
 //For later, needs more interesting sound. Explore parallel freqshifted track, or something similar
 
+q.player.bounce
 
 //## Initialize ###
 (
@@ -16,7 +17,6 @@ q.player.tickLabel = \phrase;
 q.player.loadData("04");
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
-
 
 SynthDef(\bufSegmentResonance, {|out(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(0.002);
@@ -158,6 +158,8 @@ q.player.setIterator(
 
 // q.player.play
 )
+q.player.bounce
+
 
 /*------------------------------------------------------------*/
 /*EOF*/

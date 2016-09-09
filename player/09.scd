@@ -4,12 +4,14 @@
 
 //## Initialize ###
 (
+var handclapPaths = "samples/handclaps/*.wav".resolveRelative.pathMatch;
+
 "lib/init".import;
 q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
 q.player.loadData("09");
 //q.player.extractFeatures;
-q.playerui.connect(q.player);
+// q.playerui.connect(q.player);
 q.player.data.tail = 15;
 
 
@@ -141,7 +143,7 @@ q.player.use {
 
         ~t.mixin = { In.ar(~t.longRevBus, 2) }.play(~t.postGroup);
 
-        ~t.handclaps = "samples/handclaps/*.wav".resolveRelative.pathMatch.collect { |path|
+        ~t.handclaps = handclapPaths.collect { |path|
             Buffer.read(s, path);
         };
 
@@ -164,7 +166,7 @@ q.player.use {
 };
 
 
-q.player.play
+// q.player.play
 
 // q.player.bounce
 )

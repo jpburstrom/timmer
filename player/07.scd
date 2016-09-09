@@ -5,13 +5,12 @@
 q.player.actionLabels = #[start];
 q.player.tickLabel = \start;
 q.player.loadData("07");
-)
 
-(
 q.player.setPtn(
     Plazy {
         var segSeq = Pseq(([0, 1] - 0.6.rrand(0.8)).abs);
         Pmono(\meckamack_07,
+            //FIXME: Noise volume
             \noiseMix, Pseg(Pwhite(0.0, 1), 30) * (Ptime() * 0.05).min(1),
             \totalDur, Plazy { |ev| Pn(ev.bufnum.duration) },
             \noiseDelay, Pwhite(0, 1.0) * Pseg([0.0001,1,0.0001], segSeq * Pkey(\totalDur), \exp),
