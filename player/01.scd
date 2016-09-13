@@ -6,7 +6,9 @@ q.player.loadData("01");
 //Connect UI to player
 // q.playerui.connect(q.player);
 q.player.extractFeatures;
-)
+q.player.channels = 8;
+);
+
 (
 q.player.onReady = {
 
@@ -15,7 +17,7 @@ q.player.onReady = {
 
 	//Always-running klank synth
 	//Makes a bell-like sound
-	~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, 0], ~t.postGroup);
+	~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, 4], ~t.postGroup);
 
 	//Freqshift fx synth
     ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, 2, \amp, 4, \midAmp, -3.dbamp], ~t.postGroup);
@@ -35,9 +37,9 @@ q.player.onReady = {
 		//Some detuning
 		//TODO: variation of LFNoise2 rate?
 		//TODO: individual amps?
-		snd = snd + Mix(freqs.collect({ |fq| Resonz.ar(snd, fq * LFNoise2.kr(0.1).range(lo, hi), 0.002, 3)}));
+		snd = Mix(freqs.collect({ |fq| Resonz.ar(snd, fq * LFNoise2.kr(0.1).range(lo, hi), 0.002, 3)}));
 		// snd.postln;
-		ReplaceOut.ar(0, snd);
+		Out.ar(6, snd);
     }).play(target:~t.klank, addAction:\addBefore);
 
 
@@ -217,7 +219,7 @@ q.player.setPtn(Pbind(
     	};
 	},
     */
-    \out, [0, 2],
+    \outbus, [0, 2],
     \amp, [1, 0],
     \startPos, Pfunc { |ev|
 

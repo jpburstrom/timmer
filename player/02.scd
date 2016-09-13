@@ -4,6 +4,7 @@ var relPath = "".resolveRelative;
 q.player.actionLabels = #[phrase, beat];
 q.player.tickLabel = \phrase;
 q.player.loadData("02");
+q.player.channels = 8;
 // //FIXME: Player2 idea doesn't work
 // q.player2 = q.player.clone;
 // q.player2.tickLabel = \beat;
@@ -47,7 +48,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
 	\harmonic, Pwhite(3, 6),
 	\group, Pfunc { ~t.postGroup },
 	\dur, Pfunc { ~currentEvent.dur },
-	\out, Pfunc { ~t.convBus },
+	\outbus, Pfunc { ~t.convBus },
 	\legato, 1,
 	\release, 5,
 	\db, (Pkey(\harmonic) - 2 ) * -2
@@ -60,17 +61,17 @@ q.player.onReady = {
 	};
 	~t.convBus = Bus.audio(s, 2);
     s.sync;
-	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 0, \irbufs, ~t.irSpectrum,
+	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 4, \irbufs, ~t.irSpectrum,
 		\sideAmp, 1, \amp, 0.25
 	], ~t.sendGroup);
 
-	~t.freqshiftweird = Synth(\freqShiftWeird_02, target:~t.postGroup);
+    ~t.freqshiftweird = Synth(\freqShiftWeird_02, [\outbus, 2], target:~t.postGroup);
 
 
 
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
 		\bandwidth, 5000, \decay, 0.1, \predelay, 10, \excursion, 0.9,
-		\in_diff1, 0.36, \in_diff2, 0.40
+		\in_diff1, 0.36, \in_diff2, 0.40, \outbus, 6
 	], ~t.sendGroup);
 
 };
@@ -80,3 +81,4 @@ q.player.onReady = {
 /*EOF*/
 q.player.play
 
+q.player.songPath
