@@ -73,7 +73,7 @@ SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, 
 }).add;
 
 //Buffer segment with decaying + filtered comb filter
-SynthDef(\bufSegmentComb, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentComb, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
 	var atk, snd;
 	startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
@@ -91,7 +91,7 @@ SynthDef(\bufSegmentComb, { |out(0), bufnum(0), startPos(0), sustain(1)|
 	snd = XFade2.ar(snd, atk, \mix.kr(0));
 
 
-	OffsetOut.ar(out, snd * \amp.kr(1));
+	OffsetOut.ar(outbus, snd * \amp.kr(1));
 
 
 }).add;

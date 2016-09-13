@@ -37,7 +37,7 @@ q.playerui.connect(q.player)
 q.player.setPtn(Pbind(
 	\amt, Pseg([0.5, 0], 25, \sin), //Pif(Pwhite(hi:0.6).coin, Pwhite(0, 0.35), Pseg([0,0.4,0], 20, \sin, inf)),
 	\dur, Fdef(\changePatternEndTime).(\amt),
-    \out, Pif(Pkey(\dur) < 0.35, Pfunc { ~t.fxbus } , 0)
+    \outbus, Pif(Pkey(\dur) < 0.35, Pfunc { ~t.fxbus } , 0)
 ));
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(p { |ev|
