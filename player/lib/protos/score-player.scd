@@ -466,6 +466,10 @@ p = Proto({
         //For some reason the synthdef loading message (d_recv) becomes too large or something if we don't
         //clear the score first, like this. Then we can ~loadSynthDefs again. This only happens when loading synthdefs
         //right before... :|
+
+        //We do this so bus allocation will not conflict with output buses
+        Server.fromName(\ScoreDummy).options.numOutputBusChannels_(~channels);
+
         ScoreClock.beginScore;
         ScoreClock.addSynthDefs;
         // ~loadSynthDefs.value;
