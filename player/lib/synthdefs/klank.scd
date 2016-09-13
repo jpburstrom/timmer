@@ -9,7 +9,7 @@ SynthDef(\plank, { |freq, amp=1, sustain=0.1, pan=0|
 	var snd = Decay.ar(Impulse.ar(0), 0.1, 0.1) + (PinkNoise.ar(1) * EnvGen.ar(Env.perc(0.002, 0.005, 1, -8)) * 0.8);
 
 	snd = DynKlank.ar(`wood2, snd, 60, 0, sustain*3) * EnvGen.ar(Env.linen(0, sustain, 0.002), doneAction:2);
-	Out.ar(\out.kr(0), Pan2.ar(snd.tanh, pan, amp));
+	Out.ar(\outbus.kr(0), Pan2.ar(snd.tanh, pan, amp));
 }).add;
 
 
@@ -29,7 +29,7 @@ SynthDef(\bufSegmentPlank, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
 
     snd = DynKlank.ar(`wood2, snd, \freq.kr, 0, sustain) * EnvGen.ar(Env.linen(0, sustain, 0.002), doneAction:2);
     snd = Limiter.ar(snd, \limiterAmp.kr(0.25)); //
-	Out.ar(\out.kr(0), Pan2.ar(snd, pan, amp));
+	Out.ar(\outbus.kr(0), Pan2.ar(snd, pan, amp));
 }).add;
 
 
@@ -45,7 +45,7 @@ SynthDef(\bufSegmentPlankS, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
 
 	snd = DynKlank.ar(`wood2, snd, \freq.kr(60), 0, sustain*3) * EnvGen.ar(Env.linen(0, sustain, 0.002), doneAction:2);
 	snd = snd.tanh;
-	Out.ar(\out.kr(0), Balance2.ar(snd[0], snd[1], pan, amp));
+	Out.ar(\outbus.kr(0), Balance2.ar(snd[0], snd[1], pan, amp));
 }).add;
 
 // Pbind(\dur, 0.2, \instrument, \plank, \sustain, 0.5).play
@@ -57,7 +57,7 @@ SynthDef(\klankBell, { |inbus=0, freq=150, amp=1|
         var amps = freqs.size.collect((_+1).reciprocal);
         var times = freqs.size.collect { Rand(1, 9.5) };
         var snd = DynKlank.ar(`[freqs, amps, times], In.ar(inbus, 2) * 0.01, freq * LFNoise2.kr(4).range(0.99, 1.01));
-	Out.ar(\out.kr(0), snd * amp)
+	Out.ar(\outbus.kr(0), snd * amp)
 }).add;
 
 
@@ -78,7 +78,7 @@ SynthDef(\wood09, {
 	x = FreqShiftAA.ar(snd, -800);
 	x = Klank.ar(`wood2, x * LFNoise2.ar(1).exprange(0.001, 2), 99, 0, 4) * 2;
 
-	ReplaceOut.ar(\out.kr(0), x + snd);
+	ReplaceOut.ar(\outbus.kr(0), x + snd);
 }).add;
 
 //Temporary
@@ -86,5 +86,5 @@ SynthDef(\resonator09, { |freq=88|
 	var snd = In.ar(0, 2);
 	snd = snd * EnvGen.ar(Env.asr(0.5, 1, 0.5), \gate.kr(0));
 	snd = AllpassN.ar(BPF.ar(snd, freq, 0.1), 0.05, 88.reciprocal, 10) * \amp.kr(1);
-	Out.ar(\out.kr(0), snd * 3);
+	Out.ar(\outbus.kr(0), snd * 3);
 }).add;

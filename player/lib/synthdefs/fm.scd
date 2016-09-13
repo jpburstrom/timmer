@@ -25,5 +25,5 @@ SynthDef(\fmGloss, {
 
 	snd = [snd[1] + snd[5], snd[3] + snd[5]];
 
-	Out.ar(\out.kr(0), snd * 0.05 * \amp.kr(1));
+	Out.ar(\outbus.kr(0), snd * 0.05 * \amp.kr(1));
 }).add;

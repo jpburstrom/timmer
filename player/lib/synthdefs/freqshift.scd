@@ -24,6 +24,6 @@ SynthDef(\freqShiftWeird_02, {
 
 		snd = snd * LFNoise2.kr(2).exprange(0.5, 5);
 
-		Out.ar(0, snd); //Parallel
+    Out.ar(\outbus.kr(0), snd); //Parallel
 
 	}).add;

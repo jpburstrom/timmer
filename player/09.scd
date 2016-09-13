@@ -108,7 +108,7 @@ q.player.use {
 		\octave, 4,
 		\scale, Scale.dorian,
 		\amp, Plprand(0.001, 0.01),
-		\out, Pfunc { ~t.longRevBus },
+		\outbus, Pfunc { ~t.longRevBus },
 		\timingOffset, Pwhite(0.0, 0.05),
 		\group, Pfunc { ~t.mainGroup },
 		\note, p {

@@ -8,7 +8,7 @@ Spec.add(\fqshift, [-20000, 20000]);
 Spec.add(\startPos, [0, 1200]); //20 minutes
 Spec.add(\attackStartPos, \startPos);
 Spec.add(\legato, [0.001, 10, \exp]);
-Spec.add(\out, \audiobus);
+Spec.add(\outbus, \audiobus);
 Spec.add(\sendAmp, \amp);
 Spec.add(\midAmp, \amp);
 Spec.add(\sideAmp, \amp);
@@ -22,24 +22,25 @@ Spec.add(\varFactor, \unipolar);
 
 //Simple segment player
 //startPos in seconds
-SynthDef(\bufSegment, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegment, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-    OffsetOut.ar(out, snd * \amp.kr(1));
+    OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
 
 //A bufSegment with mid/side volume control
-SynthDef(\bufSegmentMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentMS, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd, mid, side;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
 	#mid, side = Fdef(\stereo2ms).value(snd);
-	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1) * -3.dbamp, side * \sideAmp.kr(1) * -3.dbamp);OffsetOut.ar(out, snd * \amp.kr(1));
+	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1) * -3.dbamp, side * \sideAmp.kr(1) * -3.dbamp);
+    OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
 
 //Segment player with separate attack and sustain startPos's
@@ -68,7 +69,7 @@ SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, 
 	//output + envelope
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr(0, 0.1) * snd);
-	OffsetOut.ar(\out.kr(0), snd * \amp.kr(1));
+	OffsetOut.ar(\outbus.kr(0), snd * \amp.kr(1));
 }).add;
 
 //Buffer segment with decaying + filtered comb filter
@@ -97,19 +98,19 @@ SynthDef(\bufSegmentComb, { |out(0), bufnum(0), startPos(0), sustain(1)|
 
 //Simple segment player with freqshift
 //startPos in seconds
-SynthDef(\bufSegmentFreqshift, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentFreqshift, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-	OffsetOut.ar(out, Balance2.ar(snd[0], snd[1], \pan.kr(0), \amp.kr(1)));
+	OffsetOut.ar(outbus, Balance2.ar(snd[0], snd[1], \pan.kr(0), \amp.kr(1)));
 }).add;
 
 //Simple segment player with freqshift
 //startPos in seconds
-SynthDef(\bufSegmentFreqshiftSmear, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentFreqshiftSmear, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd, chains;
 
@@ -123,13 +124,13 @@ SynthDef(\bufSegmentFreqshiftSmear, { |out(0), bufnum(0), startPos(0), sustain(1
     snd = IFFT(chains);
 
     snd = snd * EnvGen.ar(Env([0, 0, 1, 1, 0], [2048 / SampleRate.ir ,fadetime, sustain, fadetime]), doneAction:2);
-    OffsetOut.ar(out, Balance2.ar(snd[0], snd[1], \pan.kr(0), \amp.kr(1)));
+    OffsetOut.ar(outbus, Balance2.ar(snd[0], snd[1], \pan.kr(0), \amp.kr(1)));
 }).add;
 
 
 //Simple segment player with freqshift
 //startPos in seconds
-SynthDef(\bufSegmentFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentFreqshiftMS, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd, mid, side;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
@@ -139,13 +140,13 @@ SynthDef(\bufSegmentFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     #mid, side = Fdef(\stereo2ms).value(snd);
 	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
-    OffsetOut.ar(out, snd * \amp.kr(1));
+    OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
 
 
 //ADSR segment player with freqshift
 //startPos in seconds
-SynthDef(\bufSegmentASRFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentASRFreqshiftMS, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd, mid, side;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
@@ -155,12 +156,12 @@ SynthDef(\bufSegmentASRFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1
     snd = snd * EnvGen.ar(Env.asr(\attack.kr(0.01),\susLevel.kr(1), \release.kr(1), 1, -10), \gate.kr(1), doneAction:2);
     #mid, side = Fdef(\stereo2ms).value(snd);
 	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
-    OffsetOut.ar(out, snd * \amp.kr(1));
+    OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
 
 //Simple segment player with freqshift
 //startPos in seconds
-SynthDef(\bufSegmentFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentFreqshiftMS, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd, mid, side;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
@@ -170,13 +171,13 @@ SynthDef(\bufSegmentFreqshiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     #mid, side = Fdef(\stereo2ms).value(snd);
 	snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
-    OffsetOut.ar(out, snd * \amp.kr(1));
+    OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
 
 
 //Simple segment player with freqshift
 //startPos in seconds
-SynthDef(\bufSegmentFreqSplitShiftMS, { |out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentFreqSplitShiftMS, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd, mid, side, lop;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
@@ -188,14 +189,14 @@ SynthDef(\bufSegmentFreqSplitShiftMS, { |out(0), bufnum(0), startPos(0), sustain
     snd = Fdef(\ms2stereo).value(mid * \midAmp.kr(1), side * \sideAmp.kr(1));
     snd = lop + snd;
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-    OffsetOut.ar(out, snd * \amp.kr(1));
+    OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
 
 
 //Debug tick
 SynthDef(\tick, {
     Line.kr(0, 1, 0.1, doneAction:2);
-    Out.ar(\out.kr(0), Impulse.ar(0).dup);
+    Out.ar(\outbus.kr(0), Impulse.ar(0).dup);
 }).add;
 
 
