@@ -5,20 +5,18 @@
 
 //For later, needs more interesting sound. Explore parallel freqshifted track, or something similar
 
-q.player.bounce
-
 //## Initialize ###
 (
 var markov;
-
 "lib/init".import;
 q.player.actionLabels = #[phrase, part];
 q.player.tickLabel = \phrase;
 q.player.loadData("04");
+q.player.channels = 6;
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 
-SynthDef(\bufSegmentResonance, {|out(0), bufnum(0), startPos(0), sustain(1)|
+SynthDef(\bufSegmentResonance, {|outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(0.002);
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
@@ -28,9 +26,15 @@ SynthDef(\bufSegmentResonance, {|out(0), bufnum(0), startPos(0), sustain(1)|
 
 
 
-    OffsetOut.ar(out, snd * \amp.kr(1));
+    OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
 
+SynthDef(\freqshiftPostEQ_04, {
+		var snd = In.ar(\inbus.kr, 2);
+		snd = BHiShelf.ar(snd, 4700, 2, -10);
+		Out.ar(\outbus.kr, snd);
+
+}).add;
 
 //This loads a previously generated markov chain
 markov = "lib/protos/markov-trainer".import;
@@ -42,15 +46,11 @@ q.player.onReady = {
 	//TODO: separate send bus for reverb
 
 	//Freqshift needs a bit of hi cut, because of noise
-	~t.freqshiftbus = Bus.audio(s, 2);
-	~t.freqshiftEq = {
-		var snd = In.ar(~t.freqshiftbus, 2);
-		snd = BHiShelf.ar(snd, 4700, 2, -10);
-		Out.ar(0, snd);
-	}.play(~t.postGroup);
+    ~t.freqshiftbus = Bus.audio(s, 2).debug("BUSS");
+    ~t.freqshiftEq = Synth(\freqshiftPostEQ_04, [\inbus, ~t.freqshiftbus.asMap, \outbus, 2]);
 
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
-		\bandwidth, 5000, \decay, 0.01, \predelay, 10, \excursion, 0.9,
+		\bandwidth, 5000, \outbus, 4, \decay, 0.01, \predelay, 10, \excursion, 0.9,
 		\in_diff1, 0.46, \in_diff2, 0.40
 	], ~t.sendGroup);
 };
@@ -86,7 +86,7 @@ q.player.setPtn(Pbind(
 	}),
 	//TODO: generalize separate keys into a chained Psym or something
 	\instrument, Pif(Pkey(\normal), \bufSegment, Pwrand([\bufSegmentFreqshift, \bufSegmentPlank, \bufSegmentResonance], [0.8, 0.1, 0.1], inf)),
-    \out, Pif(Pkey(\normal), 0, Pfunc { ~t.freqshiftbus }),
+    \outbus, Pif(Pkey(\normal), 0, 2),
 	\freqshift, Pwhite(-200, -2000),
 	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
 	\fadetime, 0.02,
@@ -96,7 +96,7 @@ q.player.setPtn(Pbind(
 			ev.phrase >= 46 //46 and 47 are possible last phrases;
 		}
 	},
-		Pkey(\dur), Pkey(\dur) * Pwhite(0.4, 1) * Pseg(Pseq([Pwhite(0.01, 0.1, 1), Pwhite(0.5, 1, 1)], inf), Pwhite(5, 20), )),
+		Pkey(\dur) - 0.1, Pkey(\dur) * Pwhite(0.4, 1) * Pseg(Pseq([Pwhite(0.01, 0.1, 1), Pwhite(0.5, 1, 1)], inf), Pwhite(5, 20), )),
 	\delta, Pif(Pkey(\normal), 0, Pkey(\dur)),
     // \pan, Pif(Pkey(\normal), 0, Pwhite(-1, 1.0)),
 	\hello, Pfunc { |ev|
@@ -158,12 +158,14 @@ q.player.setIterator(
 
 // q.player.play
 )
-q.player.bounce
 
 
 /*------------------------------------------------------------*/
 /*EOF*/
 /*------------------------------------------------------------*/
+
+q.player.bounce
+
 
 ~buf4 = Buffer.read(s, "songs/04*.wav".resolveRelative.pathMatch.last);
 
