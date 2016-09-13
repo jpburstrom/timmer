@@ -8,6 +8,7 @@ p = Proto({
     ~soundFile = nil;
     ~songPath = nil;
     ~dataPath = nil;
+    ~channels = 2;
     ~data = ();
 
     ~readyForPlay = false;
@@ -474,7 +475,8 @@ p = Proto({
         ~stop.value;
 
         score.recordNRT(path ++ ".osc", path, nil,
-            opt.sampleRate, opt.headerFormat, opt.sampleFormat, duration:score.score.last[0],
+            opt.sampleRate, opt.headerFormat, opt.sampleFormat,
+            ServerOptions().numOutputBusChannels_(~channels), duration:score.score.last[0],
             action: {
                 //Cleanup
                 if (opt.deleteScoreFile) {
