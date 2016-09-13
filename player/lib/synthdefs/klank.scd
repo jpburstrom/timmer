@@ -21,13 +21,14 @@ SynthDef(\bufSegmentPlank, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(2), 1, startPos).sum;
-    snd = FreqShiftAA.ar(snd, \freq.kr(60) * -1);
+    snd = FreqShiftAA.ar(snd, \freq.kr(60) * -2);
 	snd = snd * EnvGen.ar(Env.perc(fadetime, 0.2, 1, -8));
 	// snd = HPF.ar(snd, 200);
 
     sustain = sustain * Rand(2,4) * \freq.kr.explin(60, 800, 1, 0.75);
 
     snd = DynKlank.ar(`wood2, snd, \freq.kr, 0, sustain) * EnvGen.ar(Env.linen(0, sustain, 0.002), doneAction:2);
+    snd = Limiter.ar(snd, \limiterAmp.kr(0.25)); //
 	Out.ar(\out.kr(0), Pan2.ar(snd, pan, amp));
 }).add;
 
