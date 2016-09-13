@@ -78,7 +78,7 @@ SynthDef(\wood09, {
 	x = FreqShiftAA.ar(snd, -800);
 	x = Klank.ar(`wood2, x * LFNoise2.ar(1).exprange(0.001, 2), 99, 0, 4) * 2;
 
-	ReplaceOut.ar(\outbus.kr(0), x + snd);
+	Out.ar(\outbus.kr(0), x);
 }).add;
 
 //Temporary

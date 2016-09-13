@@ -3,7 +3,8 @@
 q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
 q.player.loadData("10");
-)
+q.player.channels = 4; //Normal + Warp
+);
 
 (
 q.player.setIterator(p { |ev|
@@ -44,6 +45,7 @@ q.player.setPtn(Pbind(
         var maxi = (ev.maxFreqshift / base).floor.abs.asInt;
         Pseries(base, base, maxi)
 })) * Pkey(\freqshiftDev),
+    \outbus, Pif(Pfunc { |ev| ev.warp == 0 }, 0, 2),
     \freqshiftAmp, Pkey(\freqshift).linexp(-10000, 0, 16, 1),
     \timingOffset, 0.1
 

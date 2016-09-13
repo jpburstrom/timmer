@@ -13,7 +13,9 @@ q.player.loadData("09");
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 q.player.data.tail = 15;
+q.player.channels = 10;
 
+//Channel map: Bass, Fqshift/Claps, FM, Resonator, strange wood
 
 q.player.use {
 
@@ -63,6 +65,7 @@ q.player.use {
         \instrument, \bufSegmentFreqshiftSmear,
         \bufnum, Pfunc( { |ev| [ev.bufnum, claps.next] } ),
         \freqshift, [-1000, 0],
+        \outbus, 2,
 		//Fade in, then
 		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \exp) * 0.3,
         \smear, Pwhite(1, 20),
@@ -87,10 +90,10 @@ q.player.use {
 		\instrument, \fmGloss,
 		\dur, Pwrand([Rest(15), Pfunc { ~currentEvent.dur }], [0.05, 0.95]),
 		\sustain, Pwhite(1, 8.0),
-		\type, p {
+        \type, p {
 			var resume;
-			loop {
-				//Wait 30-45 sec
+            loop {
+                //Wait 30-45 sec
 				resume = thisThread.beats + 30.rrand(45);
 				while { resume > thisThread.beats } {
 					\rest.yield;
@@ -131,17 +134,17 @@ q.player.use {
 	~onReady = {
 
 		//FIXME: reverb params
-		~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
+        // ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
 
-		~t.longRevBus = Bus.audio(s, 2);
-		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \decay, 1, \predelay, 0, \inbus, ~t.longRevBus], ~t.sendGroup);
+        ~t.longRevBus = Bus.audio(s, 2);
+		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \outbus, 4, \decay, 1, \predelay, 0, \inbus, ~t.longRevBus.index], ~t.sendGroup);
 
-        ~t.wood = Synth(\wood09, target:~t.postGroup);
-		~t.resonator = Synth(\resonator09, target:~t.postGroup);
+        ~t.wood = Synth(\wood09, [\outbus, 8], target:~t.postGroup);
+        ~t.resonator = Synth(\resonator09, [\outbus, 6], target:~t.postGroup);
 
         ~t.fftbus = Bus.audio(s, 2);
 
-        ~t.mixin = { In.ar(~t.longRevBus, 2) }.play(~t.postGroup);
+        // ~t.mixin = { In.ar(~t.longRevBus, 2) }.play(~t.postGroup);
 
         ~t.handclaps = handclapPaths.collect { |path|
             Buffer.read(s, path);
@@ -170,3 +173,5 @@ q.player.use {
 
 // q.player.bounce
 )
+Server.default = Server.fromName(\ScoreDummy)
+Server.default = Server.local
