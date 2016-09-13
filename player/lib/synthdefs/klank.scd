@@ -44,7 +44,7 @@ SynthDef(\bufSegmentPlankS, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
 	// snd = HPF.ar(snd, 200);
 
 	snd = DynKlank.ar(`wood2, snd, \freq.kr(60), 0, sustain*3) * EnvGen.ar(Env.linen(0, sustain, 0.002), doneAction:2);
-	snd = snd.tanh;
+	snd = Limiter.ar(snd, \limiterAmp.kr(0.25)); //
 	Out.ar(\outbus.kr(0), Balance2.ar(snd[0], snd[1], pan, amp));
 }).add;
 

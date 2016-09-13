@@ -6,19 +6,23 @@ var relPath = "".resolveRelative;
 var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
 //To be called from within q.player environment
 var spawnResonatorSynth = {
-    ~t.resonator = Synth(\resonate_08, [\sendbus, ~t.convBus], ~t.postGroup);
+    ~t.resonator = Synth(\resonate_08, [\outbus, 2, \sendbus, ~t.convBus], ~t.postGroup);
 
 };
 "lib/init".import;
 q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
 q.player.loadData("08");
+q.channels = 8;
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 // q.markov = "/lib/protos/markov-trainer".import;
 
 //onReady is called when player buffer is loaded, and before playing
 //It's called within a routine, so we can use s.sync, .wait or similar
+
+//Channel map: Bass, Resonator, Handclap, Rev
+
 q.player.onReady = {
 
 	~t.irSpectrum = 2.collect {|i|
@@ -27,7 +31,7 @@ q.player.onReady = {
     ~t.convBus = Bus.audio(s, 2);
 	s.sync;
 
-	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 0, \irbufs, ~t.irSpectrum,
+	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 2, \irbufs, ~t.irSpectrum,
 		\sideAmp, 1, \amp, 0.25
 	], ~t.sendGroup);
 
@@ -37,7 +41,7 @@ q.player.onReady = {
 
 	//TODO: separate send bus for reverb
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
-		\bandwidth, 5000, \decay, 0.01, \predelay, 10, \excursion, 0.9,
+		\bandwidth, 5000, \decay, 0.01, \predelay, 10, \outbus, 6, \excursion, 0.9,
 		\in_diff1, 0.36, \in_diff2, 0.40
 	], ~t.sendGroup);
 
@@ -56,7 +60,7 @@ q.player.data.grouping = #[
 ];
 q.player.data.iterators = ().make {
 	//Scramble order of first part, but don't put two in the same group after each other
-	~p1 = Plazy { Pseq(Fdef(\scrambleAvoidSimilar).(q.player.data.grouping[0])) } ;
+	~p1 = Plazy { Pseq(Fdef(\scrambleAvoidSimilar).(~data.grouping[0])) } ;
 	~p2 = Pseries(30, 1, 34);
 	~p3 = Plazy {
 		Pseq((64..76).scramble)
@@ -96,6 +100,7 @@ q.player.setPtn(Plazy({
 				//Weird and strange: spawn a 1-item pattern for every onset...
 				~spawner.par(Pbind(
 					\instrument, \bufSegment,
+                    \outbus, 4,
 					\bufnum, Pfunc { claps2.next },
 					\amp, Pn(0.1, 1),
 					\timingOffset, Pwhite(-0.02, 0.02),
@@ -112,7 +117,8 @@ q.player.setPtn(Plazy({
 					//Weird and strange: spawn a 1-item pattern for every onset...
 					~spawner.par(Pbind(
 						\instrument, \bufSegment,
-						\bufnum, Pfunc { claps.next },
+						\outbus, 4,
+                        \bufnum, Pfunc { claps.next },
 						\amp, Pn(0.3, 1),
 						\timingOffset, Pwhite(-0.02, 0.02),
 						\group, Pfunc { ~t.mainGroup }
@@ -125,17 +131,19 @@ q.player.setPtn(Plazy({
 			while ({ev.onset < 301}) {
 			ev = 0.yield;
 			};
-
+            Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
 			plankStream = ~spawner.par(Pbind(
 				// \instrument, \bufSegment,
 				\bufnum, Pfunc { claps.next  },
-				\instrument, \bufSegmentPlankS,
-				// \bufnum, Pfunc { ~protoEvent.bufnum },
+				\outbus, 4,
+                 \instrument, Prand([\bufSegmentPlank], inf),
+                // \bufnum, Pfunc { ~protoEvent.bufnum },
 				// \startPos, Pfunc({ ~data.onset.flop[0][~currentEvent.onset.postln] }),
-				\amp, 5,//Pbrown(0.2, 0.5),
-				\dur, Fdef(\pFuzzyBeatMatch).(q.player.data.onset[301..368].flop[1], 5),
-				\legato, Pwhite(0.2, 2.0),
-				\freq, 60,
+				\amp, 1,//Pbrown(0.2, 0.5),
+                \type, Pwrand([\note, \rest], [0.7, 0.3], inf),
+				\dur, Fdef(\pFuzzyBeatMatch).(~data.onset[301..368].flop[1], 5),
+				\legato, 1,
+                \freq, Pdefn(\plankFreq),
 				\group, Pfunc { ~t.mainGroup }
 			));
 
@@ -151,13 +159,14 @@ q.player.setPtn(Plazy({
 			~spawner.par (
 				Pfindur(endDuration + ev.dur, Pchain(
 					Pbind(
-						\instrument, \bufSegmentPlankS,
-						\bufnum, Pfunc { claps.next },
+                        \instrument, \bufSegmentPlank,
+						\outbus, 4,
+                        \bufnum, Pfunc { claps.next },
 						// \startPos, Pxrand(~data.onset.flop[0], inf),
 						\amp, Pkey(\amp) * 2,
 						// \test, Pfunc { "hello".postln },
-						\pan, 0.2,
-						\freq, 60,
+						\freq, Pdefn(\plankFreq),
+                        \sustain, 1,
 						\group, Pfunc { ~t.mainGroup }
 					),
 					Pdef(\t08randomizedBeginning)
@@ -187,7 +196,27 @@ q.player.setIterator(Plazy { Psym(Pseq(#[p1, p2, p3, p4, p5, p6]), ~data.iterato
 
 /*EOF*/
 
-q.player.play
+
+Pdefn(\plankFreq, 45)
+Ndef(\sin, { SinOsc.ar(\freq.kr) * 0.1 }).play.gui
 
 q.player.bounce((dur: 10))
 
+~claps = "samples/handclaps/*.wav".resolveRelative.pathMatch.collect(Buffer.read(s, _));
+(
+
+Pdef(\test, Pbind(
+    // \instrument, \bufSegment,
+    \bufnum, Pxrand(~claps, inf),
+    \outbus, 4,
+    \instrument, Prand([\bufSegmentPlank], inf),
+    // \bufnum, Pfunc { ~protoEvent.bufnum },
+    // \startPos, Pfunc({ ~data.onset.flop[0][~currentEvent.onset.postln] }),
+    \amp, 1,//Pbrown(0.2, 0.5),
+    \dur, Pbrown(0.2, 0.4),
+    \type, Pwrand([\note, \rest], [0.7, 0.3], inf),
+    \legato, 1,
+    \freq, 131 * Pwhite(8,12),
+    // \group, Pfunc { ~t.mainGroup }
+)).play
+)

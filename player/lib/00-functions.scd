@@ -42,7 +42,7 @@ Fdef(\pFuzzyBeatMatch, { |durs, lookahead=5|
 
         // var durs = q.player.data.onset[301..368].flop[1];
         var index = 0;
-        var tempo = 0.7.rrand(1.0);
+        var tempo = 0.8.rrand(1.0);
         var dur;
         var end, matches, newIndex, times;
         //Try up to 5 indexes for each position
