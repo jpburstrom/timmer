@@ -6,7 +6,8 @@ q.player.loadData("01");
 //Connect UI to player
 // q.playerui.connect(q.player);
 q.player.extractFeatures;
-q.player.channels = 8;
+q.player.channels = 9;
+//Channel map: Bass, Freqshift, Klank bell, Filterbank
 );
 
 (
@@ -134,7 +135,7 @@ q.player.setIterator(p {
 });
 
 q.player.setPtn(Pbind(
-    \instrument, \bufSegmentAttackSend,
+    \instrument, \bufSegmentAttackSend_01,
     \bufRate, 1,
     \attackSendAmp, Ptuple([
         p { |ev| loop { 16.rrand(24).do { ev = 0.yield }; (ev.varFactor > 0.35).asInt.yield } },
@@ -219,7 +220,9 @@ q.player.setPtn(Pbind(
     	};
 	},
     */
+    //Second channel is not sending to main out
     \outbus, [0, 2],
+    \outbus_mono, [8, 8],
     \amp, [1, 0],
     \startPos, Pfunc { |ev|
 

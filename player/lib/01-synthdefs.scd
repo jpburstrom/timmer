@@ -72,6 +72,36 @@ SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, 
 	OffsetOut.ar(\outbus.kr(0), snd * \amp.kr(1));
 }).add;
 
+//Segment player with separate attack and sustain startPos's
+//Special version for 3 channel file (stereo + extra mono track)
+//Sending stereo to send and outputs extra mono
+SynthDef(\bufSegmentAttackSend_01, { |bufnum, startPos, attackStartPos, sustain=0, bufRate=1, attackPitchDev=0|
+    var snd, attack, snd_mono;
+	var fadetime = \fadetime.kr(defaultFadeTime);
+	var attackDur = \attackDur.kr(0.06); //Duration of attack part
+
+	//Different positions for attack and sustain parts
+    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0); //Convert seconds to samples
+	attackStartPos = ((attackStartPos - fadetime) * BufSampleRate.kr(bufnum)).max(0); //Convert seconds to samples
+
+	//Randomize attack pitch
+	attack = PlayBuf.ar(3, bufnum,
+        BufRateScale.kr(bufnum) * bufRate
+        * LFNoise2.kr(Rand(1,5)).range((-10 * attackPitchDev).midiratio, (1 * attackPitchDev).midiratio), startPos: attackStartPos)[..1];
+
+    //release part is left blank
+    snd = PlayBuf.ar(3, bufnum, BufRateScale.kr(bufnum) * bufRate, startPos: startPos);
+    snd_mono = snd[2];
+    snd = snd[..1];
+
+    OffsetOut.ar(\attackSendBus.kr(16), \attackSendAmp.kr * EnvGen.ar(Env.perc(0.002, \attackDecay.kr(0.03))) * attack);
+	//output + envelope
+    snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
+    OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr(0, 0.1) * snd);
+	OffsetOut.ar(\outbus.kr(0), snd * \amp.kr(1));
+    OffsetOut.ar(\outbus_mono.kr(2), snd_mono * \amp.kr(1));
+}).add;
+
 //Buffer segment with decaying + filtered comb filter
 SynthDef(\bufSegmentComb, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
