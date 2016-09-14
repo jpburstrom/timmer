@@ -448,7 +448,8 @@ p = Proto({
 
         opt.parent_((
             //path is nil
-            path: { |ev| PathName.tmp +/+ "%_%.%".format(~song, Date.getDate.stamp, ev.headerFormat.toLower) }.inEnvir,
+            basePath: PathName.tmp,
+            path: { |ev| ~basePath +/+ "%_%.%".format(~song, Date.getDate.stamp, ev.headerFormat.toLower) }.inEnvir,
             startPos:0,
             dur:999,
             tail: 10,
