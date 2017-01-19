@@ -13,7 +13,7 @@ var spawnResonatorSynth = {
 q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
 q.player.loadData("08");
-q.channels = 8;
+q.player.channels = 9;
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 // q.markov = "/lib/protos/markov-trainer".import;
@@ -21,9 +21,12 @@ q.channels = 8;
 //onReady is called when player buffer is loaded, and before playing
 //It's called within a routine, so we can use s.sync, .wait or similar
 
-//Channel map: Bass, Resonator, Handclap, Rev
+//Channel map: Bass, Resonator, Handclap, Rev, Piezo
 
 q.player.onReady = {
+
+    ~t.buf2ch = Buffer.readChannel(s, ~songPath, channels:[0,1]);
+
 
 	~t.irSpectrum = 2.collect {|i|
 		Buffer.read(s, relPath +/+ "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i));
@@ -183,7 +186,10 @@ q.player.setPtn(Plazy({
 		//TEMP: Shorten last non-freqshifted note, so we don't get start of next attack
 		\dur, Pif(Pkey(\onset) == (endSegment), Pkey(\dur) - 0.05, Pkey(\dur)),
 		// \amp, 0,
-		\instrument, Pif(Pkey(\onset) < 370, \bufSegment, \bufSegmentFreqshift),
+		\instrument, Pif(Pkey(\onset) < 370, \bufSegment_3ch, \bufSegmentFreqshift),
+        \bufnum, Pif(Pkey(\onset) < 370, Pkey(\bufnum), Pfunc { ~t.buf2ch }),
+        \outbus, 0,
+        \outbus_mono, 8,
 		\freqshift, -5000.rrand(-8000);
 	)
 

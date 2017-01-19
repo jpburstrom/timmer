@@ -12,7 +12,7 @@ var markov;
 q.player.actionLabels = #[phrase, part];
 q.player.tickLabel = \phrase;
 q.player.loadData("04");
-q.player.channels = 6;
+q.player.channels = 7; //Bass, Fqshift etc, Reverb, 1x Piezo
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 
@@ -43,7 +43,9 @@ markov.connect(q.player);
 markov.initChain;
 
 q.player.onReady = {
-	//TODO: separate send bus for reverb
+
+    ~t.buf2ch = Buffer.readChannel(s, ~songPath, channels:[0,1]);
+    s.sync;
 
 	//Freqshift needs a bit of hi cut, because of noise
     ~t.freqshiftbus = Bus.audio(s, 2).debug("BUSS");
@@ -85,8 +87,10 @@ q.player.setPtn(Pbind(
 		}
 	}),
 	//TODO: generalize separate keys into a chained Psym or something
-	\instrument, Pif(Pkey(\normal), \bufSegment, Pwrand([\bufSegmentFreqshift, \bufSegmentPlank, \bufSegmentResonance], [0.8, 0.1, 0.1], inf)),
+	\instrument, Pif(Pkey(\normal), \bufSegment_3ch, Pwrand([\bufSegmentFreqshift, \bufSegmentPlank, \bufSegmentResonance], [0.8, 0.1, 0.1], inf)),
+    \bufnum, Pif(Pkey(\normal), Pkey(\bufnum), Pfunc { ~t.buf2ch }),
     \outbus, Pif(Pkey(\normal), 0, 2),
+    \outbus_mono, 6, //Piezo output
 	\freqshift, Pwhite(-200, -2000),
 	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
 	\fadetime, 0.02,

@@ -7,7 +7,7 @@ q.player.loadData("01");
 // q.playerui.connect(q.player);
 q.player.extractFeatures;
 q.player.channels = 9;
-//Channel map: Bass, Freqshift, Klank bell, Filterbank
+//Channel map: Bass, Freqshift, Klank bell, Filterbank, piezo
 );
 
 (
@@ -47,8 +47,15 @@ q.player.onReady = {
 };
 
 q.player.setIterator(p {
+    var introSize = 30.rrand(66);
     var size = ~data.onset.size;
-    var varStream = Fdef(\twoPeaksPattern).value(size).asStream;
+    var varStream = { |sz|
+        sz = sz - 15.rrand(30);
+        Pseq([0, Pn(1)]) * Pseg2([1, 1, 0, 0, 0.5, 0.8, 0, 0, 1, 0.7, 0],
+            Pseq([introSize, 0] ++ (size * [1,2,0.4,3,0.5,1,0.6,2].normalizeSum).floor), \cub)
+        ++ Pn(0) //Make it infinite
+    }.value(size).asStream;
+
 
 	//We have a list of phrase start/durations. This compares current onset start
 	//with the phrase start, to see if the new onset marks a start of the phrase
@@ -76,15 +83,21 @@ q.player.setIterator(p {
 	//Cache last `varFactor`
 	var prevVarFactor = 0;
 
-	//`counter` is a stream that advances up to `repeatStart + 20.rrand(40)`, then goes back to `repeatStart`
-	//`repeats` times, after which it continues infinitely
-	//A bit like "Tie a yellow ribbon" -- repeat the next-to-last phrase 3 times before the end.
-	var counter = value({
+	//Main counter for advancing onsets
+    var counter = value({
 		var repeats = 3;
 		var repeatStart = 711;
 		var ptn = Pseq([
-			Pseries(0,1,repeatStart),
-			Pn(Plazy{Pseries(repeatStart, 1, 20.rrand(40))}, repeats - 1),
+            //Start with first onset
+            Pn(0, 1),
+            //Select `introSize - 1` random onsets
+            Pwhite(0, repeatStart, introSize - 1),
+            //Advance from second onsets up to `repeatStart`
+            Pseries(1,1,repeatStart - 1),
+			// Continue up to `repeatStart + 20.rrand(40)`, then go back to `repeatStart`
+            //`repeats` times, after which it continues infinitely
+            //A bit like "Tie a yellow ribbon" -- repeat the next-to-last phrase 3 times before the end.
+            Pn(Plazy{Pseries(repeatStart, 1, 20.rrand(40))}, repeats - 1),
 			Pseries(repeatStart)
 		]);
 		ptn.asStream;

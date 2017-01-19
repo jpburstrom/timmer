@@ -13,13 +13,14 @@ q.player.loadData("09");
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 q.player.data.tail = 15;
-q.player.channels = 10;
+q.player.channels = 11;
 
-//Channel map: Bass, Fqshift/Claps, FM, Resonator, strange wood
+//Channel map: Bass, Fqshift/Claps, FM, Resonator, strange wood, Piezo (1ch)
 
 q.player.use {
 
     var claps = Pn(Plazy { Pseq(~t.handclaps.scramble) }).asStream;
+
 
     //The arrays represent different types of onsets,
     //sound classes or whatever. They were created with the segment-grouping ui in lib/misc
@@ -55,6 +56,9 @@ q.player.use {
 
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
+        \instrument, \bufSegment_3ch,
+        \outbus, 0,
+        \outbus_mono, 10,
         \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp),
     	\timingOffset, 0.1, //to sync with parPtn
 		// \test, Pfunc { |ev| ~data.groupscore[ev.onset].postln; 2 }
@@ -63,7 +67,7 @@ q.player.use {
 	//Use ptpar to offset in time, to make sure ~currentEvent is accurate
 	~parPtn = Ptpar([0.1, Pevent( Pbind(
         \instrument, \bufSegmentFreqshiftSmear,
-        \bufnum, Pfunc( { |ev| [ev.bufnum, claps.next] } ),
+        \bufnum, Pfunc( { [~t.buf2ch, claps.next] } ),
         \freqshift, [-1000, 0],
         \outbus, 2,
 		//Fade in, then
@@ -133,6 +137,9 @@ q.player.use {
 	]);
 	~onReady = {
 
+        ~t.buf2ch = Buffer.readChannel(s, ~songPath, channels: [0,1]);
+        s.sync;
+
 		//FIXME: reverb params
         // ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
 
@@ -173,5 +180,5 @@ q.player.use {
 
 // q.player.bounce
 )
-Server.default = Server.fromName(\ScoreDummy)
-Server.default = Server.local
+
+/*EOF*/

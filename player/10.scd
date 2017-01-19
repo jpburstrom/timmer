@@ -33,8 +33,9 @@ q.player.setIterator(p { |ev|
 });
 
 q.player.setPtn(Pbind(
-    \instrument, \bufSegmentFreqSplitShiftMS,
     \warp, Pseg(Pwrand([0, 1], [0.9, 0.1], Pwhite(0.01, 1), inf), 1).trace,
+
+    \instrument, Pif(Pfunc( { |ev| ev.warp == 0 } ), \bufSegment, \bufSegmentFreqSplitShiftMS),
     \dur, Pfunc { |ev| ((1-ev.warp) * ev.dur) + (ev.warp * 0.125) },
     \legato, 1 + (Pkey(\warp) * 0.25),
     \ffreq, 392, //G3
@@ -68,3 +69,4 @@ q.player.parPtn = Ptpar([0.1,Pbind(
 q.player.play
 
 q.player.bounce
+

@@ -1,5 +1,3 @@
-//# Template for songs ###
-
 //## Initialize ###
 (
 var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
@@ -9,7 +7,7 @@ var impulsePath = "data/impulses/impulse-closed-ms-48.wav".resolveRelative;
 q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
 q.player.loadData("03");
-q.player.channels = 4;
+q.player.channels = 5; //2x Bass, 2x Plank, 1x Bass piezo
 q.player.data.tail = 0;
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
@@ -17,11 +15,18 @@ q.player.data.tail = 0;
 
 //## Patterns #######
 
+q.player.onReady = {
+    ~t.plankBuf = Buffer.readChannel(s, ~songPath, channels:[0,1]);
+    s.sync;
+};
+
 //This sets a pattern used to modify the base player pattern.
 q.player.setPtn(Plazy {
     var totaldur = 2;
     Pbind(
+        \instrument, \bufSegment_3ch,
         \outbus, 0,
+        \outbus_mono, 4,
         \timingOffset, 0.1, //Delay compensation for Ptpar
         \legato, 1,//Pstep([1], Pseq([totaldur]), 1) ++ Pfuncn { |ev| (ev.dur - 0.1) / ev.dur }, // cut tail of last note
         // \fadetime, Pstep([0.01], Pseq([totaldur]), 1) ++ Pn(0.5, 1),
@@ -32,7 +37,7 @@ q.player.setPtn(Plazy {
 
 q.player.parPtn = Ptpar([0.1, Pbind(
 	\instrument, \bufSegmentPlank,
-    \bufnum, Pfunc { ~protoEvent.bufnum },
+    \bufnum, Pfunc { ~t.plankBuf },
     //Sometimes clump
     \clump, Pwrand([1,2], [0.9,0.1], inf),
     //Randomize start position from onsets

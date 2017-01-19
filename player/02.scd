@@ -4,7 +4,7 @@ var relPath = "".resolveRelative;
 q.player.actionLabels = #[phrase, beat];
 q.player.tickLabel = \phrase;
 q.player.loadData("02");
-q.player.channels = 8;
+q.player.channels = 9; //Bass, Freqshift, Resonator, Reverb, Piezo (1ch)
 // //FIXME: Player2 idea doesn't work
 // q.player2 = q.player.clone;
 // q.player2.tickLabel = \beat;
@@ -39,7 +39,13 @@ q.player.setIterator(Prout({
 }));
 
 
-q.player.setPtn(Pbind(\fadetime, 0.01));
+q.player.setPtn(Pbind(
+    \fadetime, 0.01,
+    \instrument, \bufSegment_3ch,
+    \outbus, 0,
+    \outbus_mono, 8
+
+));
 
 q.player.parPtn = Ptpar([0.1, Pbind(
 	\instrument, \resonate,
