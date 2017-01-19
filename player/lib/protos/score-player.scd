@@ -2,13 +2,17 @@ var songBasePath = "../../songs".resolveRelative;
 var dataBasePath = "../../data".resolveRelative;
 var synthDefsPath = "../01-synthdefs.scd".resolveRelative;
 
-p = Proto({
+
+
+Proto({
     var count = -1;
 
     ~soundFile = nil;
     ~songPath = nil;
     ~dataPath = nil;
     ~channels = 2;
+    ~bufferPool = "buffer-pool".import;
+    ~numBufs = 8; //Number of buffers used in buffer pool
     ~data = ();
 
     ~readyForPlay = false;
@@ -39,7 +43,7 @@ p = Proto({
     ~isRendering = false;
 
     //Event things
-    ~protoEvent = (instrument:\bufSegment, db: 0, group: { ~t.mainGroup.nodeID }.inEnvir );
+    ~protoEvent = (instrument:\diskSegment, db: 0, group: { ~t.mainGroup.nodeID }.inEnvir );
 
     //Dictionary of key => pattern to modify ~nextEvent with
 	~modPtn = EventPatternProxy(Pbind());
@@ -282,7 +286,7 @@ p = Proto({
         ~nextEvent = nextPos !? { ~data[\score][nextPos] };
 
         if (~nextEvent.notNil) {
-            //for some reason proto_ doesn't work...
+
             ~nextEvent.putAll(ev, ~protoEvent);
             if ((nextPos - ~prevPos) != 1) {
                 jump = true;
@@ -350,8 +354,7 @@ p = Proto({
 
         ~t = nil;
 
-        buf = ~protoEvent[\bufnum];
-        buf.free;
+        ~bufferPool.reset;
         /*
 		fork {
 			waitTime.wait;
@@ -370,7 +373,9 @@ p = Proto({
         ~t.mainGroup = Group.after(~t.preGroup);
         ~t.postGroup = Group.after(~t.mainGroup);
         ~t.sendGroup = Group.after(~t.postGroup);
-        ~protoEvent[\bufnum] = Buffer.read(~protoEvent.server, ~songPath);
+
+        ~bufferPool.initBuffers(~numBufs, ~soundFile.numChannels);
+
         //We don't need to sync if offline
 		if (~isRendering.not and: { sync }) {
             s.sync;
@@ -517,7 +522,14 @@ p = Proto({
             sp.seq(Pchain(
                 ~modPtn,
                 Prout(e { |ev| loop { ev = ~next.value(ev).yield }})
-            ).collect({ |ev| ~currentEvent = ev }).drop(drop));
+            ).collect({ |ev|
+                //XXX maybe this shouldn't be done
+                ev.startPos = ev.startPos - (ev.fadeTime ? 0.002);
+                //cue sound file as the very last thing to happen
+                //So we can modulate startPos before
+                ev[\bufnum] = ~bufferPool.next(~soundFile, ev.startPos);
+                ~currentEvent = ev
+            }).drop(drop));
             sp.suspend(parStream);
             tail.wait;
             sp.suspendAll; //Hack, otherwise stream will never reset when ending by itself
