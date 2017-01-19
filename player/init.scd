@@ -1,13 +1,30 @@
-var songlist = #[1,2,3,4,8,9];
+var songlist = #[1,2,3,4,7,8,9,10];
 var current;
 var songs;
 // ~songs.do(_.free);
+
+//Test: Keep track of position in song
+var segmentController = Proto({
+    ~segmentCounter = songlist.collectAs( { |x| x.asStringToBase(10,2)->0 }, Event);
+    ~update = { |player, what, args|
+        [player, what, args].postln;
+        if (what == \segment) {
+            ~segmentCounter[player.song] = ~segmentCounter[player.song] + 1;
+        };
+    };
+});
+
 songs = ~songs = ();
 songlist.do { |song|
+    var player;
     q = ();
     //2 -> "02"
     song.asStringToBase(10, 2).import;
-    ~songs[song] = q.player;
+    player = q.player;
+
+    player.addDependant(segmentController);
+
+    ~songs[song] = player;
 };
 
 ListView().items_(songlist.collect(_.asStringToBase(10, 2))).selectionMode_(\single).action_({ |view|
@@ -20,3 +37,5 @@ ListView().items_(songlist.collect(_.asStringToBase(10, 2))).selectionMode_(\sin
     current.play
 
 }).front
+
+
