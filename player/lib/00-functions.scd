@@ -26,11 +26,6 @@ Fdef(\changePatternEndTime, { |amt|
 	}, inf)
 });
 
-Fdef(\twoPeaksPattern, { |size|
-    (Pseg2([0, 0, 0.5, 0.8, 0, 0, 1, 0.7, 0],
-    Pseq((size * [1,2,0.4,3,0.5,1,0.6,2].normalizeSum).floor), \cub) ++ Pn(0))
-});
-
 //Look ahead 5 onset durations and try to find a number of onsets which has the
 //closest match to a multiple of a fixed tempo. Then divide the total duration so we end up with
 //a number close to the desired tempo, and spit them out until next "downbeat".
