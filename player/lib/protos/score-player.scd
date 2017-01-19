@@ -449,7 +449,7 @@ p = Proto({
         opt.parent_((
             //path is nil
             basePath: PathName.tmp,
-            path: { |ev| ~basePath +/+ "%_%.%".format(~song, Date.getDate.stamp, ev.headerFormat.toLower) }.inEnvir,
+            path: { |ev| ev.basePath +/+ "%_%.%".format(~song, Date.getDate.stamp, ev.headerFormat.toLower) }.inEnvir,
             startPos:0,
             dur:999,
             tail: 10,
@@ -483,6 +483,7 @@ p = Proto({
             opt.sampleRate, opt.headerFormat, opt.sampleFormat,
             ServerOptions().numOutputBusChannels_(~channels), duration:score.score.last[0],
             action: {
+                opt.action;
                 //Cleanup
                 if (opt.deleteScoreFile) {
                     File.delete(path ++ ".osc");
