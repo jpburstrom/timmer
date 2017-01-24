@@ -1,3 +1,4 @@
+var defaultFadeTime = 0.002;
 
 //Simple segment player
 //startPos in seconds
