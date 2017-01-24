@@ -41,7 +41,7 @@ q.player.setIterator(Prout({
 
 q.player.setPtn(Pbind(
     \fadetime, 0.01,
-    \instrument, \bufSegment_3ch,
+    \instrument, \diskSegment_3ch,
     \outbus, 0,
     \outbus_mono, 8
 

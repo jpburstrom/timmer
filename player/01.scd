@@ -148,8 +148,7 @@ q.player.setIterator(p {
 });
 
 q.player.setPtn(Pbind(
-    \instrument, \bufSegmentAttackSend_01,
-    \bufRate, 1,
+    \instrument, \diskSegmentAttackSend_01,
     \attackSendAmp, Ptuple([
         p { |ev| loop { 16.rrand(24).do { ev = 0.yield }; (ev.varFactor > 0.35).asInt.yield } },
         Pstutter(Pwhite(2, 8), Pwrand([0, Pbrown(-36, -12, 2.8).dbamp], [0.8, 0.2], inf))
@@ -242,7 +241,7 @@ q.player.setPtn(Pbind(
         x = ~getknn.value(ev.onset, 1.rrand(5));
         x = ~data.onset[x];
         ev.attackDecay = [0.03, x[1]];
-        ev.bufRate = [1, 1];
+
         //return startPos
 		[ev.startPos, x[0]];
     },

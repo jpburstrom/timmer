@@ -16,7 +16,8 @@ q.player.data.tail = 0;
 //## Patterns #######
 
 q.player.onReady = {
-    ~t.plankBuf = Buffer.readChannel(s, ~songPath, channels:[0,1]);
+    ~t.plankBuf = "lib/protos/buffer-pool".import;
+    ~t.plankBuf.initBuffers(8, 3);
     s.sync;
 };
 
@@ -24,7 +25,7 @@ q.player.onReady = {
 q.player.setPtn(Plazy {
     var totaldur = 2;
     Pbind(
-        \instrument, \bufSegment_3ch,
+        \instrument, \diskSegment_3ch,
         \outbus, 0,
         \outbus_mono, 4,
         \timingOffset, 0.1, //Delay compensation for Ptpar
@@ -36,13 +37,13 @@ q.player.setPtn(Plazy {
 )});
 
 q.player.parPtn = Ptpar([0.1, Pbind(
-	\instrument, \bufSegmentPlank,
-    \bufnum, Pfunc { ~t.plankBuf },
+	\instrument, \diskSegmentPlank_3ch,
     //Sometimes clump
     \clump, Pwrand([1,2], [0.9,0.1], inf),
     //Randomize start position from onsets
     \index, Pclump(Pkey(\clump), Pwhite(0, Pfunc { ~currentEvent.onset })), //Randomize among already played onsets
     \startPos, Plazy({ var times = ~data.onset.flop[0]; Pfunc { |ev| times[ev.index] } }) + Pwhite(-0.01, 0.02),
+    \bufnum, Pfunc { |ev| ~t.plankBuf.next(~soundFile, ev.startPos) },
     //Choose 5 new overtones of E1 and F1, A1 every 25-50
     //Randomly clumped
     \freq, Pclump(Pkey(\clump),
@@ -91,6 +92,9 @@ q.player.setIterator(Plazy {
 )
 
 /*EOF*/
+
+q.player.play
+
 Ndef(\testtone).prime({ SinOscFB.ar(\freq.kr(84), \fb.kr(0.0) ).dup * \amp.kr(0.1) })
 
 Ndef(\testtone).gui
