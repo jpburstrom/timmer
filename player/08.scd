@@ -25,10 +25,7 @@ q.player.channels = 9;
 
 q.player.onReady = {
 
-    ~t.buf2ch = Buffer.readChannel(s, ~songPath, channels:[0,1]);
-
-
-	~t.irSpectrum = 2.collect {|i|
+   ~t.irSpectrum = 2.collect {|i|
 		Buffer.read(s, relPath +/+ "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i));
 	};
     ~t.convBus = Bus.audio(s, 2);
@@ -102,7 +99,7 @@ q.player.setPtn(Plazy({
 			while ({ev.onset < 105}) {
 				//Weird and strange: spawn a 1-item pattern for every onset...
 				~spawner.par(Pbind(
-					\instrument, \bufSegment,
+					\instrument, \diskSegment,
                     \outbus, 4,
 					\bufnum, Pfunc { claps2.next },
 					\amp, Pn(0.1, 1),
@@ -119,7 +116,7 @@ q.player.setPtn(Plazy({
 				if ( blacklist.includes(ev.onset).not and: { 0.7.coin } ) {
 					//Weird and strange: spawn a 1-item pattern for every onset...
 					~spawner.par(Pbind(
-						\instrument, \bufSegment,
+						\instrument, \diskSegment,
 						\outbus, 4,
                         \bufnum, Pfunc { claps.next },
 						\amp, Pn(0.3, 1),
@@ -136,10 +133,9 @@ q.player.setPtn(Plazy({
 			};
             Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
 			plankStream = ~spawner.par(Pbind(
-				// \instrument, \bufSegment,
 				\bufnum, Pfunc { claps.next  },
 				\outbus, 4,
-                 \instrument, Prand([\bufSegmentPlank], inf),
+                 \instrument, Prand([\diskSegmentPlank], inf),
                 // \bufnum, Pfunc { ~protoEvent.bufnum },
 				// \startPos, Pfunc({ ~data.onset.flop[0][~currentEvent.onset.postln] }),
 				\amp, 1,//Pbrown(0.2, 0.5),
@@ -162,7 +158,7 @@ q.player.setPtn(Plazy({
 			~spawner.par (
 				Pfindur(endDuration + ev.dur, Pchain(
 					Pbind(
-                        \instrument, \bufSegmentPlank,
+                        \instrument, \diskSegmentPlank,
 						\outbus, 4,
                         \bufnum, Pfunc { claps.next },
 						// \startPos, Pxrand(~data.onset.flop[0], inf),
@@ -186,8 +182,7 @@ q.player.setPtn(Plazy({
 		//TEMP: Shorten last non-freqshifted note, so we don't get start of next attack
 		\dur, Pif(Pkey(\onset) == (endSegment), Pkey(\dur) - 0.05, Pkey(\dur)),
 		// \amp, 0,
-		\instrument, Pif(Pkey(\onset) < 370, \bufSegment_3ch, \bufSegmentFreqshift),
-        \bufnum, Pif(Pkey(\onset) < 370, Pkey(\bufnum), Pfunc { ~t.buf2ch }),
+		\instrument, Pif(Pkey(\onset) < 370, \diskSegment_3ch, \diskSegmentFreqshift_3ch),
         \outbus, 0,
         \outbus_mono, 8,
 		\freqshift, -5000.rrand(-8000);
@@ -215,7 +210,7 @@ Pdef(\test, Pbind(
     // \instrument, \bufSegment,
     \bufnum, Pxrand(~claps, inf),
     \outbus, 4,
-    \instrument, Prand([\bufSegmentPlank], inf),
+    \instrument, Prand([\diskSegmentPlank], inf),
     // \bufnum, Pfunc { ~protoEvent.bufnum },
     // \startPos, Pfunc({ ~data.onset.flop[0][~currentEvent.onset.postln] }),
     \amp, 1,//Pbrown(0.2, 0.5),

@@ -16,18 +16,6 @@ q.player.channels = 7; //Bass, Fqshift etc, Reverb, 1x Piezo
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 
-SynthDef(\bufSegmentResonance, {|outbus(0), bufnum(0), startPos(0), sustain(1)|
-	var fadetime = \fadetime.kr(0.002);
-    var snd;
-    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
-    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
-    snd = RLPF.ar(PinkNoise.ar * FreqShiftAA.ar(snd, \freq.kr(440).neg), \freq.kr, 0.01);
-    snd = snd.tanh * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-
-
-
-    OffsetOut.ar(outbus, snd * \amp.kr(1));
-}).add;
 
 SynthDef(\freqshiftPostEQ_04, {
 		var snd = In.ar(\inbus.kr, 2);
@@ -44,11 +32,8 @@ markov.initChain;
 
 q.player.onReady = {
 
-    ~t.buf2ch = Buffer.readChannel(s, ~songPath, channels:[0,1]);
-    s.sync;
-
-	//Freqshift needs a bit of hi cut, because of noise
-    ~t.freqshiftbus = Bus.audio(s, 2).debug("BUSS");
+    //Freqshift needs a bit of hi cut, because of noise
+    ~t.freqshiftbus = Bus.audio(s, 2);
     ~t.freqshiftEq = Synth(\freqshiftPostEQ_04, [\inbus, ~t.freqshiftbus.asMap, \outbus, 2]);
 
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
@@ -87,14 +72,15 @@ q.player.setPtn(Pbind(
 		}
 	}),
 	//TODO: generalize separate keys into a chained Psym or something
-	\instrument, Pif(Pkey(\normal), \bufSegment_3ch, Pwrand([\bufSegmentFreqshift, \bufSegmentPlank, \bufSegmentResonance], [0.8, 0.1, 0.1], inf)),
-    \bufnum, Pif(Pkey(\normal), Pkey(\bufnum), Pfunc { ~t.buf2ch }),
+    //TODO: use 2-channel version of file
+	\instrument, Pif(Pkey(\normal), \diskSegment_3ch, Pwrand([\diskSegmentFreqshift_3ch, \diskSegmentPlank_3ch, \diskSegmentResonance_3ch], [0.8, 0.1, 0.1], inf)),
     \outbus, Pif(Pkey(\normal), 0, 2),
     \outbus_mono, 6, //Piezo output
 	\freqshift, Pwhite(-200, -2000),
 	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
 	\fadetime, 0.02,
-    \bufRate, Pif(Pkey(\normal), 1, Pwrand([0.5, 1], [0.1, 0.9].normalizeSum, inf)),
+    //FIXME: rate
+    \rate, Pif(Pkey(\normal), 1, Pwrand([0.5, 1], [0.1, 0.9].normalizeSum, inf)),
 	\dur, Pif(Pfunc { |ev|
 		ev.normal or: {
 			ev.phrase >= 46 //46 and 47 are possible last phrases;
@@ -104,7 +90,7 @@ q.player.setPtn(Pbind(
 	\delta, Pif(Pkey(\normal), 0, Pkey(\dur)),
     // \pan, Pif(Pkey(\normal), 0, Pwhite(-1, 1.0)),
 	\hello, Pfunc { |ev|
-        if (ev.instrument == \bufSegmentResonance) {
+        if (ev.instrument == \bufSegmentResonance_3ch) {
             ev.freq = #[40,45,50,55].midicps.choose;
             ev.fadetime = 0.1;
         };
@@ -168,7 +154,7 @@ q.player.setIterator(
 /*EOF*/
 /*------------------------------------------------------------*/
 
-q.player.bounce
+q.player.play
 
 
 ~buf4 = Buffer.read(s, "songs/04*.wav".resolveRelative.pathMatch.last);
@@ -250,7 +236,6 @@ Ndef(\fqShiftTest, {
 
 }).play
 )
-
 
 //Sonny Schmidt
 ~buf4 = Buffer.read(s, "songs/04-Qin 2 __-44100.wav".resolveRelative);

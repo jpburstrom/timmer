@@ -37,7 +37,9 @@ q.player.setPtn(Plazy {
 )});
 
 q.player.parPtn = Ptpar([0.1, Pbind(
+    //TODO: 3rd channel is discarded. Use 2-channel version of file?
 	\instrument, \diskSegmentPlank_3ch,
+
     //Sometimes clump
     \clump, Pwrand([1,2], [0.9,0.1], inf),
     //Randomize start position from onsets

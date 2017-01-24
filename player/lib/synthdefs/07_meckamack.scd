@@ -4,7 +4,7 @@ SynthDef(\meckamack_07, { |bufnum|
     // PlayBufCF
     var fadetime = \fadetime.kr(0.02);
     var impchain, chain, noise, imp, amp, in, lop;
-    var snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, \startPos.kr * BufSampleRate.kr(bufnum));
+    var snd = VDiskIn.ar(2, bufnum, \rate.kr(1));
     // var snd = BufRd.ar(2, ~buf, LFNoise1.ar(LFNoise1.ar(0.1).range(0.001, 0.003)).range(300, 400).poll * BufSampleRate.kr(~buf));
 
     chain = FFT({LocalBuf(1024)}.dup, snd);

@@ -78,6 +78,15 @@ SynthDef(\diskSegmentFreqshift, {
     ~wrap.out(snd);
 }).add;
 
+//Simple segment player with freqshift, 3-channel
+//bufnum fadetime sustain freqshift outbus
+SynthDef(\diskSegmentFreqshift_3ch, {
+    var snd = ~wrap.diskIn(3);
+    snd = ~wrap.fadeInOut(snd);
+    snd = ~wrap.freqShift(snd);
+    ~wrap.out(snd);
+}).add;
+
 //Simple segment player with freqshift
 //startPos in seconds
 //bufnum fadetime sustain freqshift smear outbus
@@ -134,9 +143,20 @@ SynthDef(\diskSegmentAttackSend_01, {
 }).add;
 
 
-SynthDef(\bufSegmentResonance, {
+SynthDef(\diskSegmentResonance, {
 
     var snd = ~wrap.vDiskIn(2);
+
+    snd = RLPF.ar(PinkNoise.ar * FreqShiftAA.ar(snd, \freq.kr(440).neg), \freq.kr, 0.01);
+    snd = ~wrap.fadeInOut(snd.tanh);
+
+    ~wrap.out(snd);
+
+}).add;
+
+SynthDef(\diskSegmentResonance_3ch, {
+
+    var snd = ~wrap.vDiskIn(3);
 
     snd = RLPF.ar(PinkNoise.ar * FreqShiftAA.ar(snd, \freq.kr(440).neg), \freq.kr, 0.01);
     snd = ~wrap.fadeInOut(snd.tanh);

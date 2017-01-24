@@ -56,7 +56,7 @@ q.player.use {
 
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
-        \instrument, \bufSegment_3ch,
+        \instrument, \diskSegment_3ch,
         \outbus, 0,
         \outbus_mono, 10,
         \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp),
@@ -67,7 +67,7 @@ q.player.use {
 	//Use ptpar to offset in time, to make sure ~currentEvent is accurate
 	~parPtn = Ptpar([0.1, Pevent( Pbind(
         \instrument, \bufSegmentFreqshiftSmear,
-        \bufnum, Pfunc( { [~t.buf2ch, claps.next] } ),
+        \bufnum, Pfunc( { [claps.next, claps.next] } ),
         \freqshift, [-1000, 0],
         \outbus, 2,
 		//Fade in, then

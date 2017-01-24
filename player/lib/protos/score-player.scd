@@ -527,7 +527,11 @@ Proto({
                 ev.startPos = ev.startPos - (ev.fadeTime ? 0.002);
                 //cue sound file as the very last thing to happen
                 //So we can modulate startPos before
-                ev[\bufnum] = ~bufferPool.next(~soundFile, ev.startPos);
+                if (ev.type == \monoSet) {
+                    ev[\bufnum] = ~currentEvent.bufnum;
+                } {
+                    ev[\bufnum] = ~bufferPool.next(~soundFile, ev.startPos);
+                };
                 ~currentEvent = ev
             }).drop(drop));
             sp.suspend(parStream);
