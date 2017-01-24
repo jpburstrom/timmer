@@ -11,7 +11,7 @@ Proto({
 
     //Round-robin buffer selection.
     //Returns buffer
-    ~next = { |sf, pos|
+    ~next = flop { |sf, pos|
         ~counter = ~counter + 1 % ~buffers.size;
         ~buffers[~counter].cueSoundFile(sf.path, pos * sf.sampleRate);
     };
@@ -21,5 +21,4 @@ Proto({
     }
 
 });
-
 
