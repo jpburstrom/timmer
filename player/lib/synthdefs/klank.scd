@@ -32,12 +32,29 @@ SynthDef(\bufSegmentPlank, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
 	Out.ar(\outbus.kr(0), Pan2.ar(snd, pan, amp));
 }).add;
 
-//Simple segment player
-//startPos in seconds
+
 SynthDef(\diskSegmentPlank, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd;
-    snd = DiskIn.ar(2, bufnum).sum;
+    //Keep 2 channels, and sum them
+    snd = DiskIn.ar(2, bufnum)[..1].sum;
+    snd = FreqShiftAA.ar(snd, \freq.kr(60) * -2);
+	snd = snd * EnvGen.ar(Env.perc(fadetime, 0.2, 1, -8));
+	// snd = HPF.ar(snd, 200);
+
+    sustain = sustain * Rand(2,4) * \freq.kr.explin(60, 800, 1, 0.75);
+
+    snd = DynKlank.ar(`wood2, snd, \freq.kr, 0, sustain) * EnvGen.ar(Env.linen(0, sustain, 0.002), doneAction:2);
+    snd = Limiter.ar(snd, \limiterAmp.kr(0.25)); //
+	Out.ar(\outbus.kr(0), Pan2.ar(snd, pan, amp));
+}).add;
+
+
+SynthDef(\diskSegmentPlank_3ch, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
+	var fadetime = \fadetime.kr(defaultFadeTime);
+    var snd;
+    //Keep 2 channels, and sum them
+    snd = DiskIn.ar(3, bufnum)[..1].sum;
     snd = FreqShiftAA.ar(snd, \freq.kr(60) * -2);
 	snd = snd * EnvGen.ar(Env.perc(fadetime, 0.2, 1, -8));
 	// snd = HPF.ar(snd, 200);
