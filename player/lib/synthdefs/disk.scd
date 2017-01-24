@@ -56,7 +56,6 @@ SynthDef(\diskSegment_3ch, {
 }).add;
 
 
-//EOF
 //TODO: port below to disk
 
 //A bufSegment with mid/side volume control
