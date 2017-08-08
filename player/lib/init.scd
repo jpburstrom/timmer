@@ -29,7 +29,9 @@ q.do(_.free);
 q.clear;
 "[0-9]*.scd".resolveRelative.pathMatch.do(_.load);
 q.player = "protos/score-player".import;
-q.playerui = "protos/score-player-gui".import;
+if (\GUI.asClass.notNil) {
+	q.playerui = "protos/score-player-gui".import;
+};
 
 //Use this with a callback function to get a copy of the q object
 //So we can run multiple files simultaneously
