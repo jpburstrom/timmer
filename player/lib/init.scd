@@ -9,7 +9,7 @@ this.preProcessor = { arg str;
 };
 
 if (\Document.asClass.notNil) {
-    Document.globalKeyDownAction = { |doc, char, mod, unicode, key|
+    \Document.asClass.globalKeyDownAction = { |doc, char, mod, unicode, key|
         switch(key,
             122, { q.player.playStop }, //F1
             120, { q.player.playPause }, //F2
