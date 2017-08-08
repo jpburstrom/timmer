@@ -17,7 +17,7 @@ q.player.data.tail = 0;
 
 q.player.onReady = {
     ~t.plankBuf = "lib/protos/buffer-pool".import;
-    ~t.plankBuf.initBuffers(8, 3);
+    ~t.plankBuf.initBuffers(8, 2);
     s.sync;
 };
 
@@ -25,9 +25,8 @@ q.player.onReady = {
 q.player.setPtn(Plazy {
     var totaldur = 2;
     Pbind(
-        \instrument, \diskSegment_3ch,
+        \instrument, \diskSegment,
         \outbus, 0,
-        \outbus_mono, 4,
         \timingOffset, 0.1, //Delay compensation for Ptpar
         \legato, 1,//Pstep([1], Pseq([totaldur]), 1) ++ Pfuncn { |ev| (ev.dur - 0.1) / ev.dur }, // cut tail of last note
         // \fadetime, Pstep([0.01], Pseq([totaldur]), 1) ++ Pn(0.5, 1),
@@ -38,7 +37,7 @@ q.player.setPtn(Plazy {
 
 q.player.parPtn = Ptpar([0.1, Pbind(
     //TODO: 3rd channel is discarded. Use 2-channel version of file?
-	\instrument, \diskSegmentPlank_3ch,
+	\instrument, \diskSegmentPlank,
 
     //Sometimes clump
     \clump, Pwrand([1,2], [0.9,0.1], inf),
@@ -80,7 +79,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
         }
     },
     //Output -> second stereo pair
-    \outbus, 2
+    \outbus, q.stereo.if(0, 2)
 )]);
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(Plazy {
