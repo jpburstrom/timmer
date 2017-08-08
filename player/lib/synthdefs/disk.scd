@@ -127,10 +127,10 @@ SynthDef(\diskSegmentAttackSend_01, {
     var snd, snd_mono;
 	var attackDur = \attackDur.kr(0.06); //Duration of attack part
 
-    snd = ~wrap.vDiskIn(3);
+    snd = ~wrap.diskIn(2).poll;
 
-    snd_mono = snd[2];
-    snd = snd[..1];
+    //snd_mono = snd[2];
+    //snd = snd[..1];
 
     OffsetOut.ar(\attackSendBus.kr(16), \attackSendAmp.kr * EnvGen.ar(Env.perc(0.002, \attackDecay.kr(0.03))) * snd);
 

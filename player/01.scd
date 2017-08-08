@@ -1,4 +1,5 @@
 (
+
 "lib/init".import;
 s.latency = 0.5;
 q.player.actionLabels = #[onset, phrase];
@@ -6,7 +7,9 @@ q.player.loadData("01");
 //Connect UI to player
 // q.playerui.connect(q.player);
 q.player.extractFeatures;
-q.player.channels = 9;
+if (q.stereo.not) {
+    q.player.channels = 9;
+};
 //Channel map: Bass, Freqshift, Klank bell, Filterbank, piezo
 );
 
@@ -18,10 +21,10 @@ q.player.onReady = {
 
 	//Always-running klank synth
 	//Makes a bell-like sound
-	~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, 4], ~t.postGroup);
+    ~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, q.stereo.if(0, 4)], ~t.postGroup);
 
 	//Freqshift fx synth
-    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, 2, \amp, 4, \midAmp, -3.dbamp], ~t.postGroup);
+    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, q.stereo.if(0, 2), \amp, 4, \midAmp, -3.dbamp], ~t.postGroup);
 
 	//Filterbank acting as a kind of mellow drone,
 	//with frequencies from the first 5 notes in song
@@ -47,7 +50,7 @@ q.player.onReady = {
 };
 
 q.player.setIterator(p {
-    var introSize = 30.rrand(66);
+    var introSize = 66.rrand(96);
     var size = ~data.onset.size;
     var varStream = { |sz|
         sz = sz - 15.rrand(30);
@@ -149,6 +152,7 @@ q.player.setIterator(p {
 
 q.player.setPtn(Pbind(
     \instrument, \diskSegmentAttackSend_01,
+    \bufRate, 1,
     \attackSendAmp, Ptuple([
         p { |ev| loop { 16.rrand(24).do { ev = 0.yield }; (ev.varFactor > 0.35).asInt.yield } },
         Pstutter(Pwhite(2, 8), Pwrand([0, Pbrown(-36, -12, 2.8).dbamp], [0.8, 0.2], inf))
@@ -233,7 +237,7 @@ q.player.setPtn(Pbind(
 	},
     */
     //Second channel is not sending to main out
-    \outbus, [0, 2],
+    \outbus, [0, q.stereo.if(0, 2)],
     \outbus_mono, [8, 8],
     \amp, [1, 0],
     \startPos, Pfunc { |ev|
@@ -241,7 +245,7 @@ q.player.setPtn(Pbind(
         x = ~getknn.value(ev.onset, 1.rrand(5));
         x = ~data.onset[x];
         ev.attackDecay = [0.03, x[1]];
-
+        ev.bufRate = [1, 1];
         //return startPos
 		[ev.startPos, x[0]];
     },
@@ -256,3 +260,6 @@ q.player.setPtn(Pbind(
 
 
 q.player.play
+
+q.player.bounce((sampleRate:96000))
+
