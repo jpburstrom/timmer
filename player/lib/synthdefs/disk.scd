@@ -127,7 +127,7 @@ SynthDef(\diskSegmentAttackSend_01, {
     var snd, snd_mono;
 	var attackDur = \attackDur.kr(0.06); //Duration of attack part
 
-    snd = ~wrap.diskIn(2).poll;
+    snd = ~wrap.diskIn(2);
 
     //snd_mono = snd[2];
     //snd = snd[..1];
