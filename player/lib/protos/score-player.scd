@@ -449,40 +449,11 @@ Proto({
     //By default it creates a 44100/24bit .wav file in /tmp, named with song + timestamp.
     ~bounce = { |opt|
         var score, path;
-        opt = opt ? ();
 
-        opt.parent_((
-            //path is nil
-            basePath: PathName.tmp,
-            path: { |ev| ev.basePath +/+ "%_%.%".format(~song, Date.getDate.stamp, ev.headerFormat.toLower) }.inEnvir,
-            startPos:0,
-            dur:999,
-            tail: 10,
-            sampleRate: 44100,
-            headerFormat: "WAV",
-            sampleFormat: "int24",
-            deleteScoreFile: true
-        ));
+        score = ~generateScore.value(opt);
 
         path = opt.path.value;
 
-        ~isRendering = true;
-
-        //This apparently fixes the ERROR: makeSynthMsgWithTags: buffer overflow bug.
-        //For some reason the synthdef loading message (d_recv) becomes too large or something if we don't
-        //clear the score first, like this. Then we can ~loadSynthDefs again. This only happens when loading synthdefs
-        //right before... :|
-
-        //We do this so bus allocation will not conflict with output buses
-        Server.fromName(\ScoreDummy).options.numOutputBusChannels_(~channels);
-
-        ScoreClock.beginScore;
-        ScoreClock.addSynthDefs;
-        // ~loadSynthDefs.value;
-
-        ~play.value(0, ScoreClock);
-        score = ScoreClock.makeScore(opt.dur, opt.tail);
-        ~stop.value;
 
         score.recordNRT(path ++ ".osc", path, nil,
             opt.sampleRate, opt.headerFormat, opt.sampleFormat,
@@ -500,6 +471,44 @@ Proto({
 		~bounceScore = score;
 
         ~isRendering = false;
+    };
+
+    ~generateScore = { |opt|
+        var score;
+
+        opt = opt ? ();
+
+        opt.parent_((
+            //path is nil
+            basePath: PathName.tmp,
+            path: { |ev| ev.basePath +/+ "%_%.%".format(~song, Date.getDate.stamp, ev.headerFormat.toLower) }.inEnvir,
+            startPos:0,
+            dur:999,
+            tail: 10,
+            sampleRate: 44100,
+            headerFormat: "WAV",
+            sampleFormat: "int24",
+            deleteScoreFile: true
+        ));
+        ~isRendering = true;
+
+        //This apparently fixes the ERROR: makeSynthMsgWithTags: buffer overflow bug.
+        //For some reason the synthdef loading message (d_recv) becomes too large or something if we don't
+        //clear the score first, like this. Then we can ~loadSynthDefs again. This only happens when loading synthdefs
+        //right before... :|
+
+        //We do this so bus allocation will not conflict with output buses
+        Server.fromName(\ScoreDummy).options.numOutputBusChannels_(~channels);
+
+        ScoreClock.beginScore;
+        ScoreClock.addSynthDefs;
+        // ~loadSynthDefs.value;
+
+        ~play.value(0, ScoreClock);
+        score = ScoreClock.makeScore(opt.dur, opt.tail);
+        ~stop.value;
+        ~isRendering = false;
+        score;
     };
 
     //Re-add synthdefs for rendering
