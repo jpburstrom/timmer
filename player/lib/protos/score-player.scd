@@ -73,9 +73,9 @@ Proto({
 
         var f, file;
 
-		f = SCMIRAudioFile(~songPath, ~features);
         file = (~dataPath +/+ "features.scmirZ");
         if (File.exists(file).not) {
+	    f = \SCMIRAudioFile.asClass.new(~songPath, ~features);
             f.extractFeatures();
             f.save(file);
         } {

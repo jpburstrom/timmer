@@ -7,7 +7,8 @@ SynthDef(\resonate, { | inbus=0, outbus=0, freq=440 |
 
 
 SynthDef(\resonate_08, { |outbus=0, sendbus=0|
-    var freq = "G1".namecps * 5;
+    //G1.namecps
+    var freq = 97.998858995437 * 5;
     var snd = In.ar(0, 2);
     var detune = 0.2;
     //detune 1
