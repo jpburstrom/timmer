@@ -13,6 +13,8 @@ q.player.actionLabels = #[phrase, part];
 q.player.tickLabel = \phrase;
 q.player.loadData("04");
 q.player.channels = 7; //Bass, Fqshift etc, Reverb, 1x Piezo
+//Adjust this to avoid clicks
+q.player.numBufs = 32;
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 
@@ -34,10 +36,10 @@ q.player.onReady = {
 
     //Freqshift needs a bit of hi cut, because of noise
     ~t.freqshiftbus = Bus.audio(s, 2);
-    ~t.freqshiftEq = Synth(\freqshiftPostEQ_04, [\inbus, ~t.freqshiftbus.asMap, \outbus, 2]);
+    ~t.freqshiftEq = Synth(\freqshiftPostEQ_04, [\inbus, ~t.freqshiftbus.asMap, \outbus, q.stereo.if(0,2)]);
 
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
-		\bandwidth, 5000, \outbus, 4, \decay, 0.01, \predelay, 10, \excursion, 0.9,
+        \bandwidth, 5000, \outbus, q.stereo.if(0,4), \decay, 0.01, \predelay, 10, \excursion, 0.9,
 		\in_diff1, 0.46, \in_diff2, 0.40
 	], ~t.sendGroup);
 };
@@ -73,9 +75,9 @@ q.player.setPtn(Pbind(
 	}),
 	//TODO: generalize separate keys into a chained Psym or something
     //TODO: use 2-channel version of file
-	\instrument, Pif(Pkey(\normal), \diskSegment_3ch, Pwrand([\diskSegmentFreqshift_3ch, \diskSegmentPlank_3ch, \diskSegmentResonance_3ch], [0.8, 0.1, 0.1], inf)),
-    \outbus, Pif(Pkey(\normal), 0, 2),
-    \outbus_mono, 6, //Piezo output
+	\instrument, Pif(Pkey(\normal), \diskSegment, Pwrand([\diskSegmentFreqshift, \diskSegmentPlank, \diskSegmentResonance], [0.8, 0.1, 0.1], inf)),
+    \outbus, Pif(Pkey(\normal), 0, q.stereo.if(0,2)),
+    //\outbus_mono, 6, //Piezo output
 	\freqshift, Pwhite(-200, -2000),
 	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
 	\fadetime, 0.02,
@@ -155,7 +157,7 @@ q.player.setIterator(
 /*------------------------------------------------------------*/
 
 q.player.play
-
+q.player.bounce((sampleRate:96000))
 
 ~buf4 = Buffer.read(s, "songs/04*.wav".resolveRelative.pathMatch.last);
 
