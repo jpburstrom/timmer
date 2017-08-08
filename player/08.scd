@@ -31,7 +31,7 @@ q.player.onReady = {
     ~t.convBus = Bus.audio(s, 2);
 	s.sync;
 
-	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 2, \irbufs, ~t.irSpectrum,
+    ~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, q.stereo.if(0, 2), \irbufs, ~t.irSpectrum,
 		\sideAmp, 1, \amp, 0.25
 	], ~t.sendGroup);
 
@@ -41,7 +41,7 @@ q.player.onReady = {
 
 	//TODO: separate send bus for reverb
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
-		\bandwidth, 5000, \decay, 0.01, \predelay, 10, \outbus, 6, \excursion, 0.9,
+        \bandwidth, 5000, \decay, 0.01, \predelay, 10, \outbus, q.stereo.if(0,6), \excursion, 0.9,
 		\in_diff1, 0.36, \in_diff2, 0.40
 	], ~t.sendGroup);
 
@@ -99,13 +99,13 @@ q.player.setPtn(Plazy({
 			while ({ev.onset < 105}) {
 				//Weird and strange: spawn a 1-item pattern for every onset...
 				~spawner.par(Pbind(
-					\instrument, \diskSegment,
-                    \outbus, 4,
+					\instrument, \bufSegment,
+                    \outbus, q.stereo.if(0, 4),
 					\bufnum, Pfunc { claps2.next },
-					\amp, Pn(0.1, 1),
+					\amp, Pn(2, 1),
 					\timingOffset, Pwhite(-0.02, 0.02),
 					\group, Pfunc { ~t.mainGroup }
-				));
+				).trace);
 				ev = 0.yield
 
 			};
@@ -117,9 +117,9 @@ q.player.setPtn(Plazy({
 					//Weird and strange: spawn a 1-item pattern for every onset...
 					~spawner.par(Pbind(
 						\instrument, \diskSegment,
-						\outbus, 4,
+                        \outbus, q.stereo.if(0,4),
                         \bufnum, Pfunc { claps.next },
-						\amp, Pn(0.3, 1),
+						\amp, Pn(2, 1),
 						\timingOffset, Pwhite(-0.02, 0.02),
 						\group, Pfunc { ~t.mainGroup }
 
@@ -134,7 +134,7 @@ q.player.setPtn(Plazy({
             Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
 			plankStream = ~spawner.par(Pbind(
 				\bufnum, Pfunc { claps.next  },
-				\outbus, 4,
+                \outbus, q.stereo.if(0,4),
                  \instrument, Prand([\diskSegmentPlank], inf),
                 // \bufnum, Pfunc { ~protoEvent.bufnum },
 				// \startPos, Pfunc({ ~data.onset.flop[0][~currentEvent.onset.postln] }),
@@ -159,7 +159,7 @@ q.player.setPtn(Plazy({
 				Pfindur(endDuration + ev.dur, Pchain(
 					Pbind(
                         \instrument, \diskSegmentPlank,
-						\outbus, 4,
+                        \outbus, q.stereo.if(0,4),
                         \bufnum, Pfunc { claps.next },
 						// \startPos, Pxrand(~data.onset.flop[0], inf),
 						\amp, Pkey(\amp) * 2,
@@ -182,9 +182,9 @@ q.player.setPtn(Plazy({
 		//TEMP: Shorten last non-freqshifted note, so we don't get start of next attack
 		\dur, Pif(Pkey(\onset) == (endSegment), Pkey(\dur) - 0.05, Pkey(\dur)),
 		// \amp, 0,
-		\instrument, Pif(Pkey(\onset) < 370, \diskSegment_3ch, \diskSegmentFreqshift_3ch),
+		\instrument, Pif(Pkey(\onset) < 370, \diskSegment, \diskSegmentFreqshift),
         \outbus, 0,
-        \outbus_mono, 8,
+        //\outbus_mono, 8,
 		\freqshift, -5000.rrand(-8000);
 	)
 
@@ -196,7 +196,7 @@ q.player.setIterator(Plazy { Psym(Pseq(#[p1, p2, p3, p4, p5, p6]), ~data.iterato
 )
 
 /*EOF*/
-
+q.player.play
 
 Pdefn(\plankFreq, 45)
 Ndef(\sin, { SinOsc.ar(\freq.kr) * 0.1 }).play.gui
