@@ -56,9 +56,9 @@ q.player.use {
 
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
-        \instrument, \diskSegment_3ch,
+        \instrument, \diskSegment,
         \outbus, 0,
-        \outbus_mono, 10,
+        //\outbus_mono, 10,
         \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp),
     	\timingOffset, 0.1, //to sync with parPtn
 		// \test, Pfunc { |ev| ~data.groupscore[ev.onset].postln; 2 }
@@ -69,9 +69,9 @@ q.player.use {
         \instrument, \bufSegmentFreqshiftSmear,
         \bufnum, Pfunc( { [claps.next, claps.next] } ),
         \freqshift, [-1000, 0],
-        \outbus, 2,
+        \outbus, q.stereo.if(0, 2),
 		//Fade in, then
-		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \exp) * 0.3,
+		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \exp) * 3,
         \smear, Pwhite(1, 20),
         \pan, Pbrown(-0.2, 0.2, 0.125).repeat(9),
         \amp, p { |ev|
@@ -114,7 +114,7 @@ q.player.use {
         \root, 4,
 		\octave, 4,
 		\scale, Scale.dorian,
-		\amp, Plprand(0.001, 0.01),
+		\amp, Plprand(0.01, 0.1),
 		\outbus, Pfunc { ~t.longRevBus },
 		\timingOffset, Pwhite(0.0, 0.05),
 		\group, Pfunc { ~t.mainGroup },
@@ -144,10 +144,10 @@ q.player.use {
         // ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
 
         ~t.longRevBus = Bus.audio(s, 2);
-		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \outbus, 4, \decay, 1, \predelay, 0, \inbus, ~t.longRevBus.index], ~t.sendGroup);
+		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \outbus, q.stereo.if(0, 4), \decay, 1, \predelay, 0, \inbus, ~t.longRevBus.index], ~t.sendGroup);
 
-        ~t.wood = Synth(\wood09, [\outbus, 8], target:~t.postGroup);
-        ~t.resonator = Synth(\resonator09, [\outbus, 6], target:~t.postGroup);
+        ~t.wood = Synth(\wood09, [\outbus, q.stereo.if(0, 8)], target:~t.postGroup);
+        ~t.resonator = Synth(\resonator09, [\outbus, q.stereo.if(0, 6)], target:~t.postGroup);
 
         ~t.fftbus = Bus.audio(s, 2);
 
@@ -182,3 +182,5 @@ q.player.use {
 )
 
 /*EOF*/
+
+q.player.play
