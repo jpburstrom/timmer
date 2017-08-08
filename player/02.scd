@@ -4,7 +4,9 @@ var relPath = "".resolveRelative;
 q.player.actionLabels = #[phrase, beat];
 q.player.tickLabel = \phrase;
 q.player.loadData("02");
-q.player.channels = 9; //Bass, Freqshift, Resonator, Reverb, Piezo (1ch)
+if (q.stereo.not) {
+    q.player.channels = 9; //Bass, Freqshift, Resonator, Reverb, Piezo (1ch)
+};
 // //FIXME: Player2 idea doesn't work
 // q.player2 = q.player.clone;
 // q.player2.tickLabel = \beat;
@@ -41,9 +43,9 @@ q.player.setIterator(Prout({
 
 q.player.setPtn(Pbind(
     \fadetime, 0.01,
-    \instrument, \diskSegment_3ch,
+    \instrument, \diskSegment,
     \outbus, 0,
-    \outbus_mono, 8
+    //\outbus_mono, 8
 
 ));
 
@@ -54,7 +56,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
 	\harmonic, Pwhite(3, 6),
 	\group, Pfunc { ~t.postGroup },
 	\dur, Pfunc { ~currentEvent.dur },
-	\outbus, Pfunc { ~t.convBus },
+	\outbus, Pfunc { 0 },
 	\legato, 1,
 	\release, 5,
 	\db, (Pkey(\harmonic) - 2 ) * -2
@@ -62,23 +64,29 @@ q.player.parPtn = Ptpar([0.1, Pbind(
 
 
 q.player.onReady = {
+
+    /*
 	~t.irSpectrum = 2.collect {|i|
 		Buffer.read(s, relPath +/+ "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i));
 	};
 	~t.convBus = Bus.audio(s, 2);
     s.sync;
-	~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, 4, \irbufs, ~t.irSpectrum,
-		\sideAmp, 1, \amp, 0.25
+
+
+    ~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, stereo.if(2, 4), \irbufs, ~t.irSpectrum,
+		\sideAmp, 1, \amp, 1
 	], ~t.sendGroup);
+    */
 
-    ~t.freqshiftweird = Synth(\freqShiftWeird_02, [\outbus, 2], target:~t.postGroup);
+    ~t.freqshiftweird = Synth(\freqShiftWeird_02, [\outbus, q.stereo.if(0, 2)], target:~t.postGroup);
 
 
-
+    /*
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
 		\bandwidth, 5000, \decay, 0.1, \predelay, 10, \excursion, 0.9,
-		\in_diff1, 0.36, \in_diff2, 0.40, \outbus, 6
+        \in_diff1, 0.36, \in_diff2, 0.40, \outbus, stereo.if(0, 6)
 	], ~t.sendGroup);
+    */
 
 };
 
@@ -86,5 +94,7 @@ q.player.onReady = {
 
 /*EOF*/
 q.player.play
+
+q.player.t.conv.set(\amp, 0.25)
 
 q.player.songPath

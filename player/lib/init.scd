@@ -33,3 +33,4 @@ q.playerui = "protos/score-player-gui".import;
 //So we can run multiple files simultaneously
 { |func| func.value(q.deepCopy) };
 
+q.stereo = true;
