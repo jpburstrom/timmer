@@ -29,12 +29,13 @@ SynthDef(\meckamack_07, { |bufnum|
 
     imp = imp * \noiseMix.kr(0);
 
-    snd = HPF.ar(snd, 60);
+    //snd = HPF.ar(snd, 60);
 
     snd = snd * EnvGen.ar(Env.asr(0.01, 1, 0.01), \gate.kr(1), doneAction:2);
 
 
-    OffsetOut.ar(\outbus.kr, lop ++ snd ++ imp); //6 channels
+
+    OffsetOut.ar(\outbus.kr, lop + snd + imp); //2 channels
     // snd.dup
 }).add;
 )
