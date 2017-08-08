@@ -8,16 +8,18 @@ this.preProcessor = { arg str;
     str
 };
 
-Document.globalKeyDownAction = { |doc, char, mod, unicode, key|
-    switch(key,
-        122, { q.player.playStop }, //F1
-        120, { q.player.playPause }, //F2
-        99, nil, //F3
-        118, nil, //F4
-        109, nil,//F10
-        103, {q.playerui.connect(q.player)}, //F11
-        111, {q.player.bounce} //F12
-    );
+if (\Document.asClass.notNil) {
+    Document.globalKeyDownAction = { |doc, char, mod, unicode, key|
+        switch(key,
+            122, { q.player.playStop }, //F1
+            120, { q.player.playPause }, //F2
+            99, nil, //F3
+            118, nil, //F4
+            109, nil,//F10
+            103, {q.playerui.connect(q.player)}, //F11
+            111, {q.player.bounce} //F12
+        );
+    };
 };
 
 TempoClock.default.tempo = 1;
