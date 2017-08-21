@@ -242,7 +242,7 @@ q.player.setPtn(Pbind(
     \amp, [1, 0],
     \startPos, Pfunc { |ev|
 
-        x = ~getknn.value(ev.onset, 1.rrand(5));
+        var x = ~getknn.value(ev.onset, 1.rrand(5));
         x = ~data.onset[x];
         ev.attackDecay = [0.03, x[1]];
         ev.bufRate = [1, 1];
