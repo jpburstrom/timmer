@@ -43,7 +43,7 @@ Proto({
     ~isRendering = false;
 
     //Event things
-    ~protoEvent = (instrument:\diskSegment, db: 0, group: { ~t.mainGroup.nodeID }.inEnvir );
+    ~protoEvent = (instrument:\diskSegment, db: 0, group: { ~t.mainGroup.nodeID }.inEnvir, outbus: { ~t.mainOut.index }.inEnvir );
 
     //Dictionary of key => pattern to modify ~nextEvent with
 	~modPtn = EventPatternProxy(Pbind());
@@ -370,10 +370,23 @@ Proto({
     ~prep = { |sync=false|
         ~t = (); //A holder of temporary items
         ~prepareScore.value;
+        //For
         ~t.preGroup = Group();
+        //Main pattern is playing here
         ~t.mainGroup = Group.after(~t.preGroup);
+        //For fx using signal from main pattern
         ~t.postGroup = Group.after(~t.mainGroup);
+        //For send fx, like reverbs
         ~t.sendGroup = Group.after(~t.postGroup);
+        //Main output
+        ~t.masterGroup = Group.after(~t.sendGroup);
+        //Where monitoring happens
+        ~t.monitorGroup = Group.after(~t.mixGroup);
+
+        //Main output bus
+        ~t.mainOut = Bus.audio(s, 2);
+        //Bus for fx that need processing
+        ~t.fxOut = Bus.audio(s, 2);
 
         ~bufferPool.initBuffers(~numBufs, ~soundFile.numChannels);
 
@@ -381,6 +394,17 @@ Proto({
 		if (~isRendering.not and: { sync }) {
             s.sync;
         };
+
+
+        //Create main monitors, and mix down to stereo, bus 0
+
+        ~t.monitor = ().make {
+            ~main = Monitor();
+            ~fx = Monitor();
+        };
+        ~t.monitor.fx.play(~t.fxOut.index, 2, 0, 2, ~t.monitorGroup, multi:true);
+        ~t.monitor.main.play(~t.mainOut.index, 2, 0, 2, ~t.monitorGroup, multi:true);
+
         ~readyForPlay = true;
 
         ~onReady.value;
