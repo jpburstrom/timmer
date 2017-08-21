@@ -74,12 +74,13 @@ Proto({
         var f, file;
 
         file = (~dataPath +/+ "features.scmirZ");
+        f = SCMIRAudioFile.asClass.new(~songPath, ~features);
         if (File.exists(file).not) {
-	    f = \SCMIRAudioFile.asClass.new(~songPath, ~features);
             f.extractFeatures();
             f.save(file);
         } {
             f.load(file);
+
         };
 
 		//Make segments with n frames from every tick
