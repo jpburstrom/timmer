@@ -30,7 +30,7 @@ q.player.onReady = {
 	//with frequencies from the first 5 notes in song
 	//(Harmonics of A and D + a weird harmonic from prepared G)
 	~t.filterBank = SynthDef(\filterBank, {
-		var d1 = "D1".namecps;
+		var d1 = 73.416191979352;
 		var a1 = 55;
 		//5 first notes in song
 		var freqs = [d1 * 5, a1 * 6, 235, d1 * 3, d1 * 2];
