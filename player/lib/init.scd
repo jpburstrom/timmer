@@ -15,7 +15,7 @@ if (\Document.asClass.notNil) {
             120, { q.player.playPause }, //F2
             99, nil, //F3
             118, nil, //F4
-            109, nil,//F10
+            109, Fdef(\showMonitorUI),//F10
             103, {q.playerui.connect(q.player)}, //F11
             111, {q.player.bounce} //F12
         );
@@ -31,10 +31,12 @@ q.clear;
 q.player = "protos/score-player".import;
 if (\GUI.asClass.notNil) {
 	q.playerui = "protos/score-player-gui".import;
+    "gui/*".import;
 };
+
+q.stereo = true;
 
 //Use this with a callback function to get a copy of the q object
 //So we can run multiple files simultaneously
 { |func| func.value(q.deepCopy) };
 
-q.stereo = true;
