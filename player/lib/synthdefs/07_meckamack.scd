@@ -7,16 +7,21 @@ SynthDef(\meckamack_07, { |bufnum|
     var snd = VDiskIn.ar(2, bufnum, \rate.kr(1));
     // var snd = BufRd.ar(2, ~buf, LFNoise1.ar(LFNoise1.ar(0.1).range(0.001, 0.003)).range(300, 400).poll * BufSampleRate.kr(~buf));
 
+    var dry = snd;
+
     chain = FFT({LocalBuf(1024)}.dup, snd);
     noise = LFNoise1.ar(LFNoise0.kr(0.1).range(0.1,1)).range(0.02, 0.8);
     imp = BPF.ar(WhiteNoise.ar(1), \freq.kr(440), noise);
 
     lop = snd;
-    1.do { lop = LPF.ar(snd, 8000) }; //Keep lows
+    1.do { lop = LPF.ar(snd, 6000) }; //Keep lows
 
     //Only freqshift highs
     //Less freqshift == less delay
-    snd = FreqShiftAA.ar(DelayC.ar(snd - lop, 1, LFNoise1.kr(LFNoise0.kr(1).range(0.01,0.1)).range(0,01) * (\freqshift.kr(0) * -0.001)), \freqshift.kr);
+    snd = FreqShiftAA.ar(DelayC.ar(snd - lop, 1, LFNoise1.kr(LFNoise0.kr(1).range(0.01,0.1)).range(0, 1)
+    //Make sure delay is zero at first onset
+    * Env([0, 0, 1], [10, 5], 4).ar
+    * (\freqshift.kr(0) * -0.001)), \freqshift.kr);
 
     impchain = FFT({LocalBuf(1024)}.dup, imp);
 
@@ -34,8 +39,8 @@ SynthDef(\meckamack_07, { |bufnum|
     snd = snd * EnvGen.ar(Env.asr(0.01, 1, 0.01), \gate.kr(1), doneAction:2);
 
 
-
-    OffsetOut.ar(\outbus.kr, lop + snd + imp); //2 channels
+    OffsetOut.ar(\fxout.kr, snd + imp);
+    OffsetOut.ar(\outbus.kr, dry); //2 channels
     // snd.dup
 }).add;
 )
