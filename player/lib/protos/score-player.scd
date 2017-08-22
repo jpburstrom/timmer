@@ -17,6 +17,9 @@ Proto({
 
     ~readyForPlay = false;
 
+    //Setting this sets random seed on player start
+    ~randSeed = nil;
+
 
     //dictionary of per-label functions
     ~actions = ();
@@ -368,6 +371,13 @@ Proto({
     };
 
     ~prep = { |sync=false|
+
+        ~randSeed !? {
+            r = ~randSeed.value; //Could be a function
+            thisThread.randSeed_(r);
+            Synth(\setRandSeed, [\seed, r]);
+        };
+
         ~t = (); //A holder of temporary items
         ~prepareScore.value;
         //For
