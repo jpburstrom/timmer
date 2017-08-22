@@ -7,8 +7,8 @@ SynthDef(\freqShift, { |inbus, outbus, amp=1, midAmp=1, sideAmp=1|
 	Out.ar(outbus, snd * amp);
 }).add;
 
-SynthDef(\freqShiftWeird_02, {
-		var snd = In.ar(0, 2);
+SynthDef(\freqShiftWeird_02, { |inbus=0, outbus=0|
+		var snd = In.ar(inbus, 2);
 
 		//A slow random delay up to 15 ms -- before where you start to distinguish it
 		//as a separate sound. LFNoise is clipped below 0, so ~ half of the time there's no delay
@@ -24,6 +24,6 @@ SynthDef(\freqShiftWeird_02, {
 
 		snd = snd * LFNoise2.kr(2).exprange(0.5, 5);
 
-    Out.ar(\outbus.kr(0), snd); //Parallel
+    Out.ar(outbus, snd); //Parallel
 
-	}).add;
+}).add;
