@@ -103,8 +103,6 @@ q.player.onReady = {
         [\outbus, ~t.mainOut, \maxDelay, compLookahead, \delay, compLookahead],
         ~t.sendGroup, \addToTail);
 
-    //LIMIT EVERYTHING
-    ~t.limiter = Synth(\limiter, [\level, 0.1], ~t.masterGroup, \addToTail);
 
 };
 

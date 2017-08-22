@@ -5,6 +5,10 @@ var inserts = (
     limiter: { |snd, level=1|
         Limiter.ar(snd, level);
     },
+    safeLimiter: { |snd, level=1|
+        snd = ReplaceBadValues.ar(snd);
+        Limiter.ar(snd, level);
+    },
     softclip: { |snd, pregain=1, amp=1|
         SoftClipAmp8.ar(snd, pregain, amp);
     },

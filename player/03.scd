@@ -21,6 +21,8 @@ q.player.onReady = {
     var compLookahead = 0.01;
     var revSize = 2;
 
+    ~data.lastNote = false;
+
     ~t.plankBuf = plankPath.load;
     ~t.plankBuf.initBuffers(8, 2);
     s.sync;
@@ -43,8 +45,6 @@ q.player.onReady = {
         [\outbus, ~t.mainOut, \maxDelay, compLookahead, \delay, compLookahead],
         ~t.sendGroup, \addToTail);
 
-    //LIMIT EVERYTHING
-    ~t.limiter = Synth(\limiter, [\level, 0.1], ~t.masterGroup, \addToTail);
 };
 
 //This sets a pattern used to modify the base player pattern.
@@ -80,15 +80,15 @@ q.player.parPtn = Ptpar([0.1, Pbind(
     //Get total duration for some later Pseg patterns
     \totalDur, p { var dur = ~data.onset.last[0]; loop { dur.yield } },
     //Divide ~currentEvent (bass note) duration into equal-length segments according to \divisions pattern
-    \divisions, Pwhite(1,
+    \divisions, Pif(Pfunc { ~data.lastNote }, 1, Pwhite(1,
         Pseg([5,1.5,5,1.5,3],
             Plazy { Pseq([[0.5, 1], [4.0, 6], [2.0, 5], [1.0, 9.0]].collect(_[0].rrand(_[1])).normalizeSum) } * Pkey(\totalDur),
-            \lin, inf)),
+            \lin, inf))),
     \dur, PdurStutter(Pkey(\divisions).round, Pfunc { |ev| ~currentEvent.dur }),
     \group, Pfunc { ~t.mainGroup },
 
     //Humanize
-    \timingOffset, Plprand(0.0, 0.05),
+    \timingOffset, Plprand(0.00, 0.05),
     //Strum if clump
     \strum, Pwhite(0.05, 0.1),
     //Add phrase pauses
@@ -109,16 +109,16 @@ q.player.parPtn = Ptpar([0.1, Pbind(
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(Plazy {
     var last = 345; //last wanted onset
-    //Start at random point, play 347 segments and finish with `last`
-    Pfin(347,
-        (Pseries(last.rand) + Pstutter(Pwhite(1,3), Pwrand([0, Pwhite(-10, -3, 1)], [0.95, 0.5], inf))).wrap(0, last)
-    ) ++ Pn(last, 1)
+    //Start at random point, play `(last - 1)` segments, wrapped between `0` and `(last-1)` and finish with `last`
+    Pfin(last - 1,
+        (Pseries(last.rand) + Pstutter(Pwhite(1,3), Pwrand([0, Pwhite(-10, -3, 1)], [0.95, 0.5], inf))).wrap(0, last-1)
+    ) ++ Pfuncn({ ~data.lastNote = true; last }, 1)
 //q.player.play
 });
 )
 
 /*EOF*/
 
-q.player.play
+q.player.play(340)
 
 

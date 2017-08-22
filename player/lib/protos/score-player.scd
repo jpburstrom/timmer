@@ -20,6 +20,9 @@ Proto({
     //Setting this sets random seed on player start
     ~randSeed = nil;
 
+    //Do we want to add a safety limiter on the master bus?
+    ~safeLimit = true;
+
 
     //dictionary of per-label functions
     ~actions = ();
@@ -412,14 +415,20 @@ Proto({
             ~main = Monitor();
             ~fx = Monitor();
         };
-        ~t.monitor.fx.play(~t.fxOut.index, 2, 0, 2, ~t.monitorGroup, multi:true);
-        ~t.monitor.main.play(~t.mainOut.index, 2, 0, 2, ~t.monitorGroup, multi:true);
+        ~t.monitor.fx.play(~t.fxOut.index, 2, 0, 2, ~t.monitorGroup, multi:true, addAction:\addToHead);
+        ~t.monitor.main.play(~t.mainOut.index, 2, 0, 2, ~t.monitorGroup, multi:true, addAction:\addToHead);
 
 
 
         ~readyForPlay = true;
 
         ~onReady.value;
+
+        //Add a safety limiter after everything
+        if (~safeLimit) {
+            s.sync;
+            ~t.safeLimiter = Synth(\safeLimiter, [\outbus, 0], ~t.monitorGroup, \addToTail);
+        }
 
     };
 
