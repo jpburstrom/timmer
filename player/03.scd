@@ -2,6 +2,7 @@
 (
 var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
 var impulsePath = "data/impulses/impulse-closed-ms-48.wav".resolveRelative;
+var plankPath = "lib/protos/buffer-pool.scd".resolveRelative;
 
 "lib/init".import;
 q.player.actionLabels = #[onset];
@@ -16,9 +17,34 @@ q.player.data.tail = 0;
 //## Patterns #######
 
 q.player.onReady = {
-    ~t.plankBuf = "lib/protos/buffer-pool".import;
+
+    var compLookahead = 0.01;
+    var revSize = 2;
+
+    ~t.plankBuf = plankPath.load;
     ~t.plankBuf.initBuffers(8, 2);
     s.sync;
+    //POST FX
+    ~t.compressor = Synth(\compressor,
+        [\outbus, ~t.fxOut, \thresh, 0.8, \ratio, 3, \attack, compLookahead, \release, 0.1, \amp, 1],
+        ~t.postGroup, \addToTail);
+    //zap bad values before sending to verb
+    ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
+
+    ~t.mixin = Monitor().play(~t.mainOut.index, 2, ~t.fxOut.index, 2, ~t.postGroup, false, 0.1);
+
+    //SEND FX
+    ~t.verb = Synth(\jpverb,
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \amp, 0.1, \damp, 0.9, \size, revSize],
+        ~t.sendGroup, \addToTail);
+
+    //FIX FX LATENCY
+    ~t.latencyFix = Synth(\fixedDelay,
+        [\outbus, ~t.mainOut, \maxDelay, compLookahead, \delay, compLookahead],
+        ~t.sendGroup, \addToTail);
+
+    //LIMIT EVERYTHING
+    ~t.limiter = Synth(\limiter, [\level, 0.1], ~t.masterGroup, \addToTail);
 };
 
 //This sets a pattern used to modify the base player pattern.
@@ -26,7 +52,6 @@ q.player.setPtn(Plazy {
     var totaldur = 2;
     Pbind(
         \instrument, \diskSegment,
-        \outbus, 0,
         \timingOffset, 0.1, //Delay compensation for Ptpar
         \legato, 1,//Pstep([1], Pseq([totaldur]), 1) ++ Pfuncn { |ev| (ev.dur - 0.1) / ev.dur }, // cut tail of last note
         // \fadetime, Pstep([0.01], Pseq([totaldur]), 1) ++ Pn(0.5, 1),
@@ -79,7 +104,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
         }
     },
     //Output -> second stereo pair
-    \outbus, q.stereo.if(0, 2)
+    \outbus, Pfunc { ~t.fxOut }
 )]);
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(Plazy {
@@ -96,9 +121,4 @@ q.player.setIterator(Plazy {
 
 q.player.play
 
-Ndef(\testtone).prime({ SinOscFB.ar(\freq.kr(84), \fb.kr(0.0) ).dup * \amp.kr(0.1) })
-
-Ndef(\testtone).gui
-
-q.player.bounce((dur:10))
 
