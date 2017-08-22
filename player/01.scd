@@ -1,7 +1,6 @@
 (
 "lib/init".import;
 s.latency = 0.5;
-q.player.randSeed = { 10000.rand.debug("Random seed") };
 q.player.actionLabels = #[onset, phrase];
 q.player.loadData("01");
 
@@ -266,7 +265,8 @@ q.player.setPtn(Pbind(
 )
 /*EOF*/
 
-
+fork {
+q.player.randSeed = 1234;
 q.player.play
 
 q.player.bounce((sampleRate:96000, dur:10))

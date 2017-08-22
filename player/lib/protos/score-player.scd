@@ -18,7 +18,7 @@ Proto({
     ~readyForPlay = false;
 
     //Setting this sets random seed on player start
-    ~randSeed = nil;
+    ~randSeed = 1e+06.rand;
 
     //Do we want to add a safety limiter on the master bus?
     ~safeLimit = true;
@@ -55,15 +55,24 @@ Proto({
 	~modPtn = EventPatternProxy(Pbind());
 
 
+    //Set seed for pattern
+    ~patternSeed = { |ptn|
+        if (~randSeed.notNil) {
+            ptn = Pseed(Pn(~randSeed.value, 1), ptn);
+        };
+        ptn
+    };
 
     //Set iterator pattern
     ~setIterator = { |ptn|
-        ~iteratorPattern.source_(ptn);
+        ~iteratorPattern.source_(~patternSeed.(ptn));
     };
 
 	~setPtn = { |ptn|
 		~modPtn.source_(ptn);
 	};
+
+
 
 
     //TODO: move this to separate file?
@@ -377,7 +386,8 @@ Proto({
 
         ~randSeed !? {
             r = ~randSeed.value; //Could be a function
-            thisThread.randSeed_(r);
+            //We set this both here and as Pseed for main pattern.
+            //thisThread.randSeed_(r);
             Synth(\setRandSeed, [\seed, r]);
         };
 
@@ -566,7 +576,8 @@ Proto({
     ~asPattern = { |drop=0|
         var reset = ~reset.inEnvir;
         var tail = ~data.tail ? 0;
-        Pspawner({ arg sp;
+
+        var ptn = Pspawner({ arg sp;
             var parStream;
             ~spawner = sp;
             //reset function
@@ -576,7 +587,7 @@ Proto({
             parStream = sp.par(~parPtn);
             sp.seq(Pchain(
                 ~modPtn,
-                Prout(e { |ev| loop { ev = ~next.value(ev).yield }})
+                Prout(e { |ev| loop { ev = ~next.value(ev).yield }});
             ).collect({ |ev|
                 //XXX maybe this shouldn't be done
                 ev.startPos = ev.startPos - (ev.fadeTime ? 0.002);
@@ -593,7 +604,12 @@ Proto({
             tail.wait;
             sp.suspendAll; //Hack, otherwise stream will never reset when ending by itself
         }.inEnvir);
+
+
+        ~patternSeed.(ptn);
+
     };
+
 
     ~update = { |obj, what ... args|
 

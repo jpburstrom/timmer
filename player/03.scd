@@ -119,5 +119,8 @@ q.player.setIterator(Plazy {
 /*EOF*/
 
 q.player.play(340)
-
-
+q.player.randSeed = 1234
+(
+q.player.randSeed = 12345;
+q.player.play
+)
