@@ -391,7 +391,7 @@ Proto({
         //Main output
         ~t.masterGroup = Group.after(~t.sendGroup);
         //Where monitoring happens
-        ~t.monitorGroup = Group.after(~t.mixGroup);
+        ~t.monitorGroup = Group.after(~t.masterGroup);
 
         //Main output bus
         ~t.mainOut = Bus.audio(s, 2);
@@ -414,6 +414,8 @@ Proto({
         };
         ~t.monitor.fx.play(~t.fxOut.index, 2, 0, 2, ~t.monitorGroup, multi:true);
         ~t.monitor.main.play(~t.mainOut.index, 2, 0, 2, ~t.monitorGroup, multi:true);
+
+
 
         ~readyForPlay = true;
 
