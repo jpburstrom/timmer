@@ -57,7 +57,6 @@ q.player.use {
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
         \instrument, \diskSegment,
-        \outbus, 0,
         //\outbus_mono, 10,
         \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp),
     	\timingOffset, 0.1, //to sync with parPtn
@@ -69,7 +68,7 @@ q.player.use {
         \instrument, \bufSegmentFreqshiftSmear,
         \bufnum, Pfunc( { [claps.next, claps.next] } ),
         \freqshift, [-1000, 0],
-        \outbus, q.stereo.if(0, 2),
+        \outbus, Pfunc { ~t.mainOut },
 		//Fade in, then
 		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \exp) * 3,
         \smear, Pwhite(1, 20),
@@ -136,26 +135,40 @@ q.player.use {
 	)
 	]);
 	~onReady = {
+        var compLookahead = 0.01;
+        var revSize = 0.4;
 
-        ~t.buf2ch = Buffer.readChannel(s, ~songPath, channels: [0,1]);
-        s.sync;
-
-		//FIXME: reverb params
+        //FIXME: reverb params
         // ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -38.dbamp, \decay, 0.1, \bandwidth, 1500, \predelay, 10], ~t.sendGroup);
-
         ~t.longRevBus = Bus.audio(s, 2);
-		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \outbus, q.stereo.if(0, 4), \decay, 1, \predelay, 0, \inbus, ~t.longRevBus.index], ~t.sendGroup);
+		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \outbus, ~t.fxOut, \decay, 1, \predelay, 0, \inbus, ~t.longRevBus], ~t.sendGroup);
 
-        ~t.wood = Synth(\wood09, [\outbus, q.stereo.if(0, 8)], target:~t.postGroup);
-        ~t.resonator = Synth(\resonator09, [\outbus, q.stereo.if(0, 6)], target:~t.postGroup);
 
-        ~t.fftbus = Bus.audio(s, 2);
-
-        // ~t.mixin = { In.ar(~t.longRevBus, 2) }.play(~t.postGroup);
 
         ~t.handclaps = handclapPaths.collect { |path|
             Buffer.read(s, path);
         };
+
+       // ~t.mixin = Monitor().play(~t.mainOut.index, 2, ~t.fxOut.index, 2, ~t.postGroup, false, 0.01);
+
+        ~t.wood = Synth(\wood09, [\inbus, ~t.mainOut, \outbus, ~t.fxOut], target:~t.postGroup);
+        ~t.resonator = Synth(\resonator09, [\inbus, ~t.mainOut, \outbus, ~t.fxOut], target:~t.postGroup);
+
+        //POST FX
+        ~t.softclip = Synth(\softclip,
+            [\outbus, ~t.fxOut, \pregain, 1, \amp, 1],
+            ~t.postGroup, \addToTail);
+         ~t.compressor = Synth(\compressor,
+        [\outbus, ~t.fxOut, \thresh, 0.1, \ratio, 10, \attack, compLookahead, \release, 0.1, \amp, 1],
+        ~t.postGroup, \addToTail);
+        //zap bad values before sending to verb
+        ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
+
+        //SEND FX
+        ~t.verb = Synth(\jpverb,
+            [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \time, 0.1, \amp, 0.1, \damp, 0.4, \size, revSize],
+            ~t.sendGroup, \addToTail);
+
 
 
     };
@@ -184,3 +197,5 @@ q.player.use {
 /*EOF*/
 
 q.player.play
+
+q.player.t.verb.set(\amp, 0.1)
