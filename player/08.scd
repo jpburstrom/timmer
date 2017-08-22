@@ -6,7 +6,7 @@ var relPath = "".resolveRelative;
 var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
 //To be called from within q.player environment
 var spawnResonatorSynth = {
-    ~t.resonator = Synth(\resonate_08, [\outbus, 2, \sendbus, ~t.convBus], ~t.postGroup);
+    ~t.resonator = Synth(\resonate_08, [\inbus, ~t.mainOut, \outbus, ~t.fxOut], ~t.postGroup);
 
 };
 "lib/init".import;
@@ -24,8 +24,16 @@ q.player.channels = 9;
 //Channel map: Bass, Resonator, Handclap, Rev, Piezo
 
 q.player.onReady = {
+    var compLookahead = 0.01;
+    var revSize = 10;
 
-   ~t.irSpectrum = 2.collect {|i|
+	~t.handclaps = handClapPaths.pathMatch.collect { |path|
+		Buffer.read(s, path);
+	};
+
+    /*
+
+    ~t.irSpectrum = 2.collect {|i|
 		Buffer.read(s, relPath +/+ "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i));
 	};
     ~t.convBus = Bus.audio(s, 2);
@@ -35,17 +43,27 @@ q.player.onReady = {
 		\sideAmp, 1, \amp, 0.25
 	], ~t.sendGroup);
 
-	~t.handclaps = handClapPaths.pathMatch.collect { |path|
-		Buffer.read(s, path);
-	};
-
 	//TODO: separate send bus for reverb
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
         \bandwidth, 5000, \decay, 0.01, \predelay, 10, \outbus, q.stereo.if(0,6), \excursion, 0.9,
 		\in_diff1, 0.36, \in_diff2, 0.40
 	], ~t.sendGroup);
+    */
 
-		spawnResonatorSynth.value;
+    spawnResonatorSynth.value;
+
+       //POST FX
+    ~t.softclip = Synth(\softclip,
+        [\outbus, ~t.fxOut, \pregain, 4, \amp, 0.1],
+        ~t.postGroup, \addToTail);
+    //zap bad values before sending to verb
+    ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
+
+    //SEND FX
+    ~t.verb = Synth(\jpverb,
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \time, 4, \amp, 0.4, \damp, 0.9, \size, revSize],
+        ~t.sendGroup, \addToTail);
+
 
 };
 
@@ -100,12 +118,12 @@ q.player.setPtn(Plazy({
 				//Weird and strange: spawn a 1-item pattern for every onset...
 				~spawner.par(Pbind(
 					\instrument, \bufSegment,
-                    \outbus, q.stereo.if(0, 4),
+                    \outbus, Pfunc { ~t.fxOut },
 					\bufnum, Pfunc { claps2.next },
 					\amp, Pn(2, 1),
 					\timingOffset, Pwhite(-0.02, 0.02),
 					\group, Pfunc { ~t.mainGroup }
-				).trace);
+				));
 				ev = 0.yield
 
 			};
@@ -117,7 +135,7 @@ q.player.setPtn(Plazy({
 					//Weird and strange: spawn a 1-item pattern for every onset...
 					~spawner.par(Pbind(
 						\instrument, \diskSegment,
-                        \outbus, q.stereo.if(0,4),
+                        \outbus, Pfunc { ~t.fxOut },
                         \bufnum, Pfunc { claps.next },
 						\amp, Pn(2, 1),
 						\timingOffset, Pwhite(-0.02, 0.02),
@@ -134,7 +152,7 @@ q.player.setPtn(Plazy({
             Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
 			plankStream = ~spawner.par(Pbind(
 				\bufnum, Pfunc { claps.next  },
-                \outbus, q.stereo.if(0,4),
+                \outbus,Pfunc { ~t.fxOut },
                  \instrument, Prand([\diskSegmentPlank], inf),
                 // \bufnum, Pfunc { ~protoEvent.bufnum },
 				// \startPos, Pfunc({ ~data.onset.flop[0][~currentEvent.onset.postln] }),
@@ -159,7 +177,7 @@ q.player.setPtn(Plazy({
 				Pfindur(endDuration + ev.dur, Pchain(
 					Pbind(
                         \instrument, \diskSegmentPlank,
-                        \outbus, q.stereo.if(0,4),
+                        \outbus, Pfunc { ~t.fxOut },
                         \bufnum, Pfunc { claps.next },
 						// \startPos, Pxrand(~data.onset.flop[0], inf),
 						\amp, Pkey(\amp) * 2,
@@ -183,7 +201,6 @@ q.player.setPtn(Plazy({
 		\dur, Pif(Pkey(\onset) == (endSegment), Pkey(\dur) - 0.05, Pkey(\dur)),
 		// \amp, 0,
 		\instrument, Pif(Pkey(\onset) < 370, \diskSegment, \diskSegmentFreqshift),
-        \outbus, 0,
         //\outbus_mono, 8,
 		\freqshift, -5000.rrand(-8000);
 	)
@@ -221,3 +238,7 @@ Pdef(\test, Pbind(
     // \group, Pfunc { ~t.mainGroup }
 )).play
 )
+
+
+q.player.t.verb.set(\amp, 1);
+q.player.t.verb.set(\time, 0.5)
