@@ -94,10 +94,8 @@ SynthDef(\klankBell, { |inbus=0, freq=150, amp=1|
 	Out.ar(\outbus.kr(0), snd * amp)
 }).add;
 
-
-//Temporary
 SynthDef(\wood09, {
-	var snd = In.ar(0, 2);
+    var snd = In.ar(\inbus.kr(0), 2);
 	var x;
 	// snd = BPF.ar(snd, 88, 0.001);
 	/*
@@ -113,12 +111,4 @@ SynthDef(\wood09, {
 	x = Klank.ar(`wood2, x * LFNoise2.ar(1).exprange(0.001, 2), 99, 0, 4) * 2;
 
 	Out.ar(\outbus.kr(0), x);
-}).add;
-
-//Temporary
-SynthDef(\resonator09, { |freq=88|
-	var snd = In.ar(0, 2);
-	snd = snd * EnvGen.ar(Env.asr(0.5, 1, 0.5), \gate.kr(0));
-	snd = AllpassN.ar(BPF.ar(snd, freq, 0.1), 0.05, 88.reciprocal, 10) * \amp.kr(1);
-	Out.ar(\outbus.kr(0), snd * 3);
 }).add;
