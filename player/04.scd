@@ -20,10 +20,9 @@ q.player.numBufs = 32;
 
 
 SynthDef(\freqshiftPostEQ_04, {
-		var snd = In.ar(\inbus.kr, 2);
-		snd = BHiShelf.ar(snd, 4700, 2, -10);
-		Out.ar(\outbus.kr, snd);
-
+    var snd = In.ar(\inbus.kr, 2);
+    snd = BHiShelf.ar(snd, \freq.kr(2700), 2, -3);
+    Out.ar(\outbus.kr, snd);
 }).add;
 
 //This loads a previously generated markov chain
@@ -33,15 +32,39 @@ markov.connect(q.player);
 markov.initChain;
 
 q.player.onReady = {
+    var compLookahead = 0.01;
+    var revSize = 2;
 
     //Freqshift needs a bit of hi cut, because of noise
     ~t.freqshiftbus = Bus.audio(s, 2);
-    ~t.freqshiftEq = Synth(\freqshiftPostEQ_04, [\inbus, ~t.freqshiftbus.asMap, \outbus, q.stereo.if(0,2)]);
+    ~t.freqshiftEq = Synth(\freqshiftPostEQ_04, [\inbus, ~t.freqshiftbus, \outbus, ~t.fxOut], ~t.postGroup);
 
+    /*
 	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
         \bandwidth, 5000, \outbus, q.stereo.if(0,4), \decay, 0.01, \predelay, 10, \excursion, 0.9,
 		\in_diff1, 0.46, \in_diff2, 0.40
 	], ~t.sendGroup);
+    */
+
+      //POST FX
+    ~t.softclip = Synth(\softclip,
+        [\outbus, ~t.fxOut, \pregain, 1, \amp, 1],
+        ~t.postGroup, \addToTail);
+    ~t.compressor = Synth(\compressor,
+        [\outbus, ~t.fxOut, \thresh, 0.5, \ratio, 8, \attack, compLookahead, \release, 0.05, \amp, 0.15],
+        ~t.postGroup, \addToTail);
+    //zap bad values before sending to verb
+    ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
+
+    //SEND FX
+    ~t.verb = Synth(\jpverb,
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \time, 4, \amp, 0.1, \damp, 0.7, \size, revSize],
+        ~t.sendGroup, \addToTail);
+
+    //FIX FX LATENCY
+    ~t.latencyFix = Synth(\fixedDelay,
+        [\outbus, ~t.mainOut, \maxDelay, compLookahead, \delay, compLookahead],
+        ~t.sendGroup, \addToTail);
 };
 
 //Modifying pattern
@@ -76,7 +99,12 @@ q.player.setPtn(Pbind(
 	//TODO: generalize separate keys into a chained Psym or something
     //TODO: use 2-channel version of file
 	\instrument, Pif(Pkey(\normal), \diskSegment, Pwrand([\diskSegmentFreqshift, \diskSegmentPlank, \diskSegmentResonance], [0.8, 0.1, 0.1], inf)),
-    \outbus, Pif(Pkey(\normal), 0, q.stereo.if(0,2)),
+    //Output to main out, except for all fx
+    //If freqshift, output to its own bus for post eq
+    \outbus, Pif(Pkey(\normal), Pfunc { ~t.mainOut },
+        Pif(Pfunc { |ev| ev.instrument == \diskSegmentFreqshift }, Pfunc { ~t.freqshiftbus}, Pfunc { ~t.fxOut })
+    ),
+
     //\outbus_mono, 6, //Piezo output
 	\freqshift, Pwhite(-200, -2000),
 	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
