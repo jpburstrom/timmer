@@ -138,7 +138,6 @@ SynthDef(\diskSegmentAttackSend_01, {
     snd = ~wrap.fadeInOut(snd);
 
     ~wrap.out(snd, \sendBus.kr(16), \sendAmp.kr(0, 0.1));
-    ~wrap.out(snd, \outbus_mono.kr(2));
     ~wrap.out(snd);
 }).add;
 

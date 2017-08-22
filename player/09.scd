@@ -13,7 +13,6 @@ q.player.loadData("09");
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 q.player.data.tail = 15;
-q.player.channels = 11;
 
 //Channel map: Bass, Fqshift/Claps, FM, Resonator, strange wood, Piezo (1ch)
 
@@ -57,7 +56,6 @@ q.player.use {
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
         \instrument, \diskSegment,
-        //\outbus_mono, 10,
         \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp),
     	\timingOffset, 0.1, //to sync with parPtn
 		// \test, Pfunc { |ev| ~data.groupscore[ev.onset].postln; 2 }

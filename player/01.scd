@@ -6,9 +6,7 @@ q.player.actionLabels = #[onset, phrase];
 q.player.loadData("01");
 
 q.player.extractFeatures;
-if (q.stereo.not) {
-    q.player.channels = 9;
-};
+
 //Channel map: Bass, Freqshift, Klank bell, Filterbank, piezo
 );
 (
@@ -249,7 +247,6 @@ q.player.setPtn(Pbind(
     //Second channel is not sending to main out
 
     // \outbus, Pfunc { ~t.mainOut }, //[0, q.stereo.if(0, 2)],
-    \outbus_mono, 8, //[8, 8],
     \amp, [1, 0],
     \startPos, Pfunc { |ev|
 
@@ -272,7 +269,7 @@ q.player.setPtn(Pbind(
 
 q.player.play
 
-q.player.bounce((sampleRate:96000))
+q.player.bounce((sampleRate:96000, dur:10))
 
 (
 z.free;

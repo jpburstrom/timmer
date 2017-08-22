@@ -12,7 +12,6 @@ var markov;
 q.player.actionLabels = #[phrase, part];
 q.player.tickLabel = \phrase;
 q.player.loadData("04");
-q.player.channels = 7; //Bass, Fqshift etc, Reverb, 1x Piezo
 //Adjust this to avoid clicks
 q.player.numBufs = 32;
 //q.player.extractFeatures;
@@ -105,8 +104,7 @@ q.player.setPtn(Pbind(
         Pif(Pfunc { |ev| ev.instrument == \diskSegmentFreqshift }, Pfunc { ~t.freqshiftbus}, Pfunc { ~t.fxOut })
     ),
 
-    //\outbus_mono, 6, //Piezo output
-	\freqshift, Pwhite(-200, -2000),
+ 	\freqshift, Pwhite(-200, -2000),
 	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
 	\fadetime, 0.02,
     //FIXME: rate

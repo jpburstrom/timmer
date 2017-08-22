@@ -2,7 +2,6 @@
 q.player.actionLabels = #[start];
 q.player.tickLabel = \start;
 q.player.loadData("07");
-q.player.channels = 2; //
 
 q.player.onReady = {
     var compLookahead = 0.01;

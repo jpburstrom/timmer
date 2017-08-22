@@ -13,7 +13,6 @@ var spawnResonatorSynth = {
 q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
 q.player.loadData("08");
-q.player.channels = 9;
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
 // q.markov = "/lib/protos/markov-trainer".import;
@@ -201,8 +200,7 @@ q.player.setPtn(Plazy({
 		\dur, Pif(Pkey(\onset) == (endSegment), Pkey(\dur) - 0.05, Pkey(\dur)),
 		// \amp, 0,
 		\instrument, Pif(Pkey(\onset) < 370, \diskSegment, \diskSegmentFreqshift),
-        //\outbus_mono, 8,
-		\freqshift, -5000.rrand(-8000);
+    	\freqshift, -5000.rrand(-8000);
 	)
 
 }));

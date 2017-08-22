@@ -8,7 +8,6 @@ var plankPath = "lib/protos/buffer-pool.scd".resolveRelative;
 q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
 q.player.loadData("03");
-q.player.channels = 5; //2x Bass, 2x Plank, 1x Bass piezo
 q.player.data.tail = 0;
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
