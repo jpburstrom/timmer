@@ -1,53 +1,67 @@
 (
-
 "lib/init".import;
 s.latency = 0.5;
+q.player.randSeed = { 10000.rand.debug("Random seed") };
 q.player.actionLabels = #[onset, phrase];
 q.player.loadData("01");
-//Connect UI to player
-// q.playerui.connect(q.player);
+
 q.player.extractFeatures;
 if (q.stereo.not) {
     q.player.channels = 9;
 };
 //Channel map: Bass, Freqshift, Klank bell, Filterbank, piezo
 );
-
 (
 q.player.onReady = {
 
-    ~t.klankBus = Bus(\audio, 32, 2);
-    ~t.freqShiftBus = Bus(\audio, 34, 2);
+    var compLookahead = 0.01;
+    var revSize =  0.1.exprand(0.8).debug("rev size");
 
-	//Always-running klank synth
+
+    ~t.klankBus = Bus.audio(s, 2);
+    ~t.freqShiftBus = Bus.audio(s, 2);
+
+   //Always-running klank synth
 	//Makes a bell-like sound
-    ~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, q.stereo.if(0, 4)], ~t.postGroup);
+    ~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, ~t.fxOut, \amp, 0.15], ~t.postGroup);
 
 	//Freqshift fx synth
-    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, q.stereo.if(0, 2), \amp, 4, \midAmp, -3.dbamp], ~t.postGroup);
+    ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, ~t.fxOut, \amp, 4, \midAmp, -3.dbamp], ~t.postGroup);
 
 	//Filterbank acting as a kind of mellow drone,
 	//with frequencies from the first 5 notes in song
 	//(Harmonics of A and D + a weird harmonic from prepared G)
-	~t.filterBank = SynthDef(\filterBank, {
-		var d1 = 73.416191979352;
-		var a1 = 55;
-		//5 first notes in song
-		var freqs = [d1 * 5, a1 * 6, 235, d1 * 3, d1 * 2];
-		var snd = In.ar(0, 2);
-		var detune = 0.2;
-		var lo = detune.neg.midiratio ;
-		var hi = detune.midiratio ;
-		//Some detuning
-		//TODO: variation of LFNoise2 rate?
-		//TODO: individual amps?
-		snd = Mix(freqs.collect({ |fq| Resonz.ar(snd, fq * LFNoise2.kr(0.1).range(lo, hi), 0.002, 3)}));
-		// snd.postln;
-		Out.ar(6, snd);
-    }).play(target:~t.klank, addAction:\addBefore);
+	~t.filterBank = Synth(\resonator_01,
+        [\inbus, ~t.mainOut, \outbus, ~t.fxOut],
+        ~t.postGroup
+    );
+
+    //POST FX
+    ~t.softclip = Synth(\softclip,
+        [\outbus, ~t.fxOut, \pregain, 4, \amp, 1],
+        ~t.postGroup, \addToTail);
+    ~t.compressor = Synth(\compressor,
+        [\outbus, ~t.fxOut, \thresh, 0.25, \ratio, 20, \attack, compLookahead, \release, 0.1, \amp, 0.25],
+        ~t.postGroup, \addToTail);
+    //zap bad values before sending to verb
+    ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
+
+    //SEND FX
+    ~t.verb = Synth(\jpverb,
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \amp, 0.2, \damp, 0.9, \size, revSize],
+        ~t.sendGroup, \addToTail);
+
+    //FIX FX LATENCY
+    ~t.latencyFix = Synth(\fixedDelay,
+        [\outbus, ~t.mainOut, \maxDelay, compLookahead, \delay, compLookahead],
+        ~t.sendGroup, \addToTail);
+
+    //LIMIT EVERYTHING
+    ~t.limiter = Synth(\limiter, [\level, 0.1], ~t.masterGroup, \addToTail);
 
 
 };
+
 
 q.player.setIterator(p {
     var introSize = 66.rrand(96);
@@ -237,8 +251,9 @@ q.player.setPtn(Pbind(
 	},
     */
     //Second channel is not sending to main out
-    \outbus, [0, q.stereo.if(0, 2)],
-    \outbus_mono, [8, 8],
+
+    // \outbus, Pfunc { ~t.mainOut }, //[0, q.stereo.if(0, 2)],
+    \outbus_mono, 8, //[8, 8],
     \amp, [1, 0],
     \startPos, Pfunc { |ev|
 
@@ -263,3 +278,7 @@ q.player.play
 
 q.player.bounce((sampleRate:96000))
 
+(
+z.free;
+z =
+)
