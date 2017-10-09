@@ -5,12 +5,13 @@ var defaultFadeTime = 0.002;
 SynthDef(\bufSegment, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd;
+    //Adjust startpos, so fade ends at 0
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
-
 
 //Simple segment player
 //startPos in seconds
@@ -18,6 +19,7 @@ SynthDef(\bufSegment_3ch, { |outbus(0), outbus_mono(2), bufnum(0), startPos(0), 
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(3, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     OffsetOut.ar(outbus, snd[..1] * \amp.kr(1));
@@ -29,6 +31,7 @@ SynthDef(\bufSegmentMS, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd, mid, side;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
 	#mid, side = Fdef(\stereo2ms).value(snd);
@@ -60,6 +63,7 @@ SynthDef(\bufSegmentAttackSend, { |bufnum, startPos, attackStartPos, sustain=0, 
 	snd = LinSelectX.ar(1, [snd, LinSelectX.ar(Line.ar(0, 1, attackDur), [attack, release])]);
     OffsetOut.ar(\attackSendBus.kr(16), \attackSendAmp.kr * EnvGen.ar(Env.perc(0.002, \attackDecay.kr(0.03))) * attack);
 	//output + envelope
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr(0, 0.1) * snd);
 	OffsetOut.ar(\outbus.kr(0), snd * \amp.kr(1));
@@ -88,7 +92,8 @@ SynthDef(\bufSegmentAttackSend_01, { |bufnum, startPos, attackStartPos, sustain=
     snd = snd[..1];
 
     OffsetOut.ar(\attackSendBus.kr(16), \attackSendAmp.kr * EnvGen.ar(Env.perc(0.002, \attackDecay.kr(0.03))) * attack);
-	//output + envelope
+	sustain = sustain - fadetime; //Make last fade stop at sustain end
+    //output + envelope
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
     OffsetOut.ar(\sendBus.kr(16), \sendAmp.kr(0, 0.1) * snd);
 	OffsetOut.ar(\outbus.kr(0), snd * \amp.kr(1));
@@ -100,7 +105,8 @@ SynthDef(\bufSegmentComb, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
 	var atk, snd;
 	startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
-	snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+	sustain = sustain - fadetime; //Make last fade stop at sustain end
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
 	snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]));
 
 	//Add comb filter and filter it
@@ -125,6 +131,7 @@ SynthDef(\bufSegmentFreqshift, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
@@ -138,6 +145,7 @@ SynthDef(\bufSegmentFreqshiftSmear, { |outbus(0), bufnum(0), startPos(0), sustai
     var snd, chains;
 
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
 
     snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
@@ -158,6 +166,7 @@ SynthDef(\bufSegmentFreqshiftMS, { |outbus(0), bufnum(0), startPos(0), sustain(1
     var snd, mid, side;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1) * flutter, 1, startPos);
     snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
@@ -174,6 +183,7 @@ SynthDef(\bufSegmentASRFreqshiftMS, { |outbus(0), bufnum(0), startPos(0), sustai
     var snd, mid, side;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1) * flutter, 1, startPos);
     snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
     snd = snd * EnvGen.ar(Env.asr(\attack.kr(0.01),\susLevel.kr(1), \release.kr(1), 1, -10), \gate.kr(1), doneAction:2);
@@ -189,6 +199,7 @@ SynthDef(\bufSegmentFreqshiftMS, { |outbus(0), bufnum(0), startPos(0), sustain(1
     var snd, mid, side;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1) * flutter, 1, startPos);
     snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
@@ -205,6 +216,7 @@ SynthDef(\bufSegmentFreqSplitShiftMS, { |outbus(0), bufnum(0), startPos(0), sust
     var snd, mid, side, lop;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1) * flutter, 1, startPos);
     lop = LPF.ar(snd, \ffreq.kr(440));
     snd = FreqShiftAA.ar(snd - lop, \freqshift.kr(0), 1, \freqshiftAmp.kr(1));
@@ -219,6 +231,7 @@ SynthDef(\bufSegmentResonance, {|outbus(0), bufnum(0), startPos(0), sustain(1)|
 	var fadetime = \fadetime.kr(0.002);
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
     snd = RLPF.ar(PinkNoise.ar * FreqShiftAA.ar(snd, \freq.kr(440).neg), \freq.kr, 0.01);
     snd = snd.tanh * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);

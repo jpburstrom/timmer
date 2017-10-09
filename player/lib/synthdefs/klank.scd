@@ -20,6 +20,7 @@ SynthDef(\bufSegmentPlank, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
 	var fadetime = \fadetime.kr(defaultFadeTime);
     var snd;
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(2), 1, startPos).sum;
     snd = FreqShiftAA.ar(snd, \freq.kr(60) * -2);
 	snd = snd * EnvGen.ar(Env.perc(fadetime, 0.2, 1, -8));

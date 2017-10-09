@@ -10,6 +10,7 @@
     };
 
     ~fadeInOut = { |snd, fadetime=0.002, sustain=1|
+        sustain = sustain - fadetime; //ok?
         snd * Env([0, 1, 1, 0], [fadetime, sustain, fadetime]).ar(2);
     };
 
@@ -99,6 +100,7 @@ SynthDef(\diskSegmentFreqshiftSmear, { arg fadetime=0.002, sustain=1;
     chains = FFT({LocalBuf(2048)}.dup, snd);
     chains = PV_MagSmear(chains, \smear.kr(0));
     snd = IFFT(chains);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
 
     snd = snd * Env([0, 0, 1, 1, 0], [2048 / SampleRate.ir ,fadetime, sustain, fadetime]).ar(2);
 
