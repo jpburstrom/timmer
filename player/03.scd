@@ -18,7 +18,7 @@ q.player.data.tail = 0;
 q.player.onReady = {
 
     var compLookahead = 0.01;
-    var revSize = 2;
+    var revSize = 1;
 
     ~data.lastNote = false;
 
@@ -27,16 +27,16 @@ q.player.onReady = {
     s.sync;
     //POST FX
     ~t.compressor = Synth(\compressor,
-        [\outbus, ~t.fxOut, \thresh, 0.8, \ratio, 3, \attack, compLookahead, \release, 0.1, \amp, 1],
+        [\outbus, ~t.fxOut, \thresh, 0.1, \ratio, 10, \attack, compLookahead, \release, 0.2, \amp, 1],
         ~t.postGroup, \addToTail);
     //zap bad values before sending to verb
     ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
 
-    ~t.mixin = Monitor().play(~t.mainOut.index, 2, ~t.fxOut.index, 2, ~t.postGroup, false, 0.1);
+    //~t.mixin = Monitor().play(~t.mainOut.index, 2, ~t.fxOut.index, 2, ~t.postGroup, false, 0.1);
 
     //SEND FX
     ~t.verb = Synth(\jpverb,
-        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \amp, 0.1, \damp, 0.9, \size, revSize],
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \amp, 0.05, \damp, 0.9, \size, revSize, \time, 6.2],
         ~t.sendGroup, \addToTail);
 
     //FIX FX LATENCY
@@ -74,7 +74,6 @@ q.player.parPtn = Ptpar([0.1, Pbind(
     \freq, Pclump(Pkey(\clump),
         Pn(Plazy { |ev| Prand(([40, 41, 45].midicps *.x (2..8)).select(_ > 200).scramble.keep(5), ev) })),
     \pan, Pkey(\freq).explin(60, 800, -0.2, 0.2),
-    \sustain, Pkey(\freq).wrap(1, 3) * Pwhite(0.5, 1),
 
     //Get total duration for some later Pseg patterns
     \totalDur, p { var dur = ~data.onset.last[0]; loop { dur.yield } },
@@ -82,22 +81,51 @@ q.player.parPtn = Ptpar([0.1, Pbind(
     \divisions, Pif(Pfunc { ~data.lastNote }, 1, Pwhite(1,
         Pseg([5,1.5,5,1.5,3],
             Plazy { Pseq([[0.5, 1], [4.0, 6], [2.0, 5], [1.0, 9.0]].collect(_[0].rrand(_[1])).normalizeSum) } * Pkey(\totalDur),
-            \lin, inf))),
-    \dur, PdurStutter(Pkey(\divisions).round, Pfunc { |ev| ~currentEvent.dur }),
+            \lin, inf))).round,
+    \dur, PdurStutter(Pkey(\divisions), Pfunc { |ev| ~currentEvent.dur }),
+
+    \sustain, Pif(Pkey(\dur) < 0.25, Pseg(Pwhite(0.3, 0.6), 1), Pkey(\freq).wrap(1, 3) * Pwhite(0.5, 1)),
+
+    //Weird-maker
+    //\freqOffset, Pif(Pfunc { 0.1.coin }, Pseg(Pwhite(-100, 100), Pwhite(2.0, 3)), Pwhite(-5.0, 5.0)),
+
+    \fadetime, 0.002,
+
     \group, Pfunc { ~t.mainGroup },
 
     //Humanize
     \timingOffset, Plprand(0.00, 0.05),
+    \timingOffset, Pif(Pkey(\divisions) <= 1, Pfunc({ |ev|
+        var out = ev.timingOffset;
+        if (0.6.coin) {
+            out = out + (ev.dur * [0.25, 0.5, 0.75].choose)
+        };
+        out
+
+    }),
+        Pkey(\timingOffset)
+    ),
     //Strum if clump
-    \strum, Pwhite(0.05, 0.1),
+    \strum, Pwhite(0.1, 0.2),
     //Add phrase pauses
     \amp, p { |ev|
-        var amp, rest;
+        var amp=1, rest;
+        var fq, c=0;
         loop {
             30.rrand(100).do {
-                ev = 1.yield;
+                amp = ev.dur.linexp(0.25, 1, 0.667, 1) * 0.667;
+                //Repeating notes
+                if (fq == ev.freq) {
+                    c = c + 1;
+                    amp = amp * (0.9 / c);
+                } {
+                    c = 0;
+                };
+                fq = ev.freq;
+                ev = amp.yield;
             };
             0.rrand(30).do {
+                fq = ev.freq;
                 ev = \rest.yield
             }
         }
@@ -117,6 +145,8 @@ q.player.setIterator(Plazy {
 )
 
 /*EOF*/
+
+q.player.bounce
 
 q.player.play(340)
 q.player.randSeed = 1234
