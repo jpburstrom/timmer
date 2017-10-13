@@ -1,6 +1,6 @@
 var songlist = #[1,2,3,4,7,8,9];
 // var songlist = #[3,3,3];
-var fallbackRandSeed = { 999.rand };
+var fallbackRandSeed = { 65536.rand };
 var cond = Condition();
 var titles = (
     1: "Room Modes",
@@ -16,7 +16,16 @@ var options = (
     sampleRate:96000,
     basePath: ("../render/" ++ Date.getDate.stamp ).resolveRelative,
     path: { |ev| ev.basePath +/+ "%_%.wav".format(~song, titles[~song.asSymbol]) },
-    action: { cond.unhang };
+    //action: { cond.unhang },
+    //postAction runs after cleanup
+    postAction: { |e, code|
+        if (code.notNil and: { code > 0 }) {
+            code.exit;
+        } {
+            cond.unhang;
+        }
+    };
+    // sampleFormat: "float32"
 );
 var rend = { |o|
     o.postln;
@@ -28,36 +37,62 @@ var rend = { |o|
 "lib/init".import;
 
 fork {
-    var randSeed;
-    randSeed = thisProcess.argv[0] ? 12345.debug("Random seed");
-    thisThread.randSeed = randSeed;
-    options.basePath = "../render/%".format(randSeed.asString).resolveRelative;
-
-    "Creating directory at %".format(options.basePath).postln;
-    options.basePath.mkdir;
-
-
-    songlist.scramble.do { |song, i|
-
-        //Import file
-        song.asStringToBase(10, 2).import;
-
-        //Filename format: [num]_[title].wav
-        options.path = options.basePath +/+ "%_%.wav".format((i + 1), titles[song]);
-
-        "Rendering song % as %".format(q.player.song, options.path.basename).postln;
-        fork {
-            //This resets seed for setup code
-            thisThread.randSeed = randSeed;
-            //This sets seed for patterns and synths
-            //UGens are (currently) not completely deterministic:
-            //Would perhaps need separate randIDs for those
-            q.player.randSeed = randSeed;
-            q.player.bounce(options);
+    var nextName, randSeed;
+    var backup = { |path|
+        var newPath = path ++ ".bak";
+        if (File.exists(newPath)) {
+            backup.(newPath);
         };
-        cond.postln.hang;
-
+        if (File.exists(path)) {
+            "mv % %".format(path.quote, newPath.quote).systemCmd
+        }
     };
+    {
+        randSeed = (thisProcess.argv[0] ? fallbackRandSeed).asInteger;
 
-    "Done".postln;
+        thisProcess.argv[1] !? { |p| options.basePath = p };
+
+        //randSeed = 10000.rand;
+        thisThread.randSeed = randSeed;
+        backup.(options.basePath);
+
+        "Creating directory at %".format(options.basePath).postln;
+        options.basePath.mkdir;
+
+        songlist.scramble.do { |song, i|
+
+            //Import file
+            var title = song.asStringToBase(10, 2);
+            title.import;
+
+            //Filename format: [num]_[title].wav
+            options.path = options.basePath +/+ "%_%.wav".format((i + 1), title);
+
+            "Rendering song % as %".format(q.player.song, options.path.basename).postln;
+            fork {
+                {
+                    //This resets seed for setup code
+                    thisThread.randSeed = randSeed;
+                    //This sets seed for patterns and synths
+                    //UGens are (currently) not completely deterministic:
+                    //Would perhaps need separate randIDs for those
+                    q.player.randSeed = randSeed;
+                    q.player.bounce(options);
+                }.try({ |err|
+                    err.reportError;
+                    1.exit;
+                })
+            };
+            cond.postln.hang;
+
+        };
+        "Done".postln;
+        0.exit;
+
+    }.try({ |err|
+        err.reportError;
+        1.exit;
+    });
+
 }
+
