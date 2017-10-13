@@ -22,9 +22,11 @@ q.player.loadData("08");
 
 //Channel map: Bass, Resonator, Handclap, Rev, Piezo
 
+
+
 q.player.onReady = {
     var compLookahead = 0.01;
-    var revSize = 10;
+    var revSize = 0.1;
 
 	~t.handclaps = handClapPaths.pathMatch.collect { |path|
 		Buffer.read(s, path);
@@ -53,17 +55,18 @@ q.player.onReady = {
 
        //POST FX
     ~t.softclip = Synth(\softclip,
-        [\outbus, ~t.fxOut, \pregain, 4, \amp, 0.1],
+        [\outbus, ~t.fxOut, \pregain, 4, \amp, 0.2],
         ~t.postGroup, \addToTail);
     //zap bad values before sending to verb
     ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
 
     //SEND FX
     ~t.verb = Synth(\jpverb,
-        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \time, 4, \amp, 0.4, \damp, 0.9, \size, revSize],
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \time, 0.2, \amp, 0.4, \damp, 0.9, \size, revSize],
         ~t.sendGroup, \addToTail);
 
-
+    //XXX tmp
+    //~t.monitor.fx.vol = 0;
 };
 
 
@@ -101,8 +104,8 @@ q.player.setPtn(Plazy({
 	var endSegment = 360.rrand(370);
 
 	Pbind(
-		\startPos, Pkey(\startPos) - 0.002,
-		\dummy, Prout({ |ev|
+		//\startPos, Pkey(\startPos) - 0.002,
+        \dummy, Prout({ |ev|
 
 			var claps = Pn(Plazy { Pseq(~t.handclaps.scramble) }).asStream;
 			//Weird, but works: since claps2 is a stream, and played in parallel,
@@ -198,15 +201,17 @@ q.player.setPtn(Plazy({
 		}),
 		//TEMP: Shorten last non-freqshifted note, so we don't get start of next attack
 		\dur, Pif(Pkey(\onset) == (endSegment), Pkey(\dur) - 0.05, Pkey(\dur)),
+        //\dur, Pkey(\dur) - 0.05, //TMP
 		// \amp, 0,
 		\instrument, Pif(Pkey(\onset) < 370, \diskSegment, \diskSegmentFreqshift),
-    	\freqshift, -5000.rrand(-8000);
+        //\outbus, Pseq([0, 2], inf),
+    	\freqshift, -5000.rrand(-8000)
 	)
 
 }));
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(Plazy { Psym(Pseq(#[p1, p2, p3, p4, p5, p6]), ~data.iterators) });
-// q.player.setIterator(Pseries(301));
+//q.player.setIterator(Pseries(301));
 // q.player.play
 )
 

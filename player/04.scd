@@ -20,7 +20,7 @@ q.player.numBufs = 32;
 
 SynthDef(\freqshiftPostEQ_04, {
     var snd = In.ar(\inbus.kr, 2);
-    snd = BHiShelf.ar(snd, \freq.kr(2700), 2, -3);
+    snd = BHiShelf.ar(snd, \freq.kr(2700), 2, -9);
     Out.ar(\outbus.kr, snd);
 }).add;
 
@@ -50,14 +50,14 @@ q.player.onReady = {
         [\outbus, ~t.fxOut, \pregain, 1, \amp, 1],
         ~t.postGroup, \addToTail);
     ~t.compressor = Synth(\compressor,
-        [\outbus, ~t.fxOut, \thresh, 0.5, \ratio, 8, \attack, compLookahead, \release, 0.05, \amp, 0.15],
+        [\outbus, ~t.fxOut, \thresh, 0.5, \ratio, 8, \attack, compLookahead, \release, 0.05, \amp, 0.5],
         ~t.postGroup, \addToTail);
     //zap bad values before sending to verb
     ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
 
     //SEND FX
     ~t.verb = Synth(\jpverb,
-        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \time, 4, \amp, 0.1, \damp, 0.7, \size, revSize],
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \time, 0.4, \amp, 0.1, \damp, 0.7, \size, revSize],
         ~t.sendGroup, \addToTail);
 
     //FIX FX LATENCY
@@ -183,8 +183,9 @@ q.player.setIterator(
 /*------------------------------------------------------------*/
 
 q.player.play
-q.player.bounce((sampleRate:96000))
-
+3.do {
+    q.player.bounce((sampleRate:96000))
+}
 ~buf4 = Buffer.read(s, "songs/04*.wav".resolveRelative.pathMatch.last);
 
 (
