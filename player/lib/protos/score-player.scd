@@ -20,6 +20,10 @@ Proto({
     //Setting this sets random seed on player start
     ~randSeed = 1e+06.rand;
 
+    //Let's pull down the master gain (we'll raise it afterwards)
+    //No, let's not
+    ~monitorGain = 0.dbamp;
+
     //Do we want to add a safety limiter on the master bus?
     ~safeLimit = true;
 
@@ -425,8 +429,8 @@ Proto({
             ~main = Monitor();
             ~fx = Monitor();
         };
-        ~t.monitor.fx.play(~t.fxOut.index, 2, 0, 2, ~t.monitorGroup, multi:true, addAction:\addToHead);
-        ~t.monitor.main.play(~t.mainOut.index, 2, 0, 2, ~t.monitorGroup, multi:true, addAction:\addToHead);
+        ~t.monitor.fx.play(~t.fxOut.index, 2, 0, 2, ~t.monitorGroup, true, ~monitorGain, addAction:\addToHead);
+        ~t.monitor.main.play(~t.mainOut.index, 2, 0, 2, ~t.monitorGroup, true, ~monitorGain, addAction:\addToHead);
 
 
 
@@ -437,7 +441,9 @@ Proto({
         //Add a safety limiter after everything
         if (~safeLimit) {
             s.sync;
-            ~t.safeLimiter = Synth(\safeLimiter, [\outbus, 0], ~t.monitorGroup, \addToTail);
+            ~channels.do { |ch|
+                ~t.safeLimiter = Synth(\safeLimiter_mono, [\outbus, ch], ~t.monitorGroup, \addToTail);
+            }
         }
 
     };
@@ -506,20 +512,23 @@ Proto({
     ~bounce = { |opt|
         var score, path;
 
+        opt = opt ? ();
+
         score = ~generateScore.value(opt);
 
         path = opt.path.value;
 
-
         score.recordNRT(path ++ ".osc", path, nil,
             opt.sampleRate, opt.headerFormat, opt.sampleFormat,
             ServerOptions().numOutputBusChannels_(~channels), duration:score.score.last[0],
-            action: {
-                opt.action;
+            action: { |code|
+                opt.action(code);
                 //Cleanup
                 if (opt.deleteScoreFile) {
                     File.delete(path ++ ".osc");
                 };
+                opt.postAction(code);
+
             }
         );
 
@@ -531,8 +540,6 @@ Proto({
 
     ~generateScore = { |opt|
         var score;
-
-        opt = opt ? ();
 
         opt.parent_((
             //path is nil
@@ -591,6 +598,7 @@ Proto({
             ).collect({ |ev|
                 //XXX maybe this shouldn't be done
                 ev.startPos = ev.startPos - (ev.fadeTime ? 0.002);
+
                 //cue sound file as the very last thing to happen
                 //So we can modulate startPos before
                 if (ev.type == \monoSet) {
