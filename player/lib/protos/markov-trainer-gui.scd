@@ -138,13 +138,5 @@ Proto({
         w.front;
     };
 
-    ~markovSet = {
-        var out = [];
-        ~chain.keysValuesDo({ |k, v|
-            //We don't normalize weights
-            //MarkovSet does that for us
-            out = out.add([k, v[0].asArray, v[1].asArray]);
-        });
-        out
-    }
+
 })
