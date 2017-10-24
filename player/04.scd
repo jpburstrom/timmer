@@ -20,7 +20,8 @@ q.player.numBufs = 32;
 
 SynthDef(\freqshiftPostEQ_04, {
     var snd = In.ar(\inbus.kr, 2);
-    snd = BHiShelf.ar(snd, \freq.kr(2700), 2, -9);
+    snd = SoftClipAmp8.ar(snd, 4, 0.25);
+    snd = BHiShelf.ar(snd, \freq.kr(2700), 2, -12);
     Out.ar(\outbus.kr, snd);
 }).add;
 
@@ -105,7 +106,7 @@ q.player.setPtn(Pbind(
     ),
 
  	\freqshift, Pwhite(-200, -2000),
-	\amp, Pif(Pkey(\normal), 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
+	\amp, Pif(Pfunc { |ev| ev.instrument != \diskSegmentFreqshift }, 1, Pkey(\freqshift).explin(-2000, -200, 4, 1)),
 	\fadetime, 0.02,
     //FIXME: rate
     \rate, Pif(Pkey(\normal), 1, Pwrand([0.5, 1], [0.1, 0.9].normalizeSum, inf)),
