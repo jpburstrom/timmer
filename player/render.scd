@@ -34,6 +34,16 @@ var rend = { |o|
         o.action;
     }
 };
+
+var debug = (thisProcess.argv[2] == "1");
+
+//If debug mode
+if (debug) {
+    options.dur = 10;
+};
+
+
+
 "lib/init".import;
 
 fork {
@@ -52,8 +62,18 @@ fork {
 
         thisProcess.argv[1] !? { |p| options.basePath = p };
 
+        /*
+        if (debug and: { File.exists(options.basePath) }) {
+            "ok".postln;
+            0.exit;
+        }
+        */
         //randSeed = 10000.rand;
         thisThread.randSeed = randSeed;
+
+
+
+
         backup.(options.basePath);
 
         "Creating directory at %".format(options.basePath).postln;
