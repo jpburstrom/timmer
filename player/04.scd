@@ -20,7 +20,7 @@ q.player.numBufs = 32;
 
 SynthDef(\freqshiftPostEQ_04, {
     var snd = In.ar(\inbus.kr, 2);
-    snd = SoftClipAmp8.ar(snd, 4, 0.25);
+    snd = SoftClipAmp8.ar(snd, 1, 1);
     snd = BHiShelf.ar(snd, \freq.kr(2700), 2, -12);
     Out.ar(\outbus.kr, snd);
 }).add;
@@ -94,6 +94,11 @@ q.player.setPtn(Pbind(
 				norm = false;
 			};
 
+            if (ev.phrase >= 46) {
+                norm = true;
+            };
+
+            norm
 		}
 	}),
 	//TODO: generalize separate keys into a chained Psym or something
@@ -110,14 +115,14 @@ q.player.setPtn(Pbind(
 	\fadetime, 0.02,
     //FIXME: rate
     \rate, Pif(Pkey(\normal), 1, Pwrand([0.5, 1], [0.1, 0.9].normalizeSum, inf)),
-	\dur, Pif(Pfunc { |ev|
-		ev.normal or: {
+    \dur, Pif(Pfunc { |ev|
+        ev.normal or: {
 			ev.phrase >= 46 //46 and 47 are possible last phrases;
 		}
 	},
 		Pkey(\dur) - 0.1, Pkey(\dur) * Pwhite(0.4, 1) * Pseg(Pseq([Pwhite(0.01, 0.1, 1), Pwhite(0.5, 1, 1)], inf), Pwhite(5, 20), )),
 	\delta, Pif(Pkey(\normal), 0, Pkey(\dur)),
-    // \pan, Pif(Pkey(\normal), 0, Pwhite(-1, 1.0)),
+    \pan, Pif(Pkey(\normal), 0, Pseg(Plprand(0, 0.8) * Prand([-1,1], inf), Pwhite(0.01, 2), \sin)),
 	\hello, Pfunc { |ev|
         if (ev.instrument == \bufSegmentResonance_3ch) {
             ev.freq = #[40,45,50,55].midicps.choose;
