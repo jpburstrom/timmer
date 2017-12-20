@@ -69,7 +69,7 @@ Proto({
 
     //Set iterator pattern
     ~setIterator = { |ptn|
-        ~iteratorPattern.source_(~patternSeed.(ptn));
+        ~iteratorPattern.source_(ptn);
     };
 
 	~setPtn = { |ptn|
@@ -291,7 +291,7 @@ Proto({
         };
 
 
-        ~iteratorStream = ~iteratorPattern.asStream;
+        ~iteratorStream = ~patternSeed.(~iteratorPattern).asStream;
 
         currentEnvironment;
     };
