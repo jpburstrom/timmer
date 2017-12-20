@@ -26,7 +26,7 @@ fork {
         var num = 1;
 
         //Import file
-        song.asStringToBase(10, 2).import;
+        song.import;
 
         if (song == 4) {
             num = 3;
