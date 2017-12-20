@@ -67,7 +67,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
 	\instrument, \diskSegmentPlank,
 
     //Sometimes clump
-    \clump, Pwrand([1,2], [0.9,0.1], inf),
+    \clump,Pif(Pfunc { ~data.lastNote }, 1, Pwrand([1,2], [0.9,0.1], inf)),
     //Randomize start position from onsets
     \index, Pclump(Pkey(\clump), Pwhite(0, Pfunc { ~currentEvent.onset })), //Randomize among already played onsets
     \startPos, Plazy({ var times = ~data.onset.flop[0]; Pfunc { |ev| times[ev.index] } }) + Pwhite(-0.01, 0.02),
@@ -81,7 +81,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
     //Get total duration for some later Pseg patterns
     \totalDur, p { var dur = ~data.onset.last[0]; loop { dur.yield } },
     //Divide ~currentEvent (bass note) duration into equal-length segments according to \divisions pattern
-    \divisions, Pif(Pfunc { ~data.lastNote }, 1, Pwhite(1,
+    \divisions, Pif(Pfunc { ~data.lastNote }, Pn(1).trace, Pwhite(1,
         Pseg([5,1.5,5,1.5,3],
             Plazy { Pseq([[0.5, 1], [4.0, 6], [2.0, 5], [1.0, 9.0]].collect(_[0].rrand(_[1])).normalizeSum) } * Pkey(\totalDur),
             \lin, inf))).round,
@@ -100,7 +100,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
     \timingOffset, Plprand(0.00, 0.05),
     \timingOffset, Pif(Pkey(\divisions) <= 1, Pfunc({ |ev|
         var out = ev.timingOffset;
-        if (0.6.coin) {
+        if (0.6.coin and: { ~data.lastNote.not }) {
             out = out + (ev.dur * [0.25, 0.5, 0.75].choose)
         };
         out
@@ -138,21 +138,23 @@ q.player.parPtn = Ptpar([0.1, Pbind(
 )]);
 //Give a pattern to setIterator, which is used to select which tick is to be played
 q.player.setIterator(Plazy {
-    var last = 345; //last wanted onset
+    var last = 344; //last wanted onset
     //Start at random point, play `(last - 1)` segments, wrapped between `0` and `(last-1)` and finish with `last`
     Pfin(last - 1,
         (Pseries(last.rand) + Pstutter(Pwhite(1,3), Pwrand([0, Pwhite(-10, -3, 1)], [0.95, 0.5], inf))).wrap(0, last-1)
-    ) ++ Pfuncn({ ~data.lastNote = true; last }, 1)
+    ) ++ Plazy({ ~data.lastNote = true; Pseq([last, last + 1]) })
 //q.player.play
 });
 )
 
 /*EOF*/
 
-q.player.bounce
+q.player.bounce((sampleRate:96000))
 
-q.player.play(340)
-q.player.randSeed = 1234
+
+q.player.stop; q.player.randSeed = 1234.rand; q.player.play(340)
+
+
 (
 q.player.randSeed = 12345;
 q.player.play
