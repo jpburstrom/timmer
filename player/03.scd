@@ -18,7 +18,7 @@ q.player.data.tail = 0;
 q.player.onReady = {
 
     var compLookahead = 0.01;
-    var revSize = 1;
+    var revSize = 0.1;
 
     ~data.lastNote = false;
 
@@ -26,8 +26,11 @@ q.player.onReady = {
     ~t.plankBuf.initBuffers(8, 2);
     s.sync;
     //POST FX
+    ~t.softclip = Synth(\softclip,
+        [\outbus, ~t.fxOut, \pregain, 1, \amp, 1],
+        ~t.postGroup, \addToTail);
     ~t.compressor = Synth(\compressor,
-        [\outbus, ~t.fxOut, \thresh, 0.1, \ratio, 10, \attack, compLookahead, \release, 0.2, \amp, 1],
+        [\outbus, ~t.fxOut, \thresh, 0.9, \ratio, 2, \attack, compLookahead, \release, 0.2, \amp, 1],
         ~t.postGroup, \addToTail);
     //zap bad values before sending to verb
     ~t.zapper = Synth(\zapper, nil, ~t.postGroup, \addToTail);
@@ -36,7 +39,7 @@ q.player.onReady = {
 
     //SEND FX
     ~t.verb = Synth(\jpverb,
-        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \amp, 0.05, \damp, 0.9, \size, revSize, \time, 6.2],
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \amp, 0.25, \damp, 0.9, \size, revSize, \time, 1.2],
         ~t.sendGroup, \addToTail);
 
     //FIX FX LATENCY
@@ -73,7 +76,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
     //Randomly clumped
     \freq, Pclump(Pkey(\clump),
         Pn(Plazy { |ev| Prand(([40, 41, 45].midicps *.x (2..8)).select(_ > 200).scramble.keep(5), ev) })),
-    \pan, Pkey(\freq).explin(60, 800, -0.2, 0.2),
+    \pan, 0.2,
 
     //Get total duration for some later Pseg patterns
     \totalDur, p { var dur = ~data.onset.last[0]; loop { dur.yield } },
@@ -84,7 +87,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
             \lin, inf))).round,
     \dur, PdurStutter(Pkey(\divisions), Pfunc { |ev| ~currentEvent.dur }),
 
-    \sustain, Pif(Pkey(\dur) < 0.25, Pseg(Pwhite(0.3, 0.6), 1), Pkey(\freq).wrap(1, 3) * Pwhite(0.5, 1)),
+    \sustain, Pif(Pkey(\dur) < 0.25, Pseg(Pwhite(0.3, 0.6), 1), Pkey(\freq).wrap(1, 3) * Pwhite(0.5, 1)) ,
 
     //Weird-maker
     //\freqOffset, Pif(Pfunc { 0.1.coin }, Pseg(Pwhite(-100, 100), Pwhite(2.0, 3)), Pwhite(-5.0, 5.0)),
