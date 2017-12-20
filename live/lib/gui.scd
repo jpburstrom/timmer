@@ -18,7 +18,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
             gui.windows[label] !? { gui.windows[label].close };
             gui.windows[label] = parent.notNil.if(
 				{ View(parent, bounds) },
-				{ Window(label.asString.capitalize, bounds).front }
+				{ Window(label.asString, bounds).front }
 			).layout_(GridLayout.perform(\rows, nil ! rows ! cols))
 			.background_(Color.rand(0.8, 1));
 
@@ -30,7 +30,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
             ui = VLayout(
                 knob = Knob().keystep_(keystep),
                 number = NumberBox().maxDecimals_(4),
-                StaticText().string_(label.asString.capitalize).align_(\topLeft).toolTip_(cv.value).mouseDownAction_({cv.value.postln; cv.value.ccopy})
+                StaticText().string_(label.asString).align_(\topLeft).toolTip_(cv.value).mouseDownAction_({cv.value.postln; cv.value.ccopy})
                 .font_(Font.default.pointSize_(13)),
             ).spacing_(0).margins_(0);
             cv.connect(knob);
@@ -53,7 +53,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
             var rows = rw[parent];
             knobCounts[parent] = count + colspan;
             gui.windows[parent].layout.addSpanning(
-                StaticText().string_(label.asString.capitalize).align_(\top),
+                StaticText().string_(label.asString).align_(\top),
                 count div:rows, count % rows, rowspan, colspan
             );
         };
@@ -104,7 +104,7 @@ Req.load(#[params, storage], { |params, storage, cleanup|
         #[main, current, target].do { |key|
             currentEnvironment[key] = { |parent|
                 var ui = makeui.grid(key, 1, 8, parent, Rect(1600, 0, 500, 100));
-                makeui.label(key.asString.capitalize, key, 1, 8);
+                makeui.label(key.asString, key, 1, 8);
                 [
                     "Mshift Depth",
                     "Mshift Speed",
