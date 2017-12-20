@@ -21,3 +21,14 @@ SynthDef(\resonate_08, { |inbus=0, outbus=0|
     Out.ar(outbus, snd);
     // ReplaceOut.ar(0, snd);
 }).add;
+
+//Temporary
+
+
+//Temporary
+SynthDef(\resonator09, { |freq=88|
+    var snd = In.ar(\inbus.kr(0), 2);
+	snd = snd * EnvGen.ar(Env.asr(0.5, 1, 0.5), \gate.kr(0));
+	snd = AllpassN.ar(BPF.ar(snd, freq, 0.1), 0.05, 88.reciprocal, 10) * \amp.kr(1);
+	Out.ar(\outbus.kr(0), snd * 3);
+}).add;
