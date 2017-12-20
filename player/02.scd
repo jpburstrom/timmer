@@ -19,25 +19,51 @@ q.player.loadData("02");
 
 
 
-//Randomizing works a lot of the times, but not when
 q.player.setIterator(Prout({
-    var count = 0;
+    var current = 0, count = 0;
     var prob = 0.75; //Random jump probability
     var size = ~data.phrase.size;
 	var nojump = [size-1, 25, 29, 30, 31]; //Indexes
 	var score = Array.series(size - 1); //Save the last phrase for last
-	while { score.size > 0 } {
-	   if (prob.coin and: { nojump.includes(count).not } ) {
-            count = score.choose;
+    //Duration goal: Full duration minus last segment
+    var dur = 0;
+    var durations = ~data.phrase.flop[1];
+    var goal = durations.sum - ~data.phrase[size - 1][1];
+
+    //Continue while duration is below goal
+    while { dur < goal or: { nojump.includes(current) } } {
+
+        //choose random segment if coin tells us so, and if we are allowed
+        if (prob.coin and: { nojump.includes(current).not } ) {
+            current = score.choose;
         } {
-			count = count + 1;
+            //This will always play next segment, even if segment is removed from `score`.
+            //This combined with segments having different lengths, makes song lengths differ between ~ 3 and 7 minutes, where the long versions get a lot of repeating segments
+            //Is this good or bad?
+            current = (current + 1).wrap(0, size-2);
+
+            //This will jump to next closest non-played segment, wrapping
+            //If `nojump` is not set
+            /*
+            if (nojump.includes(current)) {
+                current = current + 1;
+            } {
+                var idx = score.indexOfGreaterThan(current) ?? { score.minIndex };
+                current = score.at(idx);
+            }
+            */
+
 		};
-		score.remove(count);
-    	count.yield;
+        current.yield;
+        score.remove(current);
+
+        dur = dur + durations[current];
      };
 
+    //finish with last segment
 	(size - 1).yield
 }));
+
 
 
 q.player.setPtn(Pbind(
@@ -81,7 +107,7 @@ q.player.onReady = {
     ~t.freqshiftweird = Synth(\freqShiftWeird_02, [\inbus, ~t.mainOut, \outbus, ~t.fxOut], target:~t.postGroup);
   //POST FX
     ~t.softclip = Synth(\softclip,
-        [\outbus, ~t.fxOut, \pregain, 4, \amp, 1],
+        [\outbus, ~t.fxOut, \pregain, 2, \amp, 1],
         ~t.postGroup, \addToTail);
     ~t.compressor = Synth(\compressor,
         [\outbus, ~t.fxOut, \thresh, 0.25, \ratio, 8, \attack, compLookahead, \release, 0.1, \amp, 0.15],
@@ -107,12 +133,5 @@ q.player.onReady = {
 q.player.play
 q.player.bounce((sampleRate:96000))
 
-q.player.t.conv.set(\amp, 0.25)
-d = 100.collect {
-q.player.generateScore.endTime
-}
 
-d.maxItem
-d.minItem
-d.sort.plot
 
