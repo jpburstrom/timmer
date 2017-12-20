@@ -20,6 +20,10 @@
         Fdef(\ms2stereo).value(mid * \midAmp.kr(1) * -3.dbamp, side * \sideAmp.kr(1) * -3.dbamp);
     };
 
+    ~balance = { |snd|
+         snd = Balance2.ar(snd[0], snd[1], \pan.kr(0));
+    };
+
     ~freqShift = { |snd|
         snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
     };
@@ -76,6 +80,7 @@ SynthDef(\diskSegmentFreqshift, {
     var snd = ~wrap.diskIn(2);
     snd = ~wrap.fadeInOut(snd);
     snd = ~wrap.freqShift(snd);
+    snd = ~wrap.balance(snd);
     ~wrap.out(snd);
 }).add;
 
@@ -130,7 +135,7 @@ SynthDef(\diskSegmentAttackSend_01, {
 	var attackDur = \attackDur.kr(0.06); //Duration of attack part
 
     snd = ~wrap.diskIn(2);
-    snd = Balance2.ar(snd[0], snd[1], \pan.kr(0));
+    snd = ~wrap.balance(snd);
 
     //snd_mono = snd[2];
     //snd = snd[..1];
@@ -152,7 +157,7 @@ SynthDef(\diskSegmentResonance, {
 
     snd = RLPF.ar(PinkNoise.ar * FreqShiftAA.ar(snd, \freq.kr(440).neg), \freq.kr, 0.01);
     snd = ~wrap.fadeInOut(snd.tanh);
-
+    snd = ~wrap.balance(snd);
     ~wrap.out(snd);
 
 }).add;
