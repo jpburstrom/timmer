@@ -40,6 +40,7 @@ SynthDef(\diskSegmentPlank, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
     //Keep 2 channels, and sum them
     snd = DiskIn.ar(2, bufnum)[..1].sum;
     snd = FreqShiftAA.ar(snd, \freq.kr(60) * -6, 0, 8);
+    snd = snd + (BrownNoise.ar * Env.perc(0.002, 0.05).ar);
 	snd = snd * EnvGen.ar(Env.perc(fadetime, 0.1, 1, -8));
     //snd = SoftClipAmp.ar(snd, 124, 0.25).poll;
 
@@ -47,8 +48,10 @@ SynthDef(\diskSegmentPlank, { |bufnum=0, startPos=0, sustain=1, pan=0, amp=0|
 
     sustain = sustain * Rand(2,4) * \freq.kr.explin(60, 800, 1, 0.75);
 
-    snd = DynKlank.ar(`wood2, snd, \freq.kr, \freqOffset.kr(0), sustain) * EnvGen.ar(Env.linen(\atk.kr(0), sustain - \atk.kr(0), 0.002), doneAction:2);
-    snd = Limiter.ar(snd, \limiterAmp.kr(0.25)); //
+    snd = DynKlank.ar(`wood2, snd, \freq.kr, \freqOffset.kr(0), sustain) * EnvGen.ar(Env.linen(\atk.kr(0), sustain * 2, 0.002, 1, \sin), doneAction:2);
+    //snd = Limiter.ar(snd, \limiterAmp.kr(4) * 0.25); //
+    snd = snd * 0.25; //Magic attenuation
+
 	Out.ar(\outbus.kr(0), Pan2.ar(snd, pan, amp));
 }).add;
 
