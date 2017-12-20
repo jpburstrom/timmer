@@ -130,6 +130,7 @@ SynthDef(\diskSegmentAttackSend_01, {
 	var attackDur = \attackDur.kr(0.06); //Duration of attack part
 
     snd = ~wrap.diskIn(2);
+    snd = Balance2.ar(snd[0], snd[1], \pan.kr(0));
 
     //snd_mono = snd[2];
     //snd = snd[..1];
@@ -138,6 +139,7 @@ SynthDef(\diskSegmentAttackSend_01, {
 
 	//output + envelope
     snd = ~wrap.fadeInOut(snd);
+
 
     ~wrap.out(snd, \sendBus.kr(16), \sendAmp.kr(0, 0.1));
     ~wrap.out(snd);

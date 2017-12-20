@@ -1,5 +1,6 @@
 (
 "lib/init".import;
+
 s.latency = 0.5;
 q.player.actionLabels = #[onset, phrase];
 q.player.loadData("01");
@@ -20,7 +21,7 @@ q.player.onReady = {
 
    //Always-running klank synth
 	//Makes a bell-like sound
-    ~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, ~t.fxOut, \amp, 0.15], ~t.postGroup);
+    ~t.klank = Synth(\klankBell, [\inbus, ~t.klankBus, \outbus, ~t.fxOut, \amp, 0.95], ~t.postGroup);
 
 	//Freqshift fx synth
     ~t.freqShift = Synth(\freqShift, [\inbus, ~t.freqShiftBus, \outbus, ~t.fxOut, \amp, 4, \midAmp, -3.dbamp], ~t.postGroup);
@@ -45,7 +46,7 @@ q.player.onReady = {
 
     //SEND FX
     ~t.verb = Synth(\jpverb,
-        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \amp, 0.2, \damp, 0.9, \size, revSize],
+        [\inbus, ~t.fxOut, \outbus, ~t.fxOut, \amp, 0.25, \damp, 0.9, \size, revSize],
         ~t.sendGroup, \addToTail);
 
     //FIX FX LATENCY
@@ -243,10 +244,11 @@ q.player.setPtn(Pbind(
     	};
 	},
     */
-    //Second channel is not sending to main out
 
     // \outbus, Pfunc { ~t.mainOut }, //[0, q.stereo.if(0, 2)],
+    //Second channel is not sending to main out
     \amp, [1, 0],
+    \pan, Pseg([-0.5, 0.5, -0.5], Pwhite(3.0, 8), \sin, inf).collect([0, _]),
     \startPos, Pfunc { |ev|
 
         var x = ~getknn.value(ev.onset, 1.rrand(5));
