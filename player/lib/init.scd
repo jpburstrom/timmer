@@ -13,7 +13,7 @@ if (\Document.asClass.notNil) {
         switch(key,
             122, { q.player.playStop }, //F1
             120, { q.player.playPause }, //F2
-            99, nil, //F3
+            99, { q.player.randSeed = 1e+06.rand; q.player.play }, //F3
             118, nil, //F4
             109, Fdef(\showMonitorUI),//F10
             103, {q.playerui.connect(q.player)}, //F11
