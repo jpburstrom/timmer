@@ -119,7 +119,7 @@ q.player.setPtn(Plazy({
 			while ({ev.onset < 105}) {
 				//Weird and strange: spawn a 1-item pattern for every onset...
 				~spawner.par(Pbind(
-					\instrument, \bufSegment,
+					\instrument, \bufHandclaps,
                     \outbus, Pfunc { ~t.fxOut },
 					\bufnum, Pfunc { claps2.next },
 					\amp, Pn(2, 1),
@@ -136,7 +136,7 @@ q.player.setPtn(Plazy({
 				if ( blacklist.includes(ev.onset).not and: { 0.7.coin } ) {
 					//Weird and strange: spawn a 1-item pattern for every onset...
 					~spawner.par(Pbind(
-						\instrument, \diskSegment,
+						\instrument, \bufHandclaps,
                         \outbus, Pfunc { ~t.fxOut },
                         \bufnum, Pfunc { claps.next },
 						\amp, Pn(2, 1),
@@ -178,11 +178,11 @@ q.player.setPtn(Plazy({
 			~spawner.par (
 				Pfindur(endDuration + ev.dur, Pchain(
 					Pbind(
-                        \instrument, \diskSegmentPlank,
+                        \instrument, \bufSegmentHandclaps,
                         \outbus, Pfunc { ~t.fxOut },
                         \bufnum, Pfunc { claps.next },
 						// \startPos, Pxrand(~data.onset.flop[0], inf),
-						\amp, Pkey(\amp) * 2,
+						\amp, Pkey(\amp) * 1,
 						// \test, Pfunc { "hello".postln },
 						\freq, Pdefn(\plankFreq),
                         \sustain, 1,
@@ -218,7 +218,7 @@ q.player.setIterator(Plazy { Psym(Pseq(#[p1, p2, p3, p4, p5, p6]), ~data.iterato
 /*EOF*/
 q.player.play
 
-Pdefn(\plankFreq, 45)
+Pdefn(\plankFreq, 75 * Plazy(Pseries(1, 1, 3.rrand(7))))
 Ndef(\sin, { SinOsc.ar(\freq.kr) * 0.1 }).play.gui
 
 q.player.bounce((dur: 10))
