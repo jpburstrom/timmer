@@ -2,6 +2,7 @@
 q.player.actionLabels = #[start];
 q.player.tickLabel = \start;
 q.player.loadData("07");
+q.player.data.tail = 0.5;
 
 q.player.onReady = {
     var compLookahead = 0.01;
@@ -38,7 +39,7 @@ q.player.setPtn(
             \noiseDelay, (Pseg([0, 0, 1, 1], [10, 5, inf]) * Pwhite(0, 1.0) * Pseg([0.0001,1,0.0001], segSeq * Pkey(\totalDur), \exp)),
             \noiseDelayLag, Pwhite(0, 0.02),
             \freqshift, Pseg(Pwhite(-1000, 0), Pwhite(0.1, 10)),
-            \rate, Pwhite(0.999, 1.001),
+            //\rate, Pwhite(0.999, 1.001),
             \freq, Pseg(Pexprand(80, 600), 10),
             \dur, Pwhite(1.0, 2.0) * Pseg([1, 0.01, 0.5], segSeq * Pkey(\totalDur), \exp),
             // \delta, Pseq([0, Pn(Pkey(\dur))]),
@@ -57,6 +58,7 @@ q.player.data.score
 q.player.modPtn.asCompileString
 q.player.play
 q.player.bounce((sampleRate:96000))
+
 Server.default = Server.local
 
 q.player.t.verb.set(\size, 3)
