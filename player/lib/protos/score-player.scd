@@ -547,7 +547,7 @@ Proto({
             path: { |ev| ev.basePath +/+ "%_%.%".format(~song, Date.getDate.stamp, ev.headerFormat.toLower) }.inEnvir,
             startPos:0,
             dur:999,
-            tail: 10,
+            tail: ~data.tail ? 0;,
             sampleRate: 44100,
             headerFormat: "WAV",
             sampleFormat: "int24",
