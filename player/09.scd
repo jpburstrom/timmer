@@ -1,6 +1,6 @@
 //# Song 09 ###
 
-//FIXME: synth tail cutoff???
+
 
 //## Initialize ###
 (
@@ -56,27 +56,24 @@ q.player.use {
     ~setPtn.(Pbind(
         //Play through 4 times, then fade
         \instrument, \diskSegment,
-        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \exp),
+        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \sin),
     	\timingOffset, 0.1, //to sync with parPtn
-		// \test, Pfunc { |ev| ~data.groupscore[ev.onset].postln; 2 }
+        \startPos, Pkey(\startPos) - 0.01 //-"-
 	));
 
 	//Use ptpar to offset in time, to make sure ~currentEvent is accurate
 	~parPtn = Ptpar([0.1, Pevent( Pbind(
-        \instrument, \bufSegmentFreqshiftSmear,
-        \bufnum, Pfunc( { [claps.next, claps.next] } ),
-        \freqshift, [-1000, 0],
+        \instrument, \bufHandclaps,
+        \bufnum, Pfunc( { claps.next } ),
         \outbus, Pfunc { ~t.mainOut },
 		//Fade in, then
-		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \exp) * 3,
-        \smear, Pwhite(1, 20),
-        \pan, Pbrown(-0.2, 0.2, 0.125).repeat(9),
+		\amp, Pseg([0.01, Pwhite(0.7, 1)], Pseq([20, Pn(3)]), \sin) * 3,
         \amp, p { |ev|
             loop {
-                25.rrand(50).do {
-                    ev = [ev.amp, 0].yield;
+                5.rrand(30).do {
+                    ev = Rest(0).yield;
                 };
-                ev = [ev.amp, ev.amp * 0.1].yield;
+                ev = (ev.amp * 0.1).yield;
             }
         },
         \break, Pfunc { 0.2.coin },
@@ -85,7 +82,7 @@ q.player.use {
             Fdef(\pBrownDurDivision).value(
                 Pfunc { ~currentEvent.dur }, 0.2, 0.22, 0.01
         )),
-        \startPos, Ptuple([Pxrand(~data.onset.flop[0], inf), 0])
+        \sustain, 1
     ), ~protoEvent),
 	0.1, 	Pbind(
 		\instrument, \fmGloss,
