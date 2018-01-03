@@ -13,6 +13,20 @@ SynthDef(\bufSegment, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
     OffsetOut.ar(outbus, snd * \amp.kr(1));
 }).add;
 
+//Simple handclaps player
+//startPos in seconds
+SynthDef(\bufHandclaps, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
+	var fadetime = \fadetime.kr(defaultFadeTime);
+    var snd;
+    //Adjust startpos, so fade ends at 0
+    startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
+    sustain = sustain - fadetime; //Make last fade stop at sustain end
+    snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+    snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
+    snd = snd + (DelayC.ar(snd, 0.1, 0.1, 0.8) * [0.2, 0.1]);
+    OffsetOut.ar(outbus, snd * \amp.kr(1));
+}).add;
+
 //Simple segment player
 //startPos in seconds
 SynthDef(\bufSegment_3ch, { |outbus(0), outbus_mono(2), bufnum(0), startPos(0), sustain(1)|
