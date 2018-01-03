@@ -174,7 +174,10 @@ q.player.setPtn(Pbind(
             },
             //default
             { 1 }
+
         );
+
+        fact
     }
 ));
 
