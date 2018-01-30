@@ -210,7 +210,7 @@ q.player.setPtn(Plazy({
 
 }));
 //Give a pattern to setIterator, which is used to select which tick is to be played
-q.player.setIterator(Plazy { Psym(Pseq(#[p1, p2, p3, p4, p5, p6]), ~data.iterators) });
+q.player.setIterator(Plazy { Psym(Pshuf(#[p1, p2, p3, p4, p5, p6]).trace, ~data.iterators) });
 //q.player.setIterator(Pseries(301));
 // q.player.play
 )
