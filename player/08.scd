@@ -4,11 +4,7 @@
 (
 var relPath = "".resolveRelative;
 var handClapPaths = "samples/handclaps/*.wav".resolveRelative;
-//To be called from within q.player environment
-var spawnResonatorSynth = {
-    ~t.resonator = Synth(\resonate_08, [\inbus, ~t.mainOut, \outbus, ~t.fxOut], ~t.postGroup);
 
-};
 "lib/init".import;
 q.player.actionLabels = #[onset];
 q.player.tickLabel = \onset;
@@ -28,32 +24,30 @@ q.player.onReady = {
     var compLookahead = 0.01;
     var revSize = 0.1;
 
-	~t.handclaps = handClapPaths.pathMatch.collect { |path|
-		Buffer.read(s, path);
-	};
+    ~t.handclaps = handClapPaths.pathMatch.collect { |path|
+        Buffer.read(s, path);
+    };
 
     /*
 
     ~t.irSpectrum = 2.collect {|i|
-		Buffer.read(s, relPath +/+ "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i));
-	};
+    Buffer.read(s, relPath +/+ "data/impulses/impulse-closed-ms-48_NRT_%.wav".format(i));
+    };
     ~t.convBus = Bus.audio(s, 2);
-	s.sync;
+    s.sync;
 
     ~t.conv = Synth(\msConv, [\inbus, ~t.convBus, \outbus, q.stereo.if(0, 2), \irbufs, ~t.irSpectrum,
-		\sideAmp, 1, \amp, 0.25
-	], ~t.sendGroup);
+    \sideAmp, 1, \amp, 0.25
+    ], ~t.sendGroup);
 
-	//TODO: separate send bus for reverb
-	~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
-        \bandwidth, 5000, \decay, 0.01, \predelay, 10, \outbus, q.stereo.if(0,6), \excursion, 0.9,
-		\in_diff1, 0.36, \in_diff2, 0.40
-	], ~t.sendGroup);
+    //TODO: separate send bus for reverb
+    ~t.reverb = Synth(\plate_reverb_2x2, [\amp, -3.dbamp,
+    \bandwidth, 5000, \decay, 0.01, \predelay, 10, \outbus, q.stereo.if(0,6), \excursion, 0.9,
+    \in_diff1, 0.36, \in_diff2, 0.40
+    ], ~t.sendGroup);
     */
 
-    spawnResonatorSynth.value;
-
-       //POST FX
+    //POST FX
     ~t.softclip = Synth(\softclip,
         [\outbus, ~t.fxOut, \pregain, 4, \amp, 0.2],
         ~t.postGroup, \addToTail);
@@ -70,148 +64,195 @@ q.player.onReady = {
 };
 
 
+q.player.use {
 
-q.player.data.grouping = #[
-	//Part one, onset groups
-	[ 0, 1, 2, 3, 1, 4, 5, 1,
-        6, 7, 1, 7, 8, 9, 7, 10,
-        7, 11, 12, 13, 7, 12, 14, 9,
-        15, 7, 12, 14, 16, 17 ]
-];
-q.player.data.iterators = ().make {
-	//Scramble order of first part, but don't put two in the same group after each other
-	~p1 = Plazy { Pseq(Fdef(\scrambleAvoidSimilar).(~data.grouping[0])) } ;
-	~p2 = Pseries(30, 1, 34);
-	~p3 = Plazy {
-		Pseq((64..76).scramble)
-		++ Pseq((77..80))
-		//This is a bit
-        ++ Pwalk((81..90), Pwrand([-2, 1, 2], [0.3, 0.4, 0.4], 30.rrand(50)))
-	};
-	// ~p4 = Pn(91,1) ++ Pxrand((92..104), 24) ++ Pn(105, 1);
-	~p4 = Pseq((91..105));
-	~p5 = Pseq((106..301));
-	//Break it down
-	~p6 = Pseries(302);
-	// ~p7 = Pn(0);
+    ~data.endSegment = 360.rrand(370);
+
+    ~data.grouping = #[
+        //Part one, onset groups
+        [ 0, 1, 2, 3, 1, 4, 5, 1,
+            6, 7, 1, 7, 8, 9, 7, 10,
+            7, 11, 12, 13, 7, 12, 14, 9,
+            15, 7, 12, 14, 16, 17 ]
+    ];
+
+    ~data.iterators = [
+        //Scramble order of first part, but don't put two in the same group after each other
+        //0
+        Plazy { Pseq(Fdef(\scrambleAvoidSimilar).(~grouping[0])) },
+        //1
+        Pseries(30, 1, 34),
+        //2
+        Plazy {
+            Pseq((64..76).scramble)
+            ++ Pseq((77..80))
+            //This is a bit
+            ++ Pwalk((81..90), Pwrand([-2, 1, 2], [0.3, 0.4, 0.4], 30.rrand(50)))
+        },
+        //3
+        Pseq((91..105)),
+        //4
+        Pseq((106..218)),
+        //5
+        Pseq((219..301)),
+        //6
+        Pseries(302, 1, ~endSegment - 302)
+        //7
+
+
+        // ~p7 = Pn(0);
+    ];
+
+    //Pattern with shuffled parts
+    //sets ~data.currentPart
+    ~setIterator.value(Pshuf(Array.series(~data.iterators.size)).collect { |index|
+        ~data.currentPart = index;
+        ~data.iterators[index];
+    });
 };
+
 
 
 //## Patterns #######
 
 //This sets a pattern used to modify the base player pattern.
-q.player.setPtn(Plazy({
-	var endSegment = 360.rrand(370);
 
-	Pbind(
-		//\startPos, Pkey(\startPos) - 0.002,
+//TODO use score-player callback instead!!!
+
+
+
+
+q.player.setPtn(Plazy({
+
+    Pbind(
+        //\startPos, Pkey(\startPos) - 0.002,
+        \timingOffset, 0.05,
         \dummy, Prout({ |ev|
 
-			var claps = Pn(Plazy { Pseq(~t.handclaps.scramble) }).asStream;
-			//Weird, but works: since claps2 is a stream, and played in parallel,
-			//we can return nil whenever we want a rest
-			var claps2 = Pseq([nil, nil, Pfuncn{ claps.next }], inf).asStream;
-			var blacklist = (118..122) ++ (134..139) ++ (175..186) ++ (192..199);
+            var blacklist = (118..122) ++ (134..139) ++ (175..186) ++ (192..199),
+            claps = Pbind(
+                \instrument, \bufHandclaps,
+                \outbus, Pfunc { ~t.fxOut },
+                \bufnum, Ppatlace([Rest(), Rest(), Pshufn(~t.handclaps, inf) }),
+                \amp, Pn(2, 1),
+                \delta, Pfunc { ~nextEvent.dur },
+                \timingOffset, Pwhite(-0.02, 0.02),
+                \group, Pfunc { ~t.mainGroup }
+            ),
+            claps2 = Pset(\amp,
+                Pif(Pfunc { blacklist.includes(ev.onset).not and: { 0.7.coin } },
+                Pn(2, 1), Rest()),
+                claps
+            ),
+            return = {
+                ev = 0.yield;
+            },
+            curPart,
 
-			var endDuration = 40.rrand(55);
-			var plankStream;
+            //To be called from within q.player environment
+            spawnResonator = {
+                ~t.resonator ?? {
+                    ~t.resonator = Synth(\resonate_08, [\inbus, ~t.mainOut, \outbus, ~t.fxOut], ~t.postGroup);
+                };
+            },
 
-			while ({ev.onset < 105}) {
-				//Weird and strange: spawn a 1-item pattern for every onset...
-				~spawner.par(Pbind(
-					\instrument, \bufHandclaps,
-                    \outbus, Pfunc { ~t.fxOut },
-					\bufnum, Pfunc { claps2.next },
-					\amp, Pn(2, 1),
-					\timingOffset, Pwhite(-0.02, 0.02),
-					\group, Pfunc { ~t.mainGroup }
-				));
-				ev = 0.yield
+            releaseResonator = {
+                ~t.resonator !? { ~t.resonator.release };
+                ~t.resonator = nil;
+            },
+            parStream,
+            spawnParPtn = { |ptn|
+                //Stop previous stream
+                ~spawner.suspend(parStream);
+                //Adjust to timing offset of parent pattern
+                parStream = ~spawner.par(ptn, ev.timingOffset);
+            }
+            ;
 
-			};
 
-			~t.resonator.free; //FIXME: release
+            if (~data.currentPart != curPart) {
 
-			while ({ev.onset < 218}) {
-				if ( blacklist.includes(ev.onset).not and: { 0.7.coin } ) {
-					//Weird and strange: spawn a 1-item pattern for every onset...
-					~spawner.par(Pbind(
-						\instrument, \bufHandclaps,
-                        \outbus, Pfunc { ~t.fxOut },
-                        \bufnum, Pfunc { claps.next },
-						\amp, Pn(2, 1),
-						\timingOffset, Pwhite(-0.02, 0.02),
-						\group, Pfunc { ~t.mainGroup }
+                if {~data.currentPart < 4) {
+                    //First 4 parts are similar, only start resonator and stream
+                    //if we're arriving from somewhere else
+                    if (curPart > 3) {
+                        spawnResonator.();
+                        spawnParPtn.(claps);
+                    }
+                } {
+                    ~data.currentPart.switch(
+                        4, {
+                            freeResonator.();
+                            spawnParPtn.(claps2);
+                        }
+                        5, {
+                            freeResonator.();
+                            ~spawner.suspend(parStream);
+                        },
+                        6, {
+                            freeResonator.();
+                            Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
+                            spawnParPtn.(Pbind(
+                                \bufnum, Pshufn(~t.handclaps, inf),
+                                \outbus,Pfunc { ~t.fxOut },
+                                \instrument, Prand([\diskSegmentPlank], inf),
+                                \amp, 1,//Pbrown(0.2, 0.5),
+                                \type, Pwrand([\note, \rest], [0.7, 0.3], inf),
+                                //XXX magic numbers
+                                \dur, Fdef(\pFuzzyBeatMatch).(~data.onset[301..368].flop[1], 5),
+                                \legato, 1,
+                                \freq, Pdefn(\plankFreq),
+                                \group, Pfunc { ~t.mainGroup }
+                            ));
+                        },
+                        7, {
+                            //Duration of this part
+                            var duration = 40.rrand(55);
 
-					));
-				};
-				ev = 0.yield
-			};
+                            spawnResonator.();
+                            ~spawner.suspend(parStream);
+                            //Parallell pattern, which continues after the main pattern has been silenced
+                            //(see below)
+                            //TODO: How can the duration of the parallel stream
+                            //affect the length of the main stream?
+                            //Maybe this part should be the last, always
+                            ~spawner.par (
+                                Pfindur(duration + ev.dur, Pchain(
+                                    Pbind(
+                                        \instrument, \bufSegmentHandclaps,
+                                        \outbus, Pfunc { ~t.fxOut },
+                                        \bufnum, Pfunc { claps.next },
+                                        // \startPos, Pxrand(~data.onset.flop[0], inf),
+                                        \amp, Pkey(\amp) * 1,
+                                        // \test, Pfunc { "hello".postln },
+                                        \freq, Pdefn(\plankFreq),
+                                        \sustain, 1,
+                                        \group, Pfunc { ~t.mainGroup }
+                                    ),
+                                    Pdef(\t08randomizedBeginning)
 
-			while ({ev.onset < 301}) {
-			ev = 0.yield;
-			};
-            Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
-			plankStream = ~spawner.par(Pbind(
-				\bufnum, Pfunc { claps.next  },
-                \outbus,Pfunc { ~t.fxOut },
-                 \instrument, Prand([\diskSegmentPlank], inf),
-                // \bufnum, Pfunc { ~protoEvent.bufnum },
-				// \startPos, Pfunc({ ~data.onset.flop[0][~currentEvent.onset.postln] }),
-				\amp, 1,//Pbrown(0.2, 0.5),
-                \type, Pwrand([\note, \rest], [0.7, 0.3], inf),
-				\dur, Fdef(\pFuzzyBeatMatch).(~data.onset[301..368].flop[1], 5),
-				\legato, 1,
-                \freq, Pdefn(\plankFreq),
-				\group, Pfunc { ~t.mainGroup }
-			));
+                                )),
+                            );
 
-			//while playing through, yield zero
-			//Then advance to the next pattern in the Pseq
-			while ({ev.onset <= endSegment}) {
-				ev = 0.yield;
-			};
-			~spawner.suspend(plankStream);
-			spawnResonatorSynth.value;
-			//Parallell pattern, which continues after the main pattern has been silenced
-			//(see below)
-			~spawner.par (
-				Pfindur(endDuration + ev.dur, Pchain(
-					Pbind(
-                        \instrument, \bufSegmentHandclaps,
-                        \outbus, Pfunc { ~t.fxOut },
-                        \bufnum, Pfunc { claps.next },
-						// \startPos, Pxrand(~data.onset.flop[0], inf),
-						\amp, Pkey(\amp) * 1,
-						// \test, Pfunc { "hello".postln },
-						\freq, Pdefn(\plankFreq),
-                        \sustain, 1,
-						\group, Pfunc { ~t.mainGroup }
-					),
-					Pdef(\t08randomizedBeginning)
-				))
-			);
+                        }
+                    )
+                };
+                //Set curPart to current
+                curPart = ~data.currentPart;
+            }
 
-			//Silence this, but continue running until `t08RandomizedBeginning` stops
-			//FIXME: This doesn't really work
-			Pfindur(endDuration, Pfunc { |ev|
-				0
-			}).embedInStream(ev);
-
-		}),
-		//TEMP: Shorten last non-freqshifted note, so we don't get start of next attack
-		\dur, Pif(Pkey(\onset) == (endSegment), Pkey(\dur) - 0.05, Pkey(\dur)),
+        }),
+        //TEMP: Shorten last non-freqshifted note, so we don't get start of next attack
+        \dur, Pif(Pkey(\onset) == (~endSegment ? 0), Pkey(\dur) - 0.05, Pkey(\dur)),
         //\dur, Pkey(\dur) - 0.05, //TMP
-		// \amp, 0,
-		\instrument, Pif(Pkey(\onset) < 370, \diskSegment, \diskSegmentFreqshift),
+        // \amp, 0,
+        \instrument, Pif(Pkey(\onset) < 370, \diskSegment, \diskSegmentFreqshift),
         //\outbus, Pseq([0, 2], inf),
-    	\freqshift, -5000.rrand(-8000)
-	)
+        \freqshift, -5000.rrand(-8000),
+        )
 
 }));
-//Give a pattern to setIterator, which is used to select which tick is to be played
-q.player.setIterator(Plazy { Psym(Pshuf(#[p1, p2, p3, p4, p5, p6]).trace, ~data.iterators) });
-//q.player.setIterator(Pseries(301));
+
 // q.player.play
 )
 
