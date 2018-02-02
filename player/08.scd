@@ -108,11 +108,10 @@ q.player.use {
         Ppatlace([
         Plazy { Pseq(
                 Fdef(\scrambleAvoidSimilar).(~data.grouping[0])  % ~data.grouping[0].size) },
-        //6
         Pseries(301, 1, ~data.endSegment - 301),
         ], inf),
         // Pshuf(Array.series(~data.endSegment - 301, 301)),
-        //7
+        //6
         Pseq((419..427), 1),
 
 
@@ -128,7 +127,8 @@ q.player.use {
         //Array.series(~data.iterators.size).scramble
         // (4..6)
         // [6,0,2,1,3,5,4,7]
-        (0..6)//[0,1,2,3,0,4,6,7]
+        // (0..6)//[0,1,2,3,0,4,6,7]
+        (0..6)
         .do { |index|
             ~data.currentPart = index;
             ev = ~data.iterators[index].trace(prefix:"onset:").embedInStream;
@@ -213,27 +213,29 @@ q.player.setPtn(Plazy({
                                 spawnResonator.();
                                 ~spawner.suspend(parStream);
                             },
+                            /*
                             3, {
                                 spawnResonator.();
                                 ~spawner.suspend(parStream);
                             },
+                            */
                             4, {
                                 releaseResonator.();
                                 spawnParPtn.(claps2);
                             },
                             5, {
-                                releaseResonator.();
+                                spawnResonator.();
                                 ~spawner.suspend(parStream);
                             },
                             6, {
                                 releaseResonator.();
-                                Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
+                                //Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
                                 spawnParPtn.(Pbind(
                                     \amp, Pbrown(0.6, 1),//Pbrown(0.2, 0.5),
                                     \bufnum, Pshufn(~t.handclaps, inf),
                                     // \type, Pwrand([\note, \rest], [0.7, 0.3], inf),
                                     //XXX magic numbers
-                                    \dur, Fdef(\pFuzzyBeatMatch).(~data.onset[301..].flop[1], 5),
+                                    \dur, Fdef(\pFuzzyBeatMatch).(~data.onset[419..427].flop[1], 5),
                                     \delta, Pkey(\dur)
                                 ) <> claps);
                             },
