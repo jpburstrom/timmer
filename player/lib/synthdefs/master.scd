@@ -10,19 +10,20 @@ var inserts = (
         Limiter.ar(snd, level);
     },
     softclip: { |snd, pregain=1, amp=1|
-        SoftClipAmp8.ar(snd, pregain, amp);
+        SoftClipAmp4©.ar(snd, pregain, amp);
     },
     fixedDelay: { |snd, i_maxDelay=0.1, delay=0.01|
         snd = DelayN.ar(snd, i_maxDelay, delay);
     },
     zapper: { |snd|
-        ReplaceBadValues.ar(snd);
+        ReplaceBadValues.ar(snd) ;
+
     }
 );
 
 var sends = (
-    jpverb: { |snd, time=4, damp=0.9, size=2, earlyDiff=0.707, amp=0.25|
-        JPverb.ar(snd, time, damp, size, earlyDiff) * amp
+    jpverb: { |snd, time=4, damp=0.9, size=2, earlyDiff=0.707, modDepth = 0.1, modFreq=2, amp=0.25|
+        JPverb.ar(snd, time, damp, size, earlyDiff, modDepth, modFreq) * amp
     }
 );
 

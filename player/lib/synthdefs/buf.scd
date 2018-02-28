@@ -22,9 +22,10 @@ SynthDef(\bufHandclaps, { |outbus(0), bufnum(0), startPos(0), sustain(1)|
     startPos = ((startPos - fadetime) * BufSampleRate.kr(bufnum)).max(0);
     sustain = sustain - fadetime; //Make last fade stop at sustain end
     snd = PlayBuf.ar(2, bufnum, BufRateScale.kr(bufnum) * \bufRate.kr(1), 1, startPos);
+    snd = BHiShelf.ar(snd, 200, 1, -15);
     snd = snd * EnvGen.ar(Env([0, 1, 1, 0], [fadetime, sustain, fadetime]), doneAction:2);
-    snd = snd + (DelayC.ar(snd, 0.1, 0.1, 0.8) * [0.2, 0.1]);
-    OffsetOut.ar(outbus, snd * \amp.kr(1));
+    snd = snd + (DelayC.ar(snd, 0.1, 0.1, 0.8) * [0.15, 0.08]);
+    OffsetOut.ar(outbus, Pan2.ar(snd, \pan.kr(0), \amp.kr(1)));
 }).add;
 
 //Simple segment player

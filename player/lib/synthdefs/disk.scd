@@ -25,7 +25,8 @@
     };
 
     ~freqShift = { |snd|
-        snd = FreqShiftAA.ar(snd, \freqshift.kr(0));
+        snd = BHiPass4.ar(snd, \freqshift.kr(0).neg.max(5));
+        snd = FreqShift.ar(snd, \freqshift.kr);
     };
 
 
@@ -78,8 +79,8 @@ SynthDef(\diskSegmentMS, {
 //bufnum fadetime sustain freqshift outbus
 SynthDef(\diskSegmentFreqshift, {
     var snd = ~wrap.diskIn(2);
-    snd = ~wrap.fadeInOut(snd);
     snd = ~wrap.freqShift(snd);
+    snd = ~wrap.fadeInOut(snd);
     snd = ~wrap.balance(snd);
     ~wrap.out(snd);
 }).add;
@@ -116,11 +117,11 @@ SynthDef(\diskSegmentFreqshiftSmear, { arg fadetime=0.002, sustain=1;
 //Simple segment player with freqshift
 //startPos in seconds
 SynthDef(\diskSegmentFreqSplitShiftMS, { arg bufnum=0, bufRate=1;
-    var snd, mid, side, lop;
+    var snd, lop;
     var flutter = 2.pow(LFNoise2.ar(\flutterSpeed.kr(0.1), \flutterDepth.kr(0)));
     snd = ~wrap.vDiskIn(2, bufnum, bufRate * flutter);
     lop = LPF.ar(snd, \ffreq.kr(440));
-    snd = ~wrap.freqShift(snd - lop) * \freqshiftAmp.kr(1);
+    snd = ~wrap.freqShift(snd - (lop * \freqshiftAmp.kr(1)));
     snd = ~wrap.adjustMS(snd);
     snd = lop + snd;
     snd = ~wrap.fadeInOut(snd);
