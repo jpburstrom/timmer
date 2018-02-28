@@ -5,14 +5,15 @@ var songs;
 
 //Test: Keep track of position in song
 var segmentController = Proto({
-    ~segmentCounter = songlist.collectAs( { |x| x.asStringToBase(10,2)->0 }, Event);
+    ~segmentCounter = songlist.collectAs( { |x| x.asStringToBase(10,2)->0 }, Dictionary);
     ~update = { |player, what, args|
-        [player, what, args].postln;
         if (what == \segment) {
             ~segmentCounter[player.song] = ~segmentCounter[player.song] + 1;
         };
     };
 });
+
+~segCtrl = segmentController;
 
 songs = ~songs = ();
 songlist.do { |song|
@@ -37,5 +38,4 @@ ListView().items_(songlist.collect(_.asStringToBase(10, 2))).selectionMode_(\sin
     current.play
 
 }).front
-
 
