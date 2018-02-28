@@ -520,7 +520,7 @@ Proto({
 
         score.recordNRT(path ++ ".osc", path, nil,
             opt.sampleRate, opt.headerFormat, opt.sampleFormat,
-            ServerOptions().numOutputBusChannels_(~channels), duration:score.score.last[0],
+            ServerOptions().numOutputBusChannels_(~channels).verbosity_(-1), duration:score.score.last[0],
             action: { |code|
                 opt.action(code);
                 //Cleanup
