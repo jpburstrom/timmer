@@ -17,7 +17,7 @@ if (\Document.asClass.notNil) {
             118, nil, //F4
             109, Fdef(\showMonitorUI),//F10
             103, {q.playerui.connect(q.player)}, //F11
-            111, {q.player.bounce} //F12
+            111, {q.player.bounce((sampleRate: s.sampleRate))} //F12
         );
     };
 };
