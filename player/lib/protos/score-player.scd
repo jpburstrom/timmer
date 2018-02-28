@@ -607,6 +607,7 @@ Proto({
                     ev[\bufnum] = ~bufferPool.next(~soundFile, ev.startPos);
                 };
                 ~currentEvent = ev
+                //TODO: Set flag when dropping events
             }).drop(drop));
             sp.suspend(parStream);
             tail.wait;
