@@ -58,7 +58,7 @@ q.player.use {
         \instrument, \diskSegment,
         \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \sin),
     	\timingOffset, 0.1, //to sync with parPtn
-        \startPos, Pkey(\startPos) - 0.01 //-"-
+        \startPos, Pkey(\startPos) - 0.01 //Fix bad segmentation
 	));
 
 	//Use ptpar to offset in time, to make sure ~currentEvent is accurate
