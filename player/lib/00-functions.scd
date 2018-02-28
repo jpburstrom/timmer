@@ -58,7 +58,7 @@ Fdef(\pFuzzyBeatMatch, { |durs, lookahead=5|
             times = matches[newIndex].div(tempo).max(1);
             dur = matches[newIndex] / times;
             index = index + newIndex + 1;
-            ev.amp = 0.8; //set amp to high on every "downbeat"
+            ev !? { ev.amp = 0.8 }; //set amp to high on every "downbeat"
             times.do {
                 ev = dur.yield;
             }
