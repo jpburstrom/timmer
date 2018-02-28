@@ -12,6 +12,7 @@ q.player.loadData("08");
 q.player.data.tail = 1;
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
+q.player.monitorGain = -1.dbamp;
 // q.markov = "/lib/protos/markov-trainer".import;
 
 //onReady is called when player buffer is loaded, and before playing
@@ -196,14 +197,12 @@ q.player.setPtn(Plazy({
             ;
 
             loop {
-                ~data.currentPart.postln;
                 if (~data.currentPart != curPart) {
 
                     if (~data.currentPart < 2) {
                         //First 4 parts are similar, only start resonator and stream
                         //if we're arriving from somewhere else
                         if (curPart.isNil or: { curPart > 1 }) {
-                            "yes".postln;
                             spawnResonator.();
                             spawnParPtn.(claps);
                         }

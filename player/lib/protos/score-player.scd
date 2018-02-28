@@ -357,8 +357,7 @@ Proto({
     ~reset = {
 		var buf, waitTime=0;
         // ~currentEvent !? { waitTime = ~currentEvent.dur };
-		"reset".debug;
-        ~nextPos = nil;
+		~nextPos = nil;
         ~iteratorStream.reset;
         ~prevPos = -1;
 		~nextEvent = nil;

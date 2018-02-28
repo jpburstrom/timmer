@@ -13,7 +13,7 @@ q.player.extractFeatures;
 q.player.onReady = {
 
     var compLookahead = 0.01;
-    var revSize =  0.1.exprand(0.8).debug("rev size");
+    var revSize =  0.1.exprand(0.8);
 
 
     ~t.klankBus = Bus.audio(s, 2);

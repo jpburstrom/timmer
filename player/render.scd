@@ -28,7 +28,6 @@ var options = (
     // sampleFormat: "float32"
 );
 var rend = { |o|
-    o.postln;
     fork {
         1.wait;
         o.action;
@@ -103,7 +102,7 @@ fork {
                     1.exit;
                 })
             };
-            cond.postln.hang;
+            cond.hang;
 
         };
         "Done".postln;
