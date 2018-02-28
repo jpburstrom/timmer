@@ -20,9 +20,9 @@ Proto({
     //Setting this sets random seed on player start
     ~randSeed = 1e+06.rand;
 
-    //Let's pull down the master gain (we'll raise it afterwards)
-    //No, let's not
-    ~monitorGain = 0.dbamp;
+    //Set this to maximum peak value
+    //Limiter will use it as final level
+    ~monitorGain = -1.dbamp;
 
     //Do we want to add a safety limiter on the master bus?
     ~safeLimit = true;
@@ -442,7 +442,7 @@ Proto({
         if (~safeLimit) {
             s.sync;
             ~channels.do { |ch|
-                ~t.safeLimiter = Synth(\safeLimiter_mono, [\outbus, ch], ~t.monitorGroup, \addToTail);
+                ~t.safeLimiter = Synth(\safeLimiter_mono, [\outbus, ch, \level, ~monitorGain], ~t.monitorGroup, \addToTail);
             }
         }
 
