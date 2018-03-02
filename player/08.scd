@@ -22,6 +22,8 @@ q.player.monitorGain = -1.dbamp;
 
 
 
+
+
 q.player.onReady = {
     var compLookahead = 0.01;
     var revSize = 0.3;
@@ -160,7 +162,7 @@ q.player.setPtn(Plazy({
             claps = Pbind(
                 \instrument, \bufHandclaps,
                 \outbus, Pfunc { ~t.fxOut },
-                \bufnum, Ppatlace([Rest(), Rest(), Pshufn(~t.handclaps, inf) ], inf),
+                \bufnum, Ppatlace([Rest(), Rest(), Pn(Plazy({ Pshuf(~t.handclaps) })) ], inf),
                 \amp, 2,
                 \delta, Pfunc { ~currentEvent.dur },
                 // \timingOffset, Pwhite(-0.02, 0.02),
@@ -231,7 +233,7 @@ q.player.setPtn(Plazy({
                                 //Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
                                 spawnParPtn.(Pbind(
                                     \amp, Pbrown(0.6, 1),//Pbrown(0.2, 0.5),
-                                    \bufnum, Pshufn(~t.handclaps, inf),
+                                    \bufnum, Pn(Plazy({ Pshuf(~t.handclaps) })),
                                     // \type, Pwrand([\note, \rest], [0.7, 0.3], inf),
                                     //XXX magic numbers
                                     \dur, Fdef(\pFuzzyBeatMatch).(~data.onset[419..427].flop[1], 5),
@@ -255,7 +257,7 @@ q.player.setPtn(Plazy({
                                         Pbind(
                                             \instrument, \bufHandclaps,
                                             \outbus, Pfunc { ~t.fxOut },
-                                            \bufnum, Pshufn(~t.handclaps, inf) ,
+                                            \bufnum, Pn(Plazy({ Pshuf(~t.handclaps) })) ,
                                             // \startPos, Pxrand(~data.onset.flop[0], inf),
                                             \amp, Pbrown(0.1, 1) * Pseg([1, 0.001], duration, \sine),
                                             // \test, Pfunc { "hello".postln },
