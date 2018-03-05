@@ -81,7 +81,7 @@ q.player.parPtn = Ptpar([0.1, Pbind(
     //Get total duration for some later Pseg patterns
     \totalDur, p { var dur = ~data.onset.last[0]; loop { dur.yield } },
     //Divide ~currentEvent (bass note) duration into equal-length segments according to \divisions pattern
-    \divisions, Pif(Pfunc { ~data.lastNote }, Pn(1).trace, Pwhite(1,
+    \divisions, Pif(Pfunc { ~data.lastNote }, Pn(1), Pwhite(1,
         Pseg([5,1.5,5,1.5,3],
             Plazy { Pseq([[0.5, 1], [4.0, 6], [2.0, 5], [1.0, 9.0]].collect(_[0].rrand(_[1])).normalizeSum) } * Pkey(\totalDur),
             \lin, inf))).round,

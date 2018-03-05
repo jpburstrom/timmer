@@ -134,7 +134,7 @@ q.player.use {
         (0..6)
         .do { |index|
             ~data.currentPart = index;
-            ev = ~data.iterators[index].trace(prefix:"onset:").embedInStream;
+            ev = ~data.iterators[index].embedInStream;
         };
 
         // Pseq((1..2)).embedInStream;
