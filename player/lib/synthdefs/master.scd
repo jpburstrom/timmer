@@ -6,17 +6,17 @@ var inserts = (
         Limiter.ar(snd, level);
     },
     safeLimiter: { |snd, level=1|
-        snd = ReplaceBadValues.ar(snd);
+        snd = Sanitize.ar(snd);
         Limiter.ar(snd, level);
     },
     softclip: { |snd, pregain=1, amp=1|
-        SoftClipAmp4©.ar(snd, pregain, amp);
+        SoftClipAmp4.ar(snd, pregain, amp);
     },
     fixedDelay: { |snd, i_maxDelay=0.1, delay=0.01|
         snd = DelayN.ar(snd, i_maxDelay, delay);
     },
     zapper: { |snd|
-        ReplaceBadValues.ar(snd) ;
+        Sanitize.ar(snd) ;
 
     }
 );

@@ -140,12 +140,13 @@ q.player.use {
 		~t.reverb2 = Synth(\plate_reverb_2x2, [\amp, 0.dbamp, \outbus, ~t.fxOut, \decay, 1, \predelay, 0, \inbus, ~t.longRevBus], ~t.sendGroup);
 
 
-
         ~t.handclaps = handclapPaths.collect { |path|
             Buffer.read(s, path);
         };
 
        // ~t.mixin = Monitor().play(~t.mainOut.index, 2, ~t.fxOut.index, 2, ~t.postGroup, false, 0.01);
+              //zap bad values before sending to verb
+        ~t.zapper = Synth(\zapper, nil, ~t.mainGroup, \addToTail);
 
         ~t.wood = Synth(\wood09, [\inbus, ~t.mainOut, \outbus, ~t.fxOut], target:~t.postGroup);
         ~t.resonator = Synth(\resonator09, [\inbus, ~t.mainOut, \outbus, ~t.fxOut], target:~t.postGroup);

@@ -111,19 +111,19 @@ var make_reverb = { |snd|
 
     //Output
 
-    out
+    out.sanitize
 };
 
 //Mono input, Stereo output
 SynthDef(\plate_reverb_1x2, { arg inbus=0, outbus=0;
-    var snd = In.ar(inbus, 1);
+    var snd = In.ar(inbus, 1).sanitize;
     Out.ar(outbus, make_reverb.value(snd) * \amp.kr(1));
 }, metadata: metadata).add;
 
 
 //Stereo input (summed), Stereo output
 SynthDef(\plate_reverb_2x2, { arg inbus=0, outbus=0;
-    var snd = In.ar(inbus, 2).sum * 0.5;
+    var snd = In.ar(inbus, 2).sanitize.sum * 0.5;
     Out.ar(outbus, make_reverb.value(snd) * \amp.kr(1));
 }, metadata: metadata).add;
 
