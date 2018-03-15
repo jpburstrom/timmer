@@ -124,7 +124,7 @@ q.player.setPtn(Pbind(
         Pif(Pfunc { |ev| ev.instrument == \diskSegmentFreqshift }, Pfunc { ~t.freqshiftbus}, Pfunc { ~t.fxOut })
     ),
 
- 	\freqshift, Pwhite(-200, -2000),
+ 	\freqshift, Pexprand(-200, -2000),
 	\fadetime, 0.02,
     //Notes for resonance & klank
     \midinote, Prand(Array.series(8, 33, 1), inf),
