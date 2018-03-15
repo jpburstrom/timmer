@@ -206,7 +206,7 @@ q.player.setPtn(Plazy({
                         //if we're arriving from somewhere else
                         if (curPart.isNil or: { curPart > 1 }) {
                             spawnResonator.();
-                            spawnParPtn.(claps);
+                            //spawnParPtn.(claps);
                         }
                     } {
                         ~data.currentPart.switch(
@@ -222,7 +222,7 @@ q.player.setPtn(Plazy({
                             */
                             4, {
                                 releaseResonator.();
-                                spawnParPtn.(claps2);
+                                //spawnParPtn.(claps2);
                             },
                             5, {
                                 spawnResonator.();
@@ -231,6 +231,7 @@ q.player.setPtn(Plazy({
                             6, {
                                 releaseResonator.();
                                 //Pdefn(\plankFreq,  131 * 12 + Pwhite(-10, 10));
+                                /*
                                 spawnParPtn.(Pbind(
                                     \amp, Pbrown(0.6, 1),//Pbrown(0.2, 0.5),
                                     \bufnum, Pn(Plazy({ Pshuf(~t.handclaps) })),
@@ -239,6 +240,7 @@ q.player.setPtn(Plazy({
                                     \dur, Fdef(\pFuzzyBeatMatch).(~data.onset[419..427].flop[1], 5),
                                     \delta, Pkey(\dur)
                                 ) <> claps);
+                                */
                             },
                             7, {
                                 //Duration of this part
