@@ -1,4 +1,5 @@
-var songlist = thisProcess.argv;
+var songlist = thisProcess.argv.drop(-1);
+var randSeed = thisProcess.argv.last.asInteger;
 // var songlist = [9,10];
 var current;
 var songs;
@@ -23,26 +24,26 @@ options.basePath.mkdir;
 songs = ~songs = ();
 fork {
     songlist.do { |song|
-        var num = 1;
+        // var num = 1;
 
         //Import file
         song.import;
-
-        if (song == 4) {
-            num = 3;
-            q.player.song = "04_%".format(1);
-        };
-
-        num.do { |i|
-            "Rendering song %".format(q.player.song).postln;
-            1.wait;
-            fork {
+        "Rendering song % as %".format(q.player.song, options.path.basename).postln;
+        fork {
+            {
+                //This resets seed for setup code
+                thisThread.randSeed = randSeed;
+                //This sets seed for patterns and synths
+                //UGens are (currently) not completely deterministic:
+                //Would perhaps need separate randIDs for those
+                q.player.randSeed = randSeed;
                 q.player.bounce(options);
-            };
-            // rend.value(options);
-            cond.postln.hang;
-            q.player.song = "%_%".format("04", i+2)
-        }
+            }.try({ |err|
+                err.reportError;
+                1.exit;
+            })
+        };
+        cond.hang;
 
     };
 }
