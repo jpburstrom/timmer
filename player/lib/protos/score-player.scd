@@ -452,7 +452,7 @@ Proto({
     ~play = { |startEvent=0, clock|
         clock = clock ?? { TempoClock.default };
         if (~streamPlayer.isPlaying.not) {
-            var startPos = ~data[~tickLabel][startEvent][0];
+            // var startPos = ~data[~tickLabel][startEvent][0];
             var func = {
                 if (~readyForPlay) {
                     ~reset.value;
@@ -462,7 +462,7 @@ Proto({
 
                 //Maybe better to calculate duration of startEvent and use ffwd instead?
                 ~streamPlayer = ~asPattern.value(startEvent).play(clock);
-                currentEnvironment.changed(\state, \playing, startPos);
+                currentEnvironment.changed(\state, \playing, 0);//startPos);
             }.inEnvir;
             if (clock == ScoreClock) {
                 func.value;
@@ -592,7 +592,7 @@ Proto({
             sp.seq(Event.silent(0, (addToCleanup: {
                 reset.value
             })));
-            parStream = sp.par(~parPtn);
+            parStream = sp.par(~parPtn !? { ~parPtn.drop(drop) });
             sp.seq(Pchain(
                 ~modPtn,
                 Prout(e { |ev| loop { ev = ~next.value(ev).yield }});
