@@ -12,7 +12,7 @@ q.player.tickLabel = \onset;
 q.player.loadData("09");
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
-q.player.data.tail = 5;
+q.player.data.tail = 1.5;
 q.player.monitorGain = 6.dbamp;
 q.player.limiterLevel = -1.dbamp;
 //Channel map: Bass, Fqshift/Claps, FM, Resonator, strange wood, Piezo (1ch)

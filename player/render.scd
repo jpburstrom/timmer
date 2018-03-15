@@ -80,6 +80,9 @@ fork {
 
         songlist.scramble.do { |song, i|
 
+            var success = false;
+            var tries = 3;
+
             //Import file
             var title = song.asStringToBase(10, 2);
             title.import;
@@ -88,21 +91,35 @@ fork {
             options.path = options.basePath +/+ "%_%.wav".format((i + 1), title);
 
             "Rendering song % as %".format(q.player.song, options.path.basename).postln;
-            fork {
-                {
-                    //This resets seed for setup code
-                    thisThread.randSeed = randSeed;
-                    //This sets seed for patterns and synths
-                    //UGens are (currently) not completely deterministic:
-                    //Would perhaps need separate randIDs for those
-                    q.player.randSeed = randSeed;
-                    q.player.bounce(options);
-                }.try({ |err|
-                    err.reportError;
-                    1.exit;
-                })
+            //Loop if
+            while { success.not and: { tries > 0 }} {
+                tries = tries - 1;
+                fork {
+                    {
+                        //This resets seed for setup code
+                        thisThread.randSeed = randSeed;
+                        //This sets seed for patterns and synths
+                        //UGens are (currently) not completely deterministic:
+                        //Would perhaps need separate randIDs for those
+                        q.player.randSeed = randSeed;
+                        q.player.bounce(options);
+                    }.try({ |err|
+                        err.reportError;
+                        1.exit;
+                    })
+                };
+                cond.hang;
+
+                //Test that file hasn't exploded
+                SoundFile.use(options.path, { |sf|
+                    sf.channelPeaks
+                    if (sf.channelPeaks.maxItem < -0.5.dbamp) {
+                        success = true;
+                    }
+                });
+                cond.hang;
+
             };
-            cond.hang;
 
         };
         "Done".postln;
