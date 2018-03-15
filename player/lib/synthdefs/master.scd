@@ -23,7 +23,7 @@ var inserts = (
 
 var sends = (
     jpverb: { |snd, time=4, damp=0.9, size=2, earlyDiff=0.707, modDepth = 0.1, modFreq=2, amp=0.25|
-        JPverb.ar(snd, time, damp, size, earlyDiff, modDepth, modFreq) * amp
+        JPverb.ar(snd.sanitize, time, damp, size, earlyDiff, modDepth, modFreq) * amp
     }
 );
 
