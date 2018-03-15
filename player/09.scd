@@ -12,7 +12,7 @@ q.player.tickLabel = \onset;
 q.player.loadData("09");
 //q.player.extractFeatures;
 // q.playerui.connect(q.player);
-q.player.data.tail = 15;
+q.player.data.tail = 5;
 q.player.monitorGain = 6.dbamp;
 q.player.limiterLevel = -1.dbamp;
 //Channel map: Bass, Fqshift/Claps, FM, Resonator, strange wood, Piezo (1ch)
@@ -57,7 +57,22 @@ q.player.use {
     ~setPtn.(Pbind(
         \instrument, \diskSegment,
         //Play through 4 times, then fade
-        \amp, Pseg2([1, 1, 0.001], Pseq([~data.onset.size * 3, 15]), \sin),
+        // \amp, Pseg2([1, 1, 1], Pseq([~data.onset.size * 3, 5]), \sin),
+        \amp, 1,
+        \end, p { |ev|
+            ~data.isEnding = false;
+            (~data.onset.size * 3).do {
+                ev = 1.yield;
+            };
+            ~data.isEnding = true;
+            //4,5,7 = magic end onsets
+            while { [4,5,7].includes(ev.onset).not } {
+                ev = 1.yield;
+            };
+            ev = 1.yield; //Let onset play, and then finish
+            nil.yield;
+
+        },
     	\timingOffset, 0.1, //to sync with parPtn
         \startPos, Pkey(\startPos) - 0.01 //Fix bad segmentation
 	));
@@ -83,12 +98,14 @@ q.player.use {
             Fdef(\pBrownDurDivision).value(
                 Pfunc { ~currentEvent.dur }, 0.2, 0.22, 0.01
         )),
+        \test, Pif(Pfunc { ~data.isEnding }, nil, 1),
         \sustain, 1
     ), ~protoEvent),
 	0.1, 	Pbind(
 		\instrument, \fmGloss,
 		\dur, Pwrand([Rest(15), Pfunc { ~currentEvent.dur }], [0.05, 0.95]),
 		\sustain, Pwhite(1, 8.0),
+        \test, Pif(Pfunc { ~data.isEnding }, nil, 1),
         \type, p {
 			var resume;
             loop {
