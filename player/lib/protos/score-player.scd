@@ -21,8 +21,10 @@ Proto({
     ~randSeed = 1e+06.rand;
 
     //Set this to maximum peak value
-    //Limiter will use it as final level
     ~monitorGain = -1.dbamp;
+    //Limiter will use ~monitorGain as final level
+    //if not ~limiterLevel is set
+    ~limiterLevel = nil;
 
     //Do we want to add a safety limiter on the master bus?
     ~safeLimit = true;
@@ -441,7 +443,7 @@ Proto({
         if (~safeLimit) {
             s.sync;
             ~channels.do { |ch|
-                ~t.safeLimiter = Synth(\safeLimiter_mono, [\outbus, ch, \level, ~monitorGain], ~t.monitorGroup, \addToTail);
+                ~t.safeLimiter = Synth(\safeLimiter_mono, [\outbus, ch, \level, ~limiterLevel ? ~monitorGain], ~t.monitorGroup, \addToTail);
             }
         }
 
