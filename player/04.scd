@@ -12,6 +12,15 @@ var markov;
 q.player.actionLabels = #[phrase, part];
 q.player.tickLabel = \phrase;
 q.player.loadData("04");
+//Very rarely something happens when loading data.
+//This is a temporary fix
+if (q.player.data.lookup.part.includes(nil)) {
+    "data corrupted, fixing...".postln;
+    q.player.data = q.player.readDataFile("scoredata");
+    q.player.prepareScore;
+    q.player.corruptedFix = true;
+};
+
 //Adjust this to avoid clicks
 q.player.numBufs = 32;
 //q.player.extractFeatures;
