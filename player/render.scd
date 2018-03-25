@@ -102,6 +102,13 @@ fork {
                         //UGens are (currently) not completely deterministic:
                         //Would perhaps need separate randIDs for those
                         q.player.randSeed = randSeed;
+
+                        //Quick fix for race conditions
+                        //player sets scoreReady to true when all data is loaded
+                        //clunky
+                        while(q.player.scoreReady.not) {
+                            0.01.wait;
+                        };
                         q.player.bounce(options);
                     }.try({ |err|
                         err.reportError;

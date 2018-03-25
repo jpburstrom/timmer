@@ -15,6 +15,7 @@ Proto({
     ~numBufs = 8; //Number of buffers used in buffer pool
     ~data = ();
 
+    ~scoreReady = false;
     ~readyForPlay = false;
 
     //Setting this sets random seed on player start
@@ -294,6 +295,9 @@ Proto({
 
 
         ~iteratorStream = ~patternSeed.(~iteratorPattern).asStream;
+
+
+        ~scoreReady = true;
 
         currentEnvironment;
     };
