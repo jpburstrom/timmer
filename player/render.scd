@@ -106,7 +106,7 @@ fork {
                         //Quick fix for race conditions
                         //player sets scoreReady to true when all data is loaded
                         //clunky
-                        while(q.player.scoreReady.not) {
+                        while { q.player.scoreReady.not } {
                             0.01.wait;
                         };
                         q.player.bounce(options);
@@ -118,12 +118,14 @@ fork {
                 cond.hang;
 
                 //Test that file hasn't exploded
-                SoundFile.use(options.path, { |sf|
-                    sf.channelPeaks
-                    if (sf.channelPeaks.maxItem < -0.5.dbamp) {
-                        success = true;
-                    }
-                });
+                fork {
+                    SoundFile.use(options.path, { |sf|
+                        if (sf.channelPeaks.maxItem < -0.5.dbamp) {
+                            success = true;
+                        };
+                        cond.unhang;
+                    });
+                };
                 cond.hang;
 
             };
