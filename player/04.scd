@@ -223,8 +223,6 @@ q.player.setIterator(
 		]);
 	})
 );
-
-// q.player.play
 )
 
 
