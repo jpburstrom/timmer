@@ -73,8 +73,6 @@ fork {
 
 
 
-        backup.(options.basePath);
-
         "Creating directory at %".format(options.basePath).postln;
         options.basePath.mkdir;
 
