@@ -6,7 +6,7 @@ Music for double bass and electronics
 
 The songs are still in progress. They are the numbered files in `player/`. 
 
-###Media files
+### Media files
 
 The media files are not version controlled with git, but can be downloaded with [git-annex](https://git-annex.branchable.com/). Install git-annex, then The `fetch-sounds.sh` script in `player/` can be used to initialize your local repository and download the files.
 
